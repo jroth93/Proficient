@@ -89,7 +89,7 @@ namespace Proficient
 
             IList<RibbonItem> toggletools = togrib.AddStackedItems(
                 new PushButtonData("toggleenlwkst", "Enlarged Workset", thisAssyPath, "Proficient.ToggleEnlWkst"),
-                new PushButtonData("toggledesignnotes", "Design Notes", thisAssyPath, "Proficient.ToggleDesignNotes"),
+                new PushButtonData("toggledesignnotes", "Design Annotations", thisAssyPath, "Proficient.ToggleDesignAnno"),
                 new PushButtonData("toggleschwarning", "Schedule Warning", thisAssyPath, "Proficient.SuppressSchWarning"));
 
             IList<RibbonItem> filttools = filtrib.AddStackedItems(
@@ -344,7 +344,23 @@ namespace Proficient
         private Dictionary<View, ICollection<ElementId>> DesignNoteViews = new Dictionary<View, ICollection<ElementId>>();
         private void HideDesignNotes(Document doc, List<ElementId> printViews)
         {
-            var textEl = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_TextNotes).Where(x => x.Name.Contains("Design Notes"));
+            var textEl = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_TextNotes)
+                .Where(x => x.Name.ToLower().Contains("design"));
+
+            var lineEl = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Lines)
+                .Where(x => (x as CurveElement).LineStyle.Name.ToLower().Contains("design"));
+
+            var dimEl = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Dimensions)
+                .Where(x => x.Name.ToLower().Contains("design"));
+
+            List<Element> designEl = new List<Element>();
+
+            designEl.AddRange(textEl);
+            designEl.AddRange(lineEl);
+            designEl.AddRange(dimEl);
 
             List<ElementId> printViewsSub = new List<ElementId>();
             printViewsSub.AddRange(printViews);
@@ -368,8 +384,14 @@ namespace Proficient
                 }
             }
 
-            var noteViews = textEl.Select(x => x.OwnerViewId).Distinct().ToList();
-            var noteDependentViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Where(x => noteViews.Contains((x as View).GetPrimaryViewId())).Select(x => x.Id);
+            var noteViews = designEl
+                .Select(x => x.OwnerViewId)
+                .Distinct()
+                .ToList();
+            var noteDependentViews = new FilteredElementCollector(doc)
+                .OfClass(typeof(View))
+                .Where(x => noteViews.Contains((x as View).GetPrimaryViewId()))
+                .Select(x => x.Id);
             noteViews.AddRange(noteDependentViews);
             var views = printViewsSub.Intersect(noteViews);
 
@@ -382,9 +404,12 @@ namespace Proficient
                     foreach (ElementId viewId in views)
                     {
                         View curView = doc.GetElement(viewId) as View;
-                        ICollection<ElementId> viewTextEl = textEl.Where(x => x.OwnerViewId == viewId || x.OwnerViewId == curView.GetPrimaryViewId()).Select(x => x.Id).ToList();
-                        DesignNoteViews.Add(curView, viewTextEl);
-                        curView.HideElements(viewTextEl);
+                        ICollection<ElementId> viewDesignEl = designEl
+                            .Where(x => x.OwnerViewId == viewId || x.OwnerViewId == curView.GetPrimaryViewId())
+                            .Select(x => x.Id)
+                            .ToList();
+                        DesignNoteViews.Add(curView, viewDesignEl);
+                        curView.HideElements(viewDesignEl);
                     }
                 }
                 tx.Commit();

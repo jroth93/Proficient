@@ -12,7 +12,7 @@ using Autodesk.Revit.DB.ExtensibleStorage;
 namespace Proficient
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class ToggleDesignNotes : IExternalCommand
+    class ToggleDesignAnno : IExternalCommand
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
@@ -23,13 +23,31 @@ namespace Proficient
 
             bool curState = GetCurrentState(doc, view);
 
-            var designNotes = new FilteredElementCollector(doc)
+            var textEl = new FilteredElementCollector(doc)
                 .OfCategory(BuiltInCategory.OST_TextNotes)
-                .Where(el => el.Name.Contains("Design Notes"))
+                .Where(x => x.Name.ToLower().Contains("design"))
                 .Where(el => el.OwnerViewId == view.Id || el.OwnerViewId == view.GetPrimaryViewId())
-                .Select(el => el.Id).ToList();
+                .Select(el => el.Id);
 
-            if(designNotes.Count == 0)
+            var lineEl = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Lines)
+                .Where(x => (x as CurveElement).LineStyle.Name.ToLower().Contains("design"))
+                .Where(el => el.OwnerViewId == view.Id || el.OwnerViewId == view.GetPrimaryViewId())
+                .Select(el => el.Id);
+
+            var dimEl = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Dimensions)
+                .Where(x => x.Name.ToLower().Contains("design"))
+                .Where(el => el.OwnerViewId == view.Id || el.OwnerViewId == view.GetPrimaryViewId())
+                .Select(el => el.Id);
+
+            List<ElementId> designElIds = new List<ElementId>();
+
+            designElIds.AddRange(textEl);
+            designElIds.AddRange(lineEl);
+            designElIds.AddRange(dimEl);
+
+            if (designElIds.Count == 0)
             {
                 return Result.Succeeded;
             }
@@ -40,11 +58,11 @@ namespace Proficient
                 {
                     if (curState)
                     {
-                        view.HideElements(designNotes);
+                        view.HideElements(designElIds);
                     }
                     else
                     {
-                        view.UnhideElements(designNotes);
+                        view.UnhideElements(designElIds);
                     }
 
                 }
@@ -94,7 +112,7 @@ namespace Proficient
                     }
                     catch
                     {
-                        curState = false;
+                        curState = true;
                     }
 
                     ent.Set(field, !curState);

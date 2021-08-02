@@ -34,7 +34,7 @@
                 <Label Style="{StaticResource HeaderLabel}" Content="Text"/>
                 <Label Style="{StaticResource ControlLabel}" Content="Default font family"/>
                 <ComboBox Name="DefaultFont" x:FieldModifier="public" Margin="0,0,100,10"/>
-                <mah:ToggleSwitch IsOn="True" Name="HideDesignNotes" x:FieldModifier="public" OnContent="Hide design note text families on print" OffContent="Hide design note text families on print" Margin="0,0,0,0"/>
+                <mah:ToggleSwitch IsOn="True" Name="HideDesignNotes" x:FieldModifier="public" OnContent="Hide design annotations on print" OffContent="Hide design note text families on print" Margin="0,0,0,0"/>
             </StackPanel>
 
             <StackPanel>

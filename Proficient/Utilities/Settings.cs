@@ -15,7 +15,7 @@ namespace Proficient
             defWorkset = "M-Mechanical";
             pipeDist = 9;
             defFont = "3/32\" Arial";
-            hideDesignNotes = false;
+            hideDesignNotes = true;
             suppressSchWarning = false;
 
             //ductulator settings

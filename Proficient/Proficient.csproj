@@ -287,7 +287,7 @@
     <Compile Include="WIP\_Test.cs" />
     <Compile Include="Toggles\SuppressSchWarning.cs" />
     <Compile Include="WipeMark.cs" />
-    <Compile Include="Toggles\ToggleDesignNotes.cs" />
+    <Compile Include="Toggles\ToggleDesignAnno.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
