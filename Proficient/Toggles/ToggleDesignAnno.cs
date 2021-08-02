@@ -98,22 +98,18 @@ namespace Proficient
                     }
 
                     Entity ent = view.GetEntity(viewSchema);
+                    Field field = viewSchema.GetField("DesignNoteVisibility");
 
                     if (ent.Schema == null)
                     {
                         ent = new Entity(viewSchema);
+                        curState = true;
                     }
-
-                    Field field = viewSchema.GetField("DesignNoteVisibility");
-
-                    try
+                    else
                     {
                         curState = ent.Get<bool>(field);
                     }
-                    catch
-                    {
-                        curState = true;
-                    }
+
 
                     ent.Set(field, !curState);
                     view.SetEntity(ent);
