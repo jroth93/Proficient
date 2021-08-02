@@ -24,7 +24,7 @@ namespace Proficient
 
             knList = await MSGraph.GetKNData(Util.GetProjectNumber(revit));
 
-            rvtTask.Run((uiApp) => RvtKNWork(uiApp.ActiveUIDocument.Document));
+            await rvtTask.Run((uiApp) => RvtKNWork(uiApp.ActiveUIDocument.Document));
         }
 
         private static void RvtKNWork(Document doc)

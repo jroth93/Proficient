@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using Proficient.Forms;
 using System;
 
 
@@ -16,35 +17,38 @@ namespace Proficient
             ElementId viewid = uidoc.ActiveView.Id;
             View view = doc.GetElement(viewid) as View;
 
+            bool prevErr = false;
+            Follower prompt = new Follower(revit);
+
             while (true)
             {
-                Reference ref1 = null, ref2 = null;
-                LocationCurve loc1 = null, loc2 = null;
+                LocationCurve loc1, loc2;
+                Reference ref1, ref2;
+
                 try
                 {
+                    prompt.Show();
+                    prompt.lbl1.Content = prevErr ? "One or both items picked was not a pipe.\nPlease try again.\n\nPick Anchor Pipe." : "Pick Anchor Pipe";
                     ref1 = uidoc.Selection.PickObject(ObjectType.Element, "Pick Anchor Pipe");
+                    prompt.lbl1.Content = "Pick Pipe To Be Moved";
                     ref2 = uidoc.Selection.PickObject(ObjectType.Element, "Pick Pipe To Be Moved");
+
                 }
                 catch (Autodesk.Revit.Exceptions.OperationCanceledException)
                 {
+                    prompt.Close();
                     return Result.Succeeded;
                 }
 
-                try
+                loc1 = doc.GetElement(ref1).Location as LocationCurve;
+                loc2 = doc.GetElement(ref2).Location as LocationCurve;
+                if (loc1 == null || loc2 == null)
                 {
-                    loc1 = doc.GetElement(ref1).Location as LocationCurve;
-                    loc2 = doc.GetElement(ref2).Location as LocationCurve;
-                    if (loc1 == null || loc2 == null) { throw new NullReferenceException(); }
+                    prevErr = true;
+                    continue;
                 }
-                catch (NullReferenceException)
-                {
-                    TaskDialog td = new TaskDialog("Invalid Selection");
-                    td.MainContent = "One or more of the items picked was not a pipe.";
-                    td.Show();
-                    return Result.Succeeded;
-                }
+                prevErr = false;
 
-                bool ishor = Math.Round(loc1.Curve.GetEndPoint(0).Y, 5) == Math.Round(loc1.Curve.GetEndPoint(1).Y, 5);
                 XYZ linedir = (loc1.Curve as Line).Direction;
                 XYZ dirvect = new XYZ(-linedir.Y, linedir.X, 0.0);
                 Line intersectline1 = Line.CreateUnbound(new XYZ(loc2.Curve.Evaluate(0.5, true).X, loc2.Curve.Evaluate(0.5, true).Y, 0), linedir);
@@ -54,7 +58,7 @@ namespace Proficient
                 XYZ intersectpnt = resarray.get_Item(0).XYZPoint;
 
                 double curdist = intersectpnt.DistanceTo(new XYZ(loc1.Curve.Evaluate(0.5, true).X, loc1.Curve.Evaluate(0.5, true).Y, 0));
-                double pipedist = Convert.ToDouble(view.Scale) * Proficient.Settings.pipeDist / 1152;
+                double pipedist = Convert.ToDouble(view.Scale) * Main.Settings.pipeDist / 1152;
                 double movedist = curdist - pipedist;
                 XYZ movedir = new XYZ(loc1.Curve.Evaluate(0.5, true).X - intersectpnt.X, loc1.Curve.Evaluate(0.5, true).Y - intersectpnt.Y, 0).Normalize();
                 XYZ vector = movedist * movedir;

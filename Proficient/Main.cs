@@ -14,116 +14,179 @@ using Newtonsoft.Json;
 namespace Proficient
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class Proficient : IExternalApplication
+    public class Main : IExternalApplication
     {
-        static readonly string  _namespace_prefix = typeof(Proficient).Namespace + ".";
-
-        internal static Proficient _app = null;
-        public static Proficient Instance
-        {
-            get { return _app; }
-        }
-
+        public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
-
-        public RibbonButton suppressSchWarningBtn;
+        public RibbonButton suppressSchWarning;
         public Result OnStartup(UIControlledApplication application)
         {
-            _app = this;
+            Instance = this;
             InitializeSettings();
 
-            application.ControlledApplication.DocumentOpened
-                += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(Application_DocumentOpened);
+            AddEventListeners(application);
+            CreateRibbon(application);
+
+            //add external resource servers for keynotes
+            ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService).AddServer(new ExternalResourceDBServer());
+            ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceUIService).AddServer(new ExternalResourceUIServer());
+
+            //check toolbar version
+            string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.UserDll).FileVersion.ToString();
+            if (thisVersion != currentVersion)
+            {
+                Util.BalloonTip("Proficient", "New version of Proficient available.\nClick here, close Revit, and run the installer.", "Proficient Out Of Date", Names.File.ServerAddinFolder);
+            }
+                
+            return Result.Succeeded;
+        }
+
+        public void AddEventListeners(UIControlledApplication application)
+        {
+            application.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(Application_DocumentOpened);
             application.ViewActivated += Application_ViewActivated;
             application.DialogBoxShowing += new EventHandler<DialogBoxShowingEventArgs>(Application_DialogBoxShowing);
+            application.ControlledApplication.DocumentPrinting += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintingEventArgs>(Application_DocumentPrinting);
+            application.ControlledApplication.DocumentPrinted += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintedEventArgs>(Application_DocumentPrinted);
+        }
 
+        public void CreateRibbon(UIControlledApplication application)
+        {
+            string thisAssyPath = Assembly.GetExecutingAssembly().Location;
             application.CreateRibbonTab("Proficient");
+
+            #region add panels
             RibbonPanel genrib = application.CreateRibbonPanel("Proficient", "General");
+            RibbonPanel togrib = application.CreateRibbonPanel("Proficient", "Toggles");
+            RibbonPanel filtrib = application.CreateRibbonPanel("Proficient", "Filters");
             RibbonPanel knrib = application.CreateRibbonPanel("Proficient", "Keynotes");
             RibbonPanel mechrib = application.CreateRibbonPanel("Proficient", "Mechanical");
             RibbonPanel elecrib = application.CreateRibbonPanel("Proficient", "Electrical");
             genrib.Title = "General";
+            togrib.Title = "Toggles";
             knrib.Title = "Keynotes";
             mechrib.Title = "Mechanical";
             elecrib.Title = "Electrical";
+            #endregion
 
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-            string thisAssemblyPath = thisAssembly.Location;
-            string thisAssemblyVersion = thisAssembly.GetName().Version.ToString();
+            #region add buttons
+            RibbonButton settings = genrib.AddItem(
+                new PushButtonData("settings", "Edit\nSettings", thisAssyPath, "Proficient.EditSettings")) as RibbonButton;
+            SplitButton txtSplit = genrib.AddItem(
+                new SplitButtonData("txttools", "Text Tools")) as SplitButton;
+            RibbonButton xl2Rvt = genrib.AddItem(
+                new PushButtonData("excelassign", "Excel\nAssigner", thisAssyPath, "Proficient.ExcelAssign")) as RibbonButton;
+            RibbonButton elPlacer = genrib.AddItem(
+                new PushButtonData("elplacer", "Element\nPlacer", thisAssyPath, "Proficient.ElementPlacer")) as RibbonButton;
+            RibbonButton wipeMark = genrib.AddItem(
+                new PushButtonData("wipemark", "Wipe\nMark", thisAssyPath, "Proficient.WipeMark")) as RibbonButton;
+            RibbonButton calloutRef = genrib.AddItem(
+                new PushButtonData("calloutref", "Change Callout\nReference", thisAssyPath, "Proficient.ChangeCalloutRef")) as RibbonButton;
+            IList<RibbonItem> fliptools = genrib.AddStackedItems(
+                new PushButtonData("flipel", "Flip Element", thisAssyPath, "Proficient.FlipElements"),
+                new PushButtonData("flipplane", "Flip Workplane", thisAssyPath, "Proficient.FlipWorkPlane"));
 
-            #region create ribbon
-            RibbonButton settingsbtn = genrib.AddItem(new PushButtonData("cmdstg", "Edit\nSettings", thisAssemblyPath, "Proficient.EditSettings")) as RibbonButton;
-            SplitButton txtsplit = genrib.AddItem(new SplitButtonData("splttxttools", "Text Tools")) as SplitButton;
-            RibbonButton calloutbutton = genrib.AddItem(new PushButtonData("cmdchangecallout", "Change Callout\nReference", thisAssemblyPath, "Proficient.ChangeCalloutRef")) as RibbonButton;
-            RibbonButton elplcbutton = genrib.AddItem(new PushButtonData("cmdelplc", "Element\nPlacer", thisAssemblyPath, "Proficient.ElementPlacer")) as RibbonButton;
-            IList<RibbonItem> stackedGroupFlip = genrib.AddStackedItems(new PushButtonData("cmdflip", "Flip Element", thisAssemblyPath, "Proficient.FlipElements"),
-                                                                           new PushButtonData("cmdflipplane", "Flip Workplane", thisAssemblyPath, "Proficient.FlipWorkPlane"));
-            RibbonButton xl2Revitbutton = genrib.AddItem(new PushButtonData("cmdexcelassign", "Excel Assigner\n(beta)", thisAssemblyPath, "Proficient.ExcelAssign")) as RibbonButton;
-            suppressSchWarningBtn = genrib.AddItem(new PushButtonData("cmdsuppressschwarning", "Schedule\nWarning On", thisAssemblyPath, "Proficient.SuppressSchWarning")) as RibbonButton;
+            IList<RibbonItem> toggletools = togrib.AddStackedItems(
+                new PushButtonData("toggleenlwkst", "Enlarged Workset", thisAssyPath, "Proficient.ToggleEnlWkst"),
+                new PushButtonData("toggledesignnotes", "Design Notes", thisAssyPath, "Proficient.ToggleDesignNotes"),
+                new PushButtonData("toggleschwarning", "Schedule Warning", thisAssyPath, "Proficient.SuppressSchWarning"));
 
-            RibbonButton knbutton = knrib.AddItem(new PushButtonData("cmdreloadkn", "Reload\nKeynotes", thisAssemblyPath, "Proficient.KNReload")) as RibbonButton;
-            RibbonButton xlbutton = knrib.AddItem(new PushButtonData("cmdlaunchkn", "Open\nKeynotes", thisAssemblyPath, "Proficient.KNLauncher")) as RibbonButton;
-            RibbonButton knutilbtn = knrib.AddItem(new PushButtonData("cmdknutil", "Keynote\nUtility", thisAssemblyPath, "Proficient.KeynoteUtil")) as RibbonButton;
-            PulldownButton legacyknpulldown = knrib.AddItem(new PulldownButtonData("spltknlegacy", "Legacy\nKeynote\nTools")) as PulldownButton;
+            IList<RibbonItem> filttools = filtrib.AddStackedItems(
+                new PushButtonData("catfilt", "Category", thisAssyPath, "Proficient.CategoryFilter"),
+                new PushButtonData("famfilt", "Family", thisAssyPath, "Proficient.FamilyFilter"),
+                new PushButtonData("typefilt", "Type", thisAssyPath, "Proficient.TypeFilter"));
 
-            RibbonButton pipebutton = mechrib.AddItem(new PushButtonData("cmdpipespace", "Space\nPipes", thisAssemblyPath, "Proficient.PipeSpacer")) as RibbonButton;
-            RibbonButton ducttagbtn = mechrib.AddItem(new PushButtonData("cmdducttag", "Tag\nDucts", thisAssemblyPath, "Proficient.DuctTag")) as RibbonButton;
-            RibbonButton ductbutton = mechrib.AddItem(new PushButtonData("cmdlaunchduct", "Launch\nDuctulator", thisAssemblyPath, "Proficient.DuctLauncher")) as RibbonButton;
-            RibbonButton damperbtn = mechrib.AddItem(new PushButtonData("cmddampertoggle", "Damper\nToggle", thisAssemblyPath, "Proficient.DamperToggle")) as RibbonButton;
-            RibbonButton elbowbtn = mechrib.AddItem(new PushButtonData("cmdductelbowtoggle", "Duct Elbow\nToggle", thisAssemblyPath, "Proficient.DuctElbowToggle")) as RibbonButton;
+            RibbonButton reloadKn = knrib.AddItem(
+                new PushButtonData("reloadkn", "Reload\nKeynotes", thisAssyPath, "Proficient.KNReload")) as RibbonButton;
+            RibbonButton openKn = knrib.AddItem(
+                new PushButtonData("launchkn", "Open\nKeynotes", thisAssyPath, "Proficient.KNLauncher")) as RibbonButton;
+            RibbonButton knUtil = knrib.AddItem(
+                new PushButtonData("knutil", "Keynote\nUtility", thisAssyPath, "Proficient.KeynoteUtil")) as RibbonButton;
+            knrib.AddSlideOut();
+            knrib.AddStackedItems(
+                new PushButtonData("lgknopen", "Legacy Open Keynotes", thisAssyPath, "Proficient.LegacyKNLauncher"),
+                new PushButtonData("legknrl", "Legacy Reload Keynotes", thisAssyPath, "Proficient.LegacyKNReload"));
 
-            RibbonButton elpanelbtn = elecrib.AddItem(new PushButtonData("cmdpanelcheck", "Panel\nChecker", thisAssemblyPath, "Proficient.PanelUtil")) as RibbonButton;
+            RibbonButton ductTag = mechrib.AddItem(
+                new PushButtonData("ducttag", "Tag\nDucts", thisAssyPath, "Proficient.DuctTag")) as RibbonButton;
+            RibbonButton pipeTag = mechrib.AddItem(
+                new PushButtonData("pipetag", "Tag\nPipes", thisAssyPath, "Proficient.PipeTag")) as RibbonButton;
+            RibbonButton pipeSpacer = mechrib.AddItem(
+                new PushButtonData("pipespacer", "Space\nPipes", thisAssyPath, "Proficient.PipeSpacer")) as RibbonButton;
+            RibbonButton setFitUpDn = mechrib.AddItem(
+                new PushButtonData("setfitupdn", "Set Fitting\nUp/Down", thisAssyPath, "Proficient.SetFittingUpDn")) as RibbonButton;
+            RibbonButton damperToggle = mechrib.AddItem(
+                new PushButtonData("dampertoggle", "Damper\nToggle", thisAssyPath, "Proficient.DamperToggle")) as RibbonButton;
+            RibbonButton elbowToggle = mechrib.AddItem(
+                new PushButtonData("elbowtoggle", "Duct Elbow\nToggle", thisAssyPath, "Proficient.DuctElbowToggle")) as RibbonButton;
+            RibbonButton ductulator = mechrib.AddItem(
+                new PushButtonData("ductulator", "Launch\nDuctulator", thisAssyPath, "Proficient.DuctLauncher")) as RibbonButton;
 
-            PushButton cmbtxtbutton = txtsplit.AddPushButton(new PushButtonData("cmdcombinetext", "Combine\nText", thisAssemblyPath, "Proficient.CombineText"));
-            PushButton txtldrbtn = txtsplit.AddPushButton(new PushButtonData("cmdtextleader", "Add Text\nWith Leader", thisAssemblyPath, "Proficient.TextLeader"));
-            PushButton addldrbtn = txtsplit.AddPushButton(new PushButtonData("cmdaddleader", "Add\nLeader", thisAssemblyPath, "Proficient.AddLeader"));
-            PushButton flattxtbtn = txtsplit.AddPushButton(new PushButtonData("cmdflattenText", "Flatten\nText", thisAssemblyPath, "Proficient.FlattenText"));
+            RibbonButton elpanelbtn = elecrib.AddItem(
+                new PushButtonData("panelcheck", "Panel\nChecker", thisAssyPath, "Proficient.PanelUtil")) as RibbonButton;
 
+            PushButton cmbtxt = txtSplit.AddPushButton(
+                new PushButtonData("combinetxt", "Combine\nText", thisAssyPath, "Proficient.CombineText"));
+            PushButton txtldr = txtSplit.AddPushButton(
+                new PushButtonData("textleader", "Add Text\nWith Leader", thisAssyPath, "Proficient.TextLeader"));
+            PushButton addldr = txtSplit.AddPushButton(
+                new PushButtonData("addleader", "Add\nLeader", thisAssyPath, "Proficient.AddLeader"));
+            PushButton flattxt = txtSplit.AddPushButton(
+                new PushButtonData("flattentext", "Flatten\nText", thisAssyPath, "Proficient.FlattenText"));
+            #endregion
 
-            PushButton legknopen = legacyknpulldown.AddPushButton(new PushButtonData("cmdlgknopen", "Open Keynotes", thisAssemblyPath, "Proficient.LegacyKNLauncher"));
-            PushButton legknreload = legacyknpulldown.AddPushButton(new PushButtonData("cmdlegknrl", "Reload Keynotes", thisAssemblyPath, "Proficient.LegacyKNReload"));
+            #region add images
+            settings.LargeImage = NewBitmapImage("wkst");
+            cmbtxt.LargeImage = NewBitmapImage("combine");
+            txtldr.LargeImage = NewBitmapImage("leadertext");
+            addldr.LargeImage = NewBitmapImage("addleader");
+            flattxt.LargeImage = NewBitmapImage("flattentext");
+            xl2Rvt.LargeImage = NewBitmapImage("xl2rvt");
+            elPlacer.LargeImage = NewBitmapImage("elplc");
+            wipeMark.LargeImage = NewBitmapImage("wipe");
+            calloutRef.LargeImage = NewBitmapImage("callout");
+            (fliptools[0] as PushButton).Image = NewBitmapImage("flipel");
+            (fliptools[1] as PushButton).Image = NewBitmapImage("flipwp");
 
-            //add images
-            (stackedGroupFlip.ElementAt(0) as PushButton).Image = NewBitmapImage("flipel.png");
-            (stackedGroupFlip.ElementAt(1) as PushButton).Image = NewBitmapImage("flipwp.png");
-            knbutton.LargeImage = NewBitmapImage("reload.png");
-            pipebutton.LargeImage = NewBitmapImage("spacepipe.png");
-            calloutbutton.LargeImage = NewBitmapImage("callout.png");
-            cmbtxtbutton.LargeImage = NewBitmapImage("combine.png");
-            ductbutton.LargeImage = NewBitmapImage("duct.png");
-            xlbutton.LargeImage = NewBitmapImage("knxl.png");
-            settingsbtn.LargeImage = NewBitmapImage("wkst.png");
-            elplcbutton.LargeImage = NewBitmapImage("elplc.png");
-            txtldrbtn.LargeImage = NewBitmapImage("leadertext.png");
-            addldrbtn.LargeImage = NewBitmapImage("addleader.png");
-            flattxtbtn.LargeImage = NewBitmapImage("flattentext.png");
-            ducttagbtn.LargeImage = NewBitmapImage("tagduct.png");
-            elpanelbtn.LargeImage = NewBitmapImage("elecpanel.png");
-            xl2Revitbutton.LargeImage = NewBitmapImage("xl2rvt.png");
-            knutilbtn.LargeImage = NewBitmapImage("keynoteutil.png");
-            damperbtn.LargeImage = NewBitmapImage("damper.png");
-            elbowbtn.LargeImage = NewBitmapImage("ducttoggle.png");
-            suppressSchWarningBtn.LargeImage = NewBitmapImage("msg.png");
+            (toggletools[0] as PushButton).Image = NewBitmapImage("enlwkst");
+            (toggletools[1] as PushButton).Image = NewBitmapImage("notes");
+            (toggletools[2] as PushButton).Image = NewBitmapImage("msg");
 
-            #endregion create ribbon
+            (filttools[0] as PushButton).Image = NewBitmapImage("cat");
+            (filttools[1] as PushButton).Image = NewBitmapImage("fam");
+            (filttools[2] as PushButton).Image = NewBitmapImage("type");
 
-            //add external resource servers for keynotes
-            ExternalService externalResourceService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);
-            externalResourceService.AddServer(new ExternalResourceDBServer());
-            ExternalService externalResourceUIService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceUIService);
-            externalResourceUIService.AddServer(new ExternalResourceUIServer());
+            reloadKn.LargeImage = NewBitmapImage("reload");
+            openKn.LargeImage = NewBitmapImage("knxl");
+            knUtil.LargeImage = NewBitmapImage("keynoteutil");
 
-            //check toolbar version
-            if (thisAssemblyVersion != FileVersionInfo.GetVersionInfo(@"Z:\Revit\Custom Add Ins\Proficient.bundle\Contents\Proficient.dll").FileVersion.ToString())
-                Util.BalloonTip("Proficient", "New version of Proficient available.\nClick here, close Revit, and run the installer.", "Proficient Out Of Date", "Z:\\Revit\\Custom Add Ins");
+            ductTag.LargeImage = NewBitmapImage("tagduct");
+            pipeTag.LargeImage = NewBitmapImage("tagpipe");
+            pipeSpacer.LargeImage = NewBitmapImage("spacepipe");
+            setFitUpDn.LargeImage = NewBitmapImage("updown");
+            damperToggle.LargeImage = NewBitmapImage("damper");
+            elbowToggle.LargeImage = NewBitmapImage("ducttoggle");
+            ductulator.LargeImage = NewBitmapImage("duct");
 
-            return Result.Succeeded;
+            elpanelbtn.LargeImage = NewBitmapImage("elecpanel");
+            #endregion
 
+            #region add tooltips
+
+            settings.ToolTip = "Change Proficient settings";
+            cmbtxt.ToolTip = "Combine multiple text objects into one";
+            txtldr.ToolTip = "Add text object with leader";
+            addldr.ToolTip = "Add leader to existing text object";
+            flattxt.ToolTip = "Remove all carriage returns from text object";
+            xl2Rvt.ToolTip = "Assign parameters to family types or instances from Excel document";
+
+            #endregion
         }
 
         public static BitmapImage NewBitmapImage(string imageName)
         {
-            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(_namespace_prefix + "images." + imageName);
+            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Main).Namespace + ".images." + imageName + ".png");
             BitmapImage img = new BitmapImage();
 
             img.BeginInit();
@@ -133,12 +196,13 @@ namespace Proficient
             return img;
         }
 
-        public Result OnShutdown(UIControlledApplication application)
+        public Result OnShutdown(UIControlledApplication app)
         {
-            SaveSettings();
-
-            application.ControlledApplication.DocumentOpened -= Application_DocumentOpened;
-            application.ViewActivated -= Application_ViewActivated;
+            app.ControlledApplication.DocumentOpened -= Application_DocumentOpened;
+            app.ViewActivated -= Application_ViewActivated;
+            app.DialogBoxShowing -= Application_DialogBoxShowing;
+            app.ControlledApplication.DocumentPrinting -= Application_DocumentPrinting;
+            app.ControlledApplication.DocumentPrinted -= Application_DocumentPrinted;
             return Result.Succeeded;
         }
 
@@ -150,7 +214,7 @@ namespace Proficient
                 WorksetTable wst = doc.GetWorksetTable();
 
                 FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
-                Workset workset = wscol.FirstOrDefault<Workset>(e => e.Name.Equals(Settings.defWorkset)) as Workset;
+                Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
 
                 Transaction transaction = new Transaction(doc, "Change Workset");
                 if (transaction.Start() == TransactionStatus.Started)
@@ -171,14 +235,14 @@ namespace Proficient
             WorksetTable wst = doc.GetWorksetTable();
             FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
             string viewname = view.Name;
-            String viewsub = view.GetParameters("MEI Discipline-Sub").Count() > 0 ? view.GetParameters("MEI Discipline-Sub")[0].AsString() : "";
+            String viewsub = view.GetParameters(Names.Parameter.ViewSubdiscipline).Count() > 0 ? view.GetParameters(Names.Parameter.ViewSubdiscipline)[0].AsString() : string.Empty;
 
             if (viewname.ToLower().Contains("enlarged") || viewsub.ToLower().Contains("enlarged"))
             {
                 if (doc.IsWorkshared && Settings.switchEnlarged)
                 {
-                    string enlWkst = Settings.defWorkset[0] == 'M' ? "M-Enlarged Plans" : "E-Enlarged Plans";
-                    Workset enlWorkset = wscol.FirstOrDefault<Workset>(e => e.Name.Equals(enlWkst)) as Workset;
+                    string enlWkst = Settings.defWorkset[0] == 'M' ? Names.Workset.MechEnlarged : Names.Workset.ElecEnlarged;
+                    Workset enlWorkset = wscol.FirstOrDefault(e => e.Name.Equals(enlWkst));
 
                     Transaction transaction = new Transaction(doc, "Change Workset");
                     if (transaction.Start() == TransactionStatus.Started)
@@ -192,8 +256,7 @@ namespace Proficient
             {
                 if (doc.IsWorkshared && Settings.switchEnlarged)
                 {
-                    string siteWkst = "E-Site";
-                    Workset siteWorkset = wscol.FirstOrDefault<Workset>(e => e.Name.Equals(siteWkst)) as Workset;
+                    Workset siteWorkset = wscol.FirstOrDefault(e => e.Name.Equals(Names.Workset.ElecSite));
 
                     Transaction transaction = new Transaction(doc, "Change Workset");
                     if (transaction.Start() == TransactionStatus.Started)
@@ -205,7 +268,7 @@ namespace Proficient
             }
             else
             {
-                Workset workset = wscol.FirstOrDefault<Workset>(e => e.Name.Equals(Settings.defWorkset)) as Workset;
+                Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
 
                 Transaction transaction = new Transaction(doc, "Change Workset");
                 if (transaction.Start() == TransactionStatus.Started)
@@ -220,25 +283,52 @@ namespace Proficient
 
         public void Application_DialogBoxShowing(object sender, DialogBoxShowingEventArgs args)
         {
-            TaskDialogShowingEventArgs e = args as TaskDialogShowingEventArgs;
-
-            if (e == null)
+            if (!(args is TaskDialogShowingEventArgs e))
+            {
                 return;
+            }
 
-            if (e.Message.StartsWith("This change will be applied to all elements of type") && suppressSchWarningBtn.ItemText.Contains("Off"))
+            if (e.Message.StartsWith("This change will be applied to all elements of type") && Settings.suppressSchWarning)
+            {
                 e.OverrideResult((int)TaskDialogCommonButtons.Ok);
-
-            if (e.Message.StartsWith("A linked model references Revit add-ins that are not installed"))
+            }
+            if (e.Message.Contains("references Revit add-ins that are not installed"))
+            {
                 e.OverrideResult((int)TaskDialogCommonButtons.Close);
+            }
 
             if (e.Message.StartsWith("The following resources are not up to date"))
+            {
                 e.OverrideResult((int)TaskDialogCommonButtons.Ok);
+            }
+        }
+
+        
+        public void Application_DocumentPrinting(object sender, Autodesk.Revit.DB.Events.DocumentPrintingEventArgs args)
+        {
+            if (Settings.hideDesignNotes)
+            {
+                Document doc = args.Document;
+                List<ElementId> printViews = args.GetViewElementIds().ToList();
+                HideDesignNotes(doc, printViews);
+            }
+        }
+
+        public void Application_DocumentPrinted(object sender, Autodesk.Revit.DB.Events.DocumentPrintedEventArgs args)
+        {
+            if (Settings.hideDesignNotes)
+            {
+                Document doc = args.Document;
+                UnhideDesignNotes(doc); 
+            }
         }
 
         public void InitializeSettings()
         {
-            string configPath = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\config.json";
+            string configPath = Names.File.UserSettings;
             string configTxt;
+            Settings = new Settings();
+
             if (File.Exists(configPath))
             {
                 configTxt = File.ReadAllText(configPath);
@@ -246,17 +336,74 @@ namespace Proficient
             }
             else
             {
-                Settings = new Settings();
-                Settings.InitializeDefaults();
-                SaveSettings();
+                string jsonSettings = JsonConvert.SerializeObject(Settings);
+                File.WriteAllText(configPath, jsonSettings);
             }
         }
 
-        public void SaveSettings()
+        private Dictionary<View, ICollection<ElementId>> DesignNoteViews = new Dictionary<View, ICollection<ElementId>>();
+        private void HideDesignNotes(Document doc, List<ElementId> printViews)
         {
-            string configPath = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\config.json";
-            string jsonSettings = JsonConvert.SerializeObject(Settings);
-            File.WriteAllText(configPath, jsonSettings);
+            var textEl = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_TextNotes).Where(x => x.Name.Contains("Design Notes"));
+
+            List<ElementId> printViewsSub = new List<ElementId>();
+            printViewsSub.AddRange(printViews);
+
+            foreach (ElementId id in printViews)
+            {
+                ViewSheet vs = doc.GetElement(id) as ViewSheet;
+                if (vs != null)
+                {
+                    foreach (ElementId vid in vs.GetAllPlacedViews())
+                    {
+                        printViewsSub.Add(vid);
+                        ElementId pvid = (doc.GetElement(vid) as View).GetPrimaryViewId();
+                        if (pvid == ElementId.InvalidElementId) printViewsSub.Add(pvid);
+                    }
+                }
+                else
+                {
+                    ElementId pvid = (doc.GetElement(id) as View).GetPrimaryViewId();
+                    if (pvid != ElementId.InvalidElementId) printViewsSub.Add(pvid);
+                }
+            }
+
+            var noteViews = textEl.Select(x => x.OwnerViewId).Distinct().ToList();
+            var noteDependentViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Where(x => noteViews.Contains((x as View).GetPrimaryViewId())).Select(x => x.Id);
+            noteViews.AddRange(noteDependentViews);
+            var views = printViewsSub.Intersect(noteViews);
+
+            DesignNoteViews.Clear();
+
+            using (Transaction tx = new Transaction(doc, "Hide Design Notes"))
+            {
+                if (tx.Start() == TransactionStatus.Started)
+                {
+                    foreach (ElementId viewId in views)
+                    {
+                        View curView = doc.GetElement(viewId) as View;
+                        ICollection<ElementId> viewTextEl = textEl.Where(x => x.OwnerViewId == viewId || x.OwnerViewId == curView.GetPrimaryViewId()).Select(x => x.Id).ToList();
+                        DesignNoteViews.Add(curView, viewTextEl);
+                        curView.HideElements(viewTextEl);
+                    }
+                }
+                tx.Commit();
+            }
+        }
+
+        private void UnhideDesignNotes(Document doc)
+        {
+            using (Transaction tx = new Transaction(doc, "Unhide Design Notes"))
+            {
+                if (tx.Start() == TransactionStatus.Started)
+                {
+                    foreach (View curView in DesignNoteViews.Keys)
+                    {
+                        curView.UnhideElements(DesignNoteViews[curView]);
+                    }
+                }
+                tx.Commit();
+            }
         }
     }
 

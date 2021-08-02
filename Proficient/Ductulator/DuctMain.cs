@@ -12,18 +12,18 @@ namespace Proficient
         public DuctMain()
         {
             InitializeComponent();
-            TopMost = Proficient.Settings.appOnTop;
+            TopMost = Main.Settings.appOnTop;
             ActiveControl = Airflowtxt1;
-            if (Proficient.Settings.appVert) VerticalApplication();
+            if (Main.Settings.appVert) VerticalApplication();
 
-            Depthmaxtxt1.Text = Convert.ToString(Proficient.Settings.defDepthMax);
-            Depthmintxt1.Text = Convert.ToString(Proficient.Settings.defDepthMin);
-            Frictiontxt1.Text = Convert.ToString(Proficient.Settings.defFriction);
-            Veltxt1.Text = Convert.ToString(Proficient.Settings.defVelocity);
-            Depthmaxtxt2.Text = Convert.ToString(Proficient.Settings.defDepthMax);
-            Depthmintxt2.Text = Convert.ToString(Proficient.Settings.defDepthMin);
-            depthmaxtxt3.Text = Convert.ToString(Proficient.Settings.defDepthMax);
-            depthmintxt3.Text = Convert.ToString(Proficient.Settings.defDepthMin);
+            Depthmaxtxt1.Text = Convert.ToString(Main.Settings.defDepthMax);
+            Depthmintxt1.Text = Convert.ToString(Main.Settings.defDepthMin);
+            Frictiontxt1.Text = Convert.ToString(Main.Settings.defFriction);
+            Veltxt1.Text = Convert.ToString(Main.Settings.defVelocity);
+            Depthmaxtxt2.Text = Convert.ToString(Main.Settings.defDepthMax);
+            Depthmintxt2.Text = Convert.ToString(Main.Settings.defDepthMin);
+            depthmaxtxt3.Text = Convert.ToString(Main.Settings.defDepthMax);
+            depthmintxt3.Text = Convert.ToString(Main.Settings.defDepthMin);
         }
 
         private void Tab1Control(object sender, EventArgs e)
@@ -101,11 +101,11 @@ namespace Proficient
             label5.Visible = boolrnd;
             Diatxt1.Visible = boolrnd;
 
-            if (boolrnd & Proficient.Settings.appVert)
+            if (boolrnd & Main.Settings.appVert)
             {
                 Output5.Location = new Point(40, 130);
             }
-            else if (!boolrnd & Proficient.Settings.appVert)
+            else if (!boolrnd & Main.Settings.appVert)
             {
                 Output5.Location = new Point(40, 170);
             }
@@ -147,11 +147,11 @@ namespace Proficient
             label6.Visible = !boolrnd;
             label7.Visible = !boolrnd;
 
-            if (boolrnd & Proficient.Settings.appVert)
+            if (boolrnd & Main.Settings.appVert)
             {
                 Output6.Location = new Point(40, 130);
             }
-            else if (!boolrnd & Proficient.Settings.appVert)
+            else if (!boolrnd & Main.Settings.appVert)
             {
                 Output6.Location = new Point(40, 170);
             }
@@ -188,11 +188,11 @@ namespace Proficient
             dialbl3.Visible = boolrnd;
             diatxt3.Visible = boolrnd;
 
-            if (boolrnd & Proficient.Settings.appVert)
+            if (boolrnd & Main.Settings.appVert)
             {
                 Output8.Location = new Point(40, 130);
             }
-            else if (!boolrnd & Proficient.Settings.appVert)
+            else if (!boolrnd & Main.Settings.appVert)
             {
                 Output8.Location = new Point(40, 170);
             }
@@ -233,11 +233,11 @@ namespace Proficient
             label15.Top = boolrnd ? 95 : 133;
             label13.Top = boolrnd ? 95 : 133;
 
-            if (boolrnd & Proficient.Settings.appVert)
+            if (boolrnd & Main.Settings.appVert)
             {
                 Output9.Location = new Point(40, 130);
             }
-            else if (!boolrnd & Proficient.Settings.appVert)
+            else if (!boolrnd & Main.Settings.appVert)
             {
                 Output9.Location = new Point(40, 170);
             }
@@ -286,7 +286,7 @@ namespace Proficient
 
         private void WindowSize(int size)
         {
-            if (Proficient.Settings.appVert)
+            if (Main.Settings.appVert)
             {
                 this.Height = size > 170 ? size + 300 : 450;
             }

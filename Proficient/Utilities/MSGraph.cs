@@ -13,7 +13,7 @@ namespace Proficient
     class MSGraph
     {
         private static GraphConfig config;
-        private const string configFile = @"Z:\Revit\Custom Add Ins\Proficient Config Files\appsettings.json";
+        private const string configFile = Names.File.CommonSettings;
 
         public static async void OpenKNFile(string pn)
         {
@@ -46,16 +46,16 @@ namespace Proficient
                     .Header("workbook-session-id", $"{session.Id}")
                     .GetAsync();
 
-                string[][] rngarray = rng.Text.ToObject<string[][]>();
-
-                knList.Add(new KeynoteEntry(ws.Name, String.Empty));
-                foreach (string[] row in rngarray)
+                knList.Add(new KeynoteEntry(ws.Name, string.Empty));
+                foreach (var row in rng.Values.RootElement.EnumerateArray())
                 {
-                    if (row[0] != null && row[0] != String.Empty && row[1] != null && row[1] != String.Empty)
+                    string knNum = row[0].GetString();
+                    string knTxt = row[1].GetString();
+                    if (knNum != null && knNum != string.Empty && knTxt != null && knTxt != string.Empty)
                     {
                         try
                         {
-                            knList.Add(new KeynoteEntry(row[0], ws.Name, row[1]));
+                            knList.Add(new KeynoteEntry(knNum, ws.Name, knTxt));
                         }
                         catch { }
                     }
@@ -126,9 +126,9 @@ namespace Proficient
                                                         .ExecuteAsync();
 
             GraphServiceClient graphClient = new GraphServiceClient("https://graph.microsoft.com/v1.0/",
-                new DelegateAuthenticationProvider(async (requestMessage) =>
-                {
+                new DelegateAuthenticationProvider((requestMessage) => {
                     requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", authResult.AccessToken);
+                    return Task.CompletedTask;
                 }));
 
 

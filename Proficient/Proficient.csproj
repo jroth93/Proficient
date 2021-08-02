@@ -10,6 +10,7 @@
     <RootNamespace>Proficient</RootNamespace>
     <AssemblyName>Proficient</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
@@ -41,7 +42,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -49,7 +50,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -67,7 +68,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Publish|x64'">
-    <OutputPath>bin\x64\Publish\</OutputPath>
+    <OutputPath>bin\Publish\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -84,6 +85,7 @@
       <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="RevitAPI">
       <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
     </Reference>
@@ -108,13 +110,25 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Settings.cs" />
-    <Compile Include="GraphConfig.cs" />
+    <Compile Include="Forms\Blank.xaml.cs">
+      <DependentUpon>Blank.xaml</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Mech\PipeTag.cs" />
+    <Compile Include="Utilities\Names.cs" />
+    <Compile Include="Forms\SettingsForm.xaml.cs">
+      <DependentUpon>SettingsForm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Follower.xaml.cs">
+      <DependentUpon>Follower.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\Settings.cs" />
+    <Compile Include="Utilities\GraphConfig.cs" />
     <Compile Include="ChangeCalloutRef.cs" />
     <Compile Include="Keynotes\KNReload.cs" />
     <Compile Include="Keynotes\KNLauncher.cs" />
     <Compile Include="Mech\DuctElbowToggle.cs" />
-    <Compile Include="MSGraph.cs" />
+    <Compile Include="Utilities\MSGraph.cs" />
     <Compile Include="Ductulator\Backend.cs" />
     <Compile Include="Ductulator\DuctMain.cs">
       <SubType>Form</SubType>
@@ -211,15 +225,20 @@
     </Compile>
     <Compile Include="Keynotes\ExternalResourceDBServer.cs" />
     <Compile Include="Keynotes\ExternalResourceUIServer.cs" />
-    <Compile Include="RevitTask.cs" />
-    <Compile Include="TextCommands\FlattenText.cs" />
-    <Compile Include="TextCommands\AddLeader.cs" />
-    <Compile Include="TextCommands\TextLeader.cs" />
+    <Compile Include="Utilities\RevitTask.cs" />
+    <Compile Include="Text\FlattenText.cs" />
+    <Compile Include="Text\AddLeader.cs" />
+    <Compile Include="Text\TextLeader.cs" />
     <Compile Include="Elec\PanelUtil.cs" />
     <Compile Include="Keynotes\KeynoteUtil.cs" />
     <Compile Include="Mech\DamperToggle.cs" />
-    <Compile Include="Util.cs" />
+    <Compile Include="Utilities\Util.cs" />
+    <Compile Include="Filters\TypeFilter.cs" />
+    <Compile Include="Filters\FamilyFilter.cs" />
     <Compile Include="WIP\ReceptaclePlacer.cs" />
+    <Compile Include="Toggles\ToggleEnlWkst.cs" />
+    <Compile Include="Mech\SetFittingUpDn.cs" />
+    <Compile Include="Filters\CategoryFilter.cs" />
     <Compile Include="WIP\_Template.cs" />
     <Compile Include="ElementPlacer.cs" />
     <Compile Include="Forms\EntryBox.cs">
@@ -235,12 +254,6 @@
       <DependentUpon>PlaceElFrm.cs</DependentUpon>
     </Compile>
     <Compile Include="EditSettings.cs" />
-    <Compile Include="Forms\SettingsFrm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\SettingsFrm.Designer.cs">
-      <DependentUpon>SettingsFrm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -249,8 +262,8 @@
     <Compile Include="Keynotes\LegacyKNLauncher.cs" />
     <Compile Include="WIP\RoomSep2SpaceSep.cs" />
     <Compile Include="WIP\TagElKn.cs" />
-    <Compile Include="TextCommands\CombineText.cs" />
-    <Compile Include="FlipWorkPlane.cs" />
+    <Compile Include="Text\CombineText.cs" />
+    <Compile Include="Toggles\FlipWorkPlane.cs" />
     <Compile Include="Mech\DuctLauncher.cs" />
     <Compile Include="Forms\ViewForm.cs">
       <SubType>Form</SubType>
@@ -261,7 +274,7 @@
     <Compile Include="Keynotes\LegacyKNReload.cs" />
     <Compile Include="Mech\DuctTag.cs" />
     <Compile Include="Mech\PipeSpacer.cs" />
-    <Compile Include="FlipElements.cs" />
+    <Compile Include="Toggles\FlipElements.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -270,8 +283,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ExcelAssign.cs" />
+    <Compile Include="WIP\OpenSectionView.cs" />
     <Compile Include="WIP\_Test.cs" />
-    <Compile Include="SuppressSchWarning.cs" />
+    <Compile Include="Toggles\SuppressSchWarning.cs" />
+    <Compile Include="WipeMark.cs" />
+    <Compile Include="Toggles\ToggleDesignNotes.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
@@ -318,9 +334,6 @@
     <EmbeddedResource Include="Forms\PlaceElFrm.resx">
       <DependentUpon>PlaceElFrm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\SettingsFrm.resx">
-      <DependentUpon>SettingsFrm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ViewForm.resx">
       <DependentUpon>ViewForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -364,18 +377,54 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Ductulator\mxparser\syntaxchecker\csjavacc.jar" />
+    <EmbeddedResource Include="images\updown.png" />
+    <EmbeddedResource Include="images\type.png" />
+    <EmbeddedResource Include="images\fam.png" />
+    <EmbeddedResource Include="images\cat.png" />
+    <EmbeddedResource Include="images\wipe.png" />
+    <EmbeddedResource Include="images\tagpipe.png" />
+    <EmbeddedResource Include="images\notes.png" />
+    <EmbeddedResource Include="images\enlwkst.png" />
     <EmbeddedResource Include="images\msg.png" />
-    <EmbeddedResource Include="images\nomsg.png" />
     <EmbeddedResource Include="images\ducttoggle.png" />
     <EmbeddedResource Include="images\damper.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MahApps.Metro">
+      <Version>2.4.7</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.Graph">
-      <Version>3.30.0</Version>
+      <Version>4.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client">
-      <Version>4.30.1</Version>
+      <Version>4.35.0</Version>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Forms\MAFormStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Forms\FormStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\Blank.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
+    <Page Include="Forms\SettingsForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\Follower.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

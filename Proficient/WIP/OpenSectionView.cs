@@ -1,18 +1,11 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System;
-using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace Proficient
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class _Test : IExternalCommand
+    class OpenSectionView : IExternalCommand
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
@@ -20,24 +13,34 @@ namespace Proficient
             UIDocument uidoc = revit.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
             View view = doc.GetElement(uidoc.ActiveView.Id) as View;
+            KeynoteTable knt = KeynoteTable.GetKeynoteTable(doc);
+            KeyBasedTreeEntries kbte = knt.GetKeyBasedTreeEntries();
+            IList<ElementId> selectedIds = uidoc.Selection.GetElementIds() as IList<ElementId>;
+
+
+
 
             using (Transaction tx = new Transaction(doc, "commandname"))
             {
                 if (tx.Start() == TransactionStatus.Started)
-                {                    
-                  
+                {
+                   
                 }
 
                 tx.Commit();
             }
 
-
+            foreach (ElementId id in selectedIds)
+            {
+                ElementId idView = new ElementId(id.IntegerValue + 1);
+                View vw = doc.GetElement(idView) as View;
+                if (vw != null)
+                {
+                    uidoc.RequestViewChange(vw);
+                }
+            }
 
             return Result.Succeeded;
         }
-
-
     }
-
- 
 }

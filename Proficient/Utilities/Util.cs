@@ -10,10 +10,43 @@ namespace Proficient
 {
     class Util
     {
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern int SetWindowText(IntPtr hWnd, string lpString);
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+        public static bool IsTagged(Document doc, ElementId viewid, Element el)
+        {
+            FilteredElementCollector fec = new FilteredElementCollector(doc, viewid).OfClass(typeof(IndependentTag));
+            foreach (IndependentTag it in fec)
+            {
+                if (it.TaggedLocalElementId == el.Id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public enum ViewPlane
+        {
+            Top = 1,
+            Bottom = 2
+        }
+        public static double GetViewBound(Document doc, View view, ViewPlane vp)
+        {
+            if (view is ViewPlan)
+            {
+                ViewPlan viewPlan = view as ViewPlan;
+                PlanViewRange viewRange = viewPlan.GetViewRange();
+
+                PlanViewPlane pvp = vp == ViewPlane.Top ? PlanViewPlane.TopClipPlane : PlanViewPlane.BottomClipPlane;
+                double elev = (doc.GetElement(viewRange.GetLevelId(pvp)) as Level).Elevation;
+                double offset = viewRange.GetOffset(pvp);
+
+                return elev + offset;
+            }
+            else
+            {
+                return 0;
+            }
+
+        }
 
         public static void BalloonTip(string category, string title, string text)
         {
@@ -38,6 +71,11 @@ namespace Proficient
             Autodesk.Windows.ComponentManager.InfoCenterPaletteManager.ShowBalloon(ri);
         }
 
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern int SetWindowText(IntPtr hWnd, string lpString);
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
         public static void SetStatusText(string text)
         {
             IntPtr mainWindow = Process.GetCurrentProcess().MainWindowHandle;
@@ -52,8 +90,8 @@ namespace Proficient
         public static string GetProjectFolder(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
-            bool parExists = doc.ProjectInformation.GetParameters("MEI Project Folder").Count > 0;
-            string projFolder = parExists ? doc.ProjectInformation.GetParameters("MEI Project Folder")[0].AsString() : String.Empty;
+            bool parExists = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).Count > 0;
+            string projFolder = parExists ? doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].AsString() : String.Empty;
 
             if (String.IsNullOrEmpty(projFolder))
             {
@@ -64,14 +102,14 @@ namespace Proficient
 
                 if (!parExists)
                 {
-                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", "MEI Project Folder");
+                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
                 }
 
                 using (Transaction tx = new Transaction(doc, "Assign Project Folder Parameter"))
                 {
                     if (tx.Start() == TransactionStatus.Started)
                     {
-                        doc.ProjectInformation.GetParameters("MEI Project Folder")[0].Set(projFolder);
+                        doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].Set(projFolder);
                     }
                     tx.Commit();
                 }
@@ -84,9 +122,9 @@ namespace Proficient
         public static string GetProjectNumber(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
-            bool parExists = doc.ProjectInformation.GetParameters("MEI Project Number").Count > 0;
+            bool parExists = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber).Count > 0;
 
-            string projNum = parExists ? Convert.ToString(doc.ProjectInformation.GetParameters("MEI Project Number")[0].AsDouble()) : String.Empty;
+            string projNum = parExists ? Convert.ToString(doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber)[0].AsDouble()) : String.Empty;
 
             if (String.IsNullOrEmpty(projNum) || projNum == "0")
             {
@@ -96,14 +134,14 @@ namespace Proficient
 
                 if (!parExists)
                 {
-                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", "MEI Project Number");
+                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectNumber);
                 }
 
                 using (Transaction tx = new Transaction(doc, "Assign Project Number Parameter"))
                 {
                     if (tx.Start() == TransactionStatus.Started)
                     {
-                        doc.ProjectInformation.GetParameters("MEI Project Number")[0].Set(Convert.ToDouble(projNum));
+                        doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber)[0].Set(Convert.ToDouble(projNum));
                     }
                     tx.Commit();
                 }
@@ -116,7 +154,7 @@ namespace Proficient
         {
             CategorySet cset = uiapp.Application.Create.NewCategorySet();
             cset.Insert(doc.Settings.Categories.get_Item(bic));
-            uiapp.Application.SharedParametersFilename = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
+            uiapp.Application.SharedParametersFilename = Names.File.SharedParameters;
             DefinitionFile spFile = uiapp.Application.OpenSharedParameterFile();
 
             ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup).FirstOrDefault().Definitions.Where(ed => ed.Name == parName).FirstOrDefault() as ExternalDefinition;

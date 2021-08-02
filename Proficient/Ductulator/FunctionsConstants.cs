@@ -8,7 +8,7 @@ namespace Proficient
         public const double rho = 0.0753;
         public const double pi = 3.1415926525897;
         public const double sigma = 0.0005; ///material absolute roughness factor
-        public static double fprecision = Math.Pow(10, Proficient.Settings.fricPrec);
+        public static double fprecision = Math.Pow(10, Main.Settings.fricPrec);
         public static string numpattern = @"^\d+(\.\d+)?$";
         public static string pattern = @"^\d*\.?\d+\s*([\+\-\*\/]\s*\d+(\.\d+)?\s*)*$";
 

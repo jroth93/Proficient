@@ -2,7 +2,12 @@
 using Autodesk.Revit.UI;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Reflection;
+using System.IO;
+using System.Windows;
+using Proficient.Forms;
+using Newtonsoft.Json;
 
 
 namespace Proficient
@@ -13,49 +18,47 @@ namespace Proficient
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
-            WorksetTable wst = doc.GetWorksetTable();
             
-            FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
-            SettingsForm form1 = new SettingsForm();
-            form1.checkBox1.Checked = Proficient.Settings.switchEnlarged;
-            form1.pipespaceupdown.Value = Proficient.Settings.pipeDist;
+            SettingsForm sf = new SettingsForm();
+            sf.HideDesignNotes.IsOn = Main.Settings.hideDesignNotes;
+            sf.PipeDist.Value = Main.Settings.pipeDist;
+            sf.SwitchEnlWorkset.IsOn = Main.Settings.switchEnlarged;
+
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            form1.lblVersion.Text = $"Proficient Version {assemblyVersion}";
+            sf.Version.Content = $"Proficient Version {assemblyVersion}";
 
-            foreach (Workset ws in wscol)
+            sf.Loaded += (object sender, RoutedEventArgs e) =>
             {
-                if (ws.Kind == WorksetKind.UserWorkset)
-                {
-                    form1.defaultworkset.Items.Add(ws.Name);
-                }
+                Rectangle mwe = revit.Application.MainWindowExtents;
+                sf.Left = (mwe.Left + mwe.Right) / 2 - sf.Width / 2;
+                sf.Top = (mwe.Top + mwe.Bottom) / 2 - sf.Height / 2;
+            };
 
-            }
-            form1.defaultworkset.SelectedItem = Proficient.Settings.defWorkset;
+            sf.DefaultWorkset.ItemsSource = new FilteredWorksetCollector(doc).ToWorksets()
+                .Where(ws => ws.Kind == WorksetKind.UserWorkset)
+                .Select(ws => ws.Name);
+            sf.DefaultWorkset.SelectedItem = Main.Settings.defWorkset;
 
-            FilteredElementCollector coll = new FilteredElementCollector(doc);
-            var txttypes = coll.WherePasses(new ElementClassFilter(typeof(TextNoteType))).Select(txt => txt.Name).ToArray();
-            form1.defaulttext.Items.AddRange(txttypes);
-            form1.defaulttext.SelectedItem = txttypes.Where(type => type == Proficient.Settings.defFont).FirstOrDefault();
+            sf.DefaultFont.ItemsSource = new FilteredElementCollector(doc)
+                .WherePasses(new ElementClassFilter(typeof(TextNoteType)))
+                .Select(txt => txt.Name)
+                .ToList(); 
+            sf.DefaultFont.SelectedItem = Main.Settings.defFont;
 
-            form1.ShowDialog();
-
-            if (!form1.iscancelled)
+            if (sf.ShowDialog() ?? false)
             {
-                try
-                {
-                    Proficient.Settings.defWorkset = form1.defaultworkset.SelectedItem as String;
-                    Proficient.Settings.switchEnlarged = form1.checkBox1.Checked;
-                    Proficient.Settings.pipeDist = Convert.ToInt32(form1.pipespaceupdown.Value);
-                    Proficient.Settings.defFont = form1.defaulttext.SelectedItem.ToString();
-                }
-                catch
-                {
+                Main.Settings.defWorkset = sf.DefaultWorkset.SelectedItem as string;
+                Main.Settings.switchEnlarged = sf.SwitchEnlWorkset.IsOn;
+                Main.Settings.pipeDist = Convert.ToInt32(sf.PipeDist.Value);
+                Main.Settings.defFont = sf.DefaultFont.SelectedItem.ToString();
+                Main.Settings.hideDesignNotes = sf.HideDesignNotes.IsOn;
 
-                }
+                string jsonSettings = JsonConvert.SerializeObject(Main.Settings);
+                File.WriteAllText(Names.File.UserSettings, jsonSettings);
             }
 
 
-            form1.Close();
+            sf.Close();
 
             return Result.Succeeded;
         }

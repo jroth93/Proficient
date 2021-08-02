@@ -1,53 +1,96 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using System;
+﻿using System;
 using System.Linq;
+using System.Collections.Generic;
+using System.Windows.Controls;
+using System.Windows;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using Proficient.Forms;
 using Autodesk.Revit.DB.Mechanical;
-
 
 namespace Proficient
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class DuctTag : IExternalCommand
+    class PipeTag : IExternalCommand
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
-
+            UIApplication app = revit.Application;
             UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = revit.Application.ActiveUIDocument.Document;
+            Document doc = uidoc.Document;
             ElementId viewId = uidoc.ActiveView.Id;
-            View view = doc.GetElement(viewId) as View;
+            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
 
-            var ducts = new FilteredElementCollector(doc, viewId)
-                .OfCategory(BuiltInCategory.OST_DuctCurves)
+            IList<Element> pipes = new FilteredElementCollector(doc, viewId)
+                .OfCategory(BuiltInCategory.OST_PipeCurves)
                 .ToElements();
-            var fittings = 
-                new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_DuctFitting)
+            IEnumerable<Element> fittings =
+                new FilteredElementCollector(doc, viewId)
+                .OfCategory(BuiltInCategory.OST_PipeFitting)
                 .OfClass(typeof(FamilyInstance))
                 .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
 
-            if(ducts.Count == 0 && fittings.Count() == 0)
+            if (pipes.Count == 0 && fittings.Count() == 0)
             {
                 return Result.Succeeded;
             }
 
-            #region tag ducts
-            using (Transaction tx = new Transaction(doc, "Add duct tags"))
+            #region get leader preference
+            Blank frm = new Blank();
+            frm.sp.Orientation = Orientation.Horizontal;
+
+            Button btnLdr = new Button();
+            btnLdr.Content = "Leader";
+            frm.sp.Children.Add(btnLdr);
+
+            Label spacer = new Label();
+            spacer.Content = " ";
+            frm.sp.Children.Add(spacer);
+
+            Button btnNoLdr = new Button();
+            btnNoLdr.Content = "No Leader";
+            frm.sp.Children.Add(btnNoLdr);
+
+            bool ldr = true;
+
+            frm.Loaded += (object sender, RoutedEventArgs e) =>
+            {
+                Rectangle mwe = revit.Application.MainWindowExtents;
+                frm.Left = (mwe.Left + mwe.Right) / 2 - frm.Width / 2;
+                frm.Top = (mwe.Top + mwe.Bottom) / 2 - frm.Height / 2;
+            };
+
+            btnLdr.Click += (object sender, RoutedEventArgs e) =>
+            {
+                frm.DialogResult = true;
+                ldr = true;
+                frm.Close();
+            };
+
+            btnNoLdr.Click += (object sender, RoutedEventArgs e) =>
+            {
+                frm.DialogResult = true;
+                ldr = false;
+                frm.Close();
+            };
+
+            if (!frm.ShowDialog() ?? false)
+            {
+                return Result.Cancelled;
+            }
+
+            #endregion
+
+            #region tag pipes
+            using (Transaction tx = new Transaction(doc, "Add pipe tags"))
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    foreach (Element duct in ducts)
+                    foreach (Element pipe in pipes)
                     {
-                        Reference dRef = new Reference(duct);
-                        Location loc = duct.Location;
-                        LocationCurve locCrv = loc as LocationCurve;
+                        Reference pRef = new Reference(pipe);
+                        LocationCurve locCrv = pipe.Location as LocationCurve;
                         bool longEnough = locCrv.Curve.Length > 3;
-                        double dWidth =
-                            duct.Name == Names.Family.RoundDuct ?
-                            duct.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble() :
-                            duct.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM).AsDouble();
-                        double minNoLdr =Convert.ToDouble(view.Scale) / 64.0;
 
                         XYZ ep1 = locCrv.Curve.GetEndPoint(0);
                         XYZ ep2 = locCrv.Curve.GetEndPoint(1);
@@ -56,46 +99,27 @@ namespace Proficient
                         bool isHor = Math.Round(ep1.Y, 4) == Math.Round(ep2.Y, 4);
                         bool isInPlane = Math.Round(ep1.Z, 4) == Math.Round(ep2.Z, 4);
 
-                        if (longEnough && isInPlane && !Util.IsTagged(doc, viewId, duct))
+                        if (longEnough && isInPlane && !Util.IsTagged(doc, viewId, pipe))
                         {
-                            XYZ point = locCrv.Curve.Evaluate(0.5, true) as XYZ;
-                            bool ldr = false;
-                            TagOrientation tagOr = TagOrientation.Horizontal;
+                            XYZ point = locCrv.Curve.Evaluate(0.5, true);
+                            TagOrientation tagOr = !ldr && isVert ? TagOrientation.Vertical : TagOrientation.Horizontal;
+
                             ElementId symId = (new FilteredElementCollector(doc)
                                 .OfClass(typeof(Family))
-                                .First(f => f.Name == Names.Family.DuctTag) as Family)
+                                .First(f => f.Name == Names.Family.PipeTag) as Family)
                                 .GetFamilySymbolIds()
                                 .First();
 
-                            if (isVert)
-                            {
-                                if (dWidth >= minNoLdr)
-                                {
-                                    tagOr = TagOrientation.Vertical;
-                                }
-                                else
-                                {
-                                    ldr = true;
-                                }
-                            }
-                            else if (isHor && dWidth < minNoLdr)
-                            {
-                                ldr = true;
-                            }
-                            else
+                            if (!isVert && !isHor && !ldr)
                             {
                                 symId = (new FilteredElementCollector(doc)
-                                    .OfClass(typeof(Family))
-                                    .First(f => f.Name == Names.Family.DuctTagRotating) as Family)
-                                    .GetFamilySymbolIds()
-                                    .First();
-                                if (dWidth < minNoLdr)
-                                {
-                                    ldr = true;
-                                }
+                                .OfClass(typeof(Family))
+                                .First(f => f.Name == Names.Family.PipeTagRotating) as Family)
+                                .GetFamilySymbolIds()
+                                .First();
                             }
 
-                            IndependentTag tag = IndependentTag.Create(doc, symId, viewId, dRef, ldr, tagOr, point);
+                            IndependentTag tag = IndependentTag.Create(doc, symId, viewId, pRef, ldr, tagOr, point);
                         }
                     }
                 }
@@ -103,14 +127,16 @@ namespace Proficient
             }
             #endregion
 
-            #region tag duct drops/rises
+            #region tag pipe drops/rises
             using (Transaction tx = new Transaction(doc, "Add fitting tags"))
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    var fec = new FilteredElementCollector(doc);
-                    Family tagFam = fec.OfClass(typeof(Family)).Where(fam => fam.Name == Names.Family.DuctFittingTag).FirstOrDefault() as Family;
-                    ElementId symId = tagFam.GetFamilySymbolIds().FirstOrDefault();
+                    ElementId symId = (new FilteredElementCollector(doc)
+                        .OfClass(typeof(Family))
+                        .First(fam => fam.Name == Names.Family.PipeFittingTag) as Family)
+                        .GetFamilySymbolIds()
+                        .First();
 
                     foreach (FamilyInstance f in fittings)
                     {
@@ -133,7 +159,7 @@ namespace Proficient
                                                 Reference fRef = new Reference(f);
                                                 XYZ point = (f.Location as LocationPoint).Point;
                                                 IndependentTag tag = IndependentTag.Create(doc, symId, viewId, fRef, true, TagOrientation.Horizontal, point);
-                                            } 
+                                            }
                                         }
                                     }
                                 }
@@ -165,8 +191,5 @@ namespace Proficient
 
             return Result.Succeeded;
         }
-
-
-
     }
 }

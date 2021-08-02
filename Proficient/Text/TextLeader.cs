@@ -18,7 +18,7 @@ namespace Proficient
             XYZ pt = uidoc.Selection.PickPoint();
 
             FilteredElementCollector coll = new FilteredElementCollector(doc);
-            TextNoteType txttype = coll.WherePasses(new ElementClassFilter(typeof(TextNoteType))).Where(type => type.Name == Proficient.Settings.defFont).ElementAt(0) as TextNoteType;
+            TextNoteType txttype = coll.WherePasses(new ElementClassFilter(typeof(TextNoteType))).Where(type => type.Name == Main.Settings.defFont).ElementAt(0) as TextNoteType;
             TextNoteOptions txtoptions = new TextNoteOptions(txttype.Id);
 
             using (Transaction tx = new Transaction(doc, "Remove Line Breaks"))
