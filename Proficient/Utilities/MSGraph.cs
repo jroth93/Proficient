@@ -49,15 +49,18 @@ namespace Proficient
                 knList.Add(new KeynoteEntry(ws.Name, string.Empty));
                 foreach (var row in rng.Values.RootElement.EnumerateArray())
                 {
-                    string knNum = row[0].GetString();
-                    string knTxt = row[1].GetString();
-                    if (knNum != null && knNum != string.Empty && knTxt != null && knTxt != string.Empty)
+                    if (row.GetArrayLength() >= 2)
                     {
-                        try
+                        string knNum = row[0].ToString();
+                        string knTxt = row[1].ToString();
+                        if (knNum != null && knNum != string.Empty && knTxt != null && knTxt != string.Empty)
                         {
-                            knList.Add(new KeynoteEntry(knNum, ws.Name, knTxt));
-                        }
-                        catch { }
+                            try
+                            {
+                                knList.Add(new KeynoteEntry(knNum, ws.Name, knTxt));
+                            }
+                            catch { }
+                        } 
                     }
                         
                 }
