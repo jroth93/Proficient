@@ -1,13 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System;
-using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace Proficient
 {
@@ -122,5 +117,5 @@ namespace Proficient
         }
     }
 
- 
+
 }

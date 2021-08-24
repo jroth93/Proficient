@@ -1,13 +1,12 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-using System.IO;
-using System.Windows;
-using Proficient.Forms;
 using Newtonsoft.Json;
+using Proficient.Forms;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
 
 
 namespace Proficient
@@ -18,7 +17,7 @@ namespace Proficient
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
-            
+
             SettingsForm sf = new SettingsForm();
             sf.HideDesignNotes.IsOn = Main.Settings.hideDesignNotes;
             sf.PipeDist.Value = Main.Settings.pipeDist;
@@ -42,7 +41,7 @@ namespace Proficient
             sf.DefaultFont.ItemsSource = new FilteredElementCollector(doc)
                 .WherePasses(new ElementClassFilter(typeof(TextNoteType)))
                 .Select(txt => txt.Name)
-                .ToList(); 
+                .ToList();
             sf.DefaultFont.SelectedItem = Main.Settings.defFont;
 
             if (sf.ShowDialog() ?? false)

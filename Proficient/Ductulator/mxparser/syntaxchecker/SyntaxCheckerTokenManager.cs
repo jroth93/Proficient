@@ -1776,7 +1776,7 @@ null, null, null, null, null, "\x5b", "\x5d", null, null, };
             Token matchedToken;
             int curPos = 0;
 
-        EOFLoop:
+            EOFLoop:
             for (; ; )
             {
                 try

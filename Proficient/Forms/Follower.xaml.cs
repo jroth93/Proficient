@@ -1,22 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Forms;
-using Autodesk.Revit.UI;
-using System.Runtime.InteropServices;
+﻿using Autodesk.Revit.UI;
+using System;
 using System.Diagnostics;
-using Autodesk.Revit.DB;
-using MahApps.Metro.Controls;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace Proficient.Forms
 {
@@ -64,8 +50,8 @@ namespace Proficient.Forms
                 MouseMessages.WM_MOUSEMOVE == (MouseMessages)wParam)
             {
                 MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-                if(hookStruct.pt.x <= de.Right 
-                    && hookStruct.pt.x >= de.Left 
+                if (hookStruct.pt.x <= de.Right
+                    && hookStruct.pt.x >= de.Left
                     && hookStruct.pt.y <= de.Bottom
                     && hookStruct.pt.y >= de.Top)
                 {
@@ -75,13 +61,13 @@ namespace Proficient.Forms
                     {
                         mw.Show();
                     }
-                    
+
                 }
                 else
                 {
                     mw.Hide();
                 }
-                
+
             }
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }

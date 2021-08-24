@@ -234,7 +234,7 @@ namespace org.mariuszgromada.math.mxparser.syntaxchecker
 
                 }
             }
-        label_1:;
+            label_1:;
 
         }
 
@@ -639,7 +639,7 @@ namespace org.mariuszgromada.math.mxparser.syntaxchecker
                         }
                         expression();
                     }
-                label_2:;
+                    label_2:;
 
                     break;
                 default:
@@ -753,7 +753,7 @@ namespace org.mariuszgromada.math.mxparser.syntaxchecker
 
                                     }
                                 }
-                            label_4:;
+                                label_4:;
 
                                 break;
                             default:
@@ -774,7 +774,7 @@ namespace org.mariuszgromada.math.mxparser.syntaxchecker
 
                         }
                     }
-                label_3:;
+                    label_3:;
 
                     jj_consume_token(126);
                     break;

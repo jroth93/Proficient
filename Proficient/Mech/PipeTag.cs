@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Proficient.Forms;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using Proficient.Forms;
 
 namespace Proficient
 {
@@ -34,7 +34,7 @@ namespace Proficient
             {
                 return Result.Succeeded;
             }
-
+            
             #region get leader preference
             Blank frm = new Blank();
             frm.sp.Orientation = Orientation.Horizontal;
@@ -50,9 +50,9 @@ namespace Proficient
             Button btnNoLdr = new Button();
             btnNoLdr.Content = "No Leader";
             frm.sp.Children.Add(btnNoLdr);
-
+            
             bool ldr = true;
-
+            
             frm.Loaded += (object sender, RoutedEventArgs e) =>
             {
                 Rectangle mwe = revit.Application.MainWindowExtents;
@@ -80,7 +80,7 @@ namespace Proficient
             }
 
             #endregion
-
+            
             #region tag pipes
             using (Transaction tx = new Transaction(doc, "Add pipe tags"))
             {
@@ -154,6 +154,10 @@ namespace Proficient
                                             Curve crv = lc.Curve;
                                             double top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
                                             double viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
+                                            if (viewTop - top > 70)
+                                            {
+                                                viewTop -= 100;
+                                            }
                                             if (top > viewTop)
                                             {
                                                 Reference fRef = new Reference(f);
@@ -172,12 +176,16 @@ namespace Proficient
                                             Curve crv = lc.Curve;
                                             double bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
                                             double viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
+                                            if (viewBottom - bottom > 70)
+                                            {
+                                                viewBottom -= 100;
+                                            }
                                             if (bottom < viewBottom)
                                             {
                                                 Reference fRef = new Reference(f);
                                                 XYZ point = (f.Location as LocationPoint).Point;
                                                 IndependentTag tag = IndependentTag.Create(doc, symId, viewId, fRef, true, TagOrientation.Horizontal, point);
-                                            } 
+                                            }
                                         }
                                     }
                                 }

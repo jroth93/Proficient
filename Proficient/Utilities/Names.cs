@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Proficient
 {
@@ -36,10 +32,11 @@ namespace Proficient
         public class File
         {
             public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
-            public const string UserDll = @"Z:\Revit\Custom Add Ins\Proficient.bundle\Contents\Proficient.dll";
+            public const string ServerDll = @"Z:\Revit\Custom Add Ins\Proficient.bundle\Contents\Proficient.dll";
             public const string ServerAddinFolder = @"Z:\Revit\Custom Add Ins";
             public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\config.json";
             public const string CommonSettings = @"Z:\Revit\Custom Add Ins\Proficient Config Files\appsettings.json";
+            public const string UserDllFolder = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents";
         }
 
         public class Guids

@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using System;
 using System.Linq;
-using Autodesk.Revit.DB.Mechanical;
 
 
 namespace Proficient
@@ -21,13 +21,13 @@ namespace Proficient
             var ducts = new FilteredElementCollector(doc, viewId)
                 .OfCategory(BuiltInCategory.OST_DuctCurves)
                 .ToElements();
-            var fittings = 
+            var fittings =
                 new FilteredElementCollector(doc)
                 .OfCategory(BuiltInCategory.OST_DuctFitting)
                 .OfClass(typeof(FamilyInstance))
                 .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
 
-            if(ducts.Count == 0 && fittings.Count() == 0)
+            if (ducts.Count == 0 && fittings.Count() == 0)
             {
                 return Result.Succeeded;
             }
@@ -44,10 +44,10 @@ namespace Proficient
                         LocationCurve locCrv = loc as LocationCurve;
                         bool longEnough = locCrv.Curve.Length > 3;
                         double dWidth =
-                            duct.Name == Names.Family.RoundDuct ?
+                            (duct as Duct).DuctType.Shape == ConnectorProfileType.Round ?
                             duct.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble() :
                             duct.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM).AsDouble();
-                        double minNoLdr =Convert.ToDouble(view.Scale) / 64.0;
+                        double minNoLdr = Convert.ToDouble(view.Scale) / 64.0;
 
                         XYZ ep1 = locCrv.Curve.GetEndPoint(0);
                         XYZ ep2 = locCrv.Curve.GetEndPoint(1);
@@ -108,14 +108,16 @@ namespace Proficient
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    var fec = new FilteredElementCollector(doc);
-                    Family tagFam = fec.OfClass(typeof(Family)).Where(fam => fam.Name == Names.Family.DuctFittingTag).FirstOrDefault() as Family;
+                    Family tagFam = new FilteredElementCollector(doc)
+                        .OfClass(typeof(Family))
+                        .Where(fam => fam.Name == Names.Family.DuctFittingTag)
+                        .FirstOrDefault() as Family;
                     ElementId symId = tagFam.GetFamilySymbolIds().FirstOrDefault();
 
                     foreach (FamilyInstance f in fittings)
                     {
                         MechanicalFitting mf = f.MEPModel as MechanicalFitting;
-                        if (!Util.IsTagged(doc, view.Id, f))
+                        if (!Util.IsTagged(doc, view.Id, f) && mf.ConnectorManager != null)
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {
@@ -128,12 +130,16 @@ namespace Proficient
                                             Curve crv = lc.Curve;
                                             double top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
                                             double viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
+                                            if (viewTop - top > 70)
+                                            {
+                                                viewTop -= 100;
+                                            }
                                             if (top > viewTop)
                                             {
                                                 Reference fRef = new Reference(f);
                                                 XYZ point = (f.Location as LocationPoint).Point;
                                                 IndependentTag tag = IndependentTag.Create(doc, symId, viewId, fRef, true, TagOrientation.Horizontal, point);
-                                            } 
+                                            }
                                         }
                                     }
                                 }
@@ -146,12 +152,16 @@ namespace Proficient
                                             Curve crv = lc.Curve;
                                             double bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
                                             double viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
+                                            if (viewBottom - bottom > 70)
+                                            {
+                                                viewBottom -= 100;
+                                            }
                                             if (bottom < viewBottom)
                                             {
                                                 Reference fRef = new Reference(f);
                                                 XYZ point = (f.Location as LocationPoint).Point;
                                                 IndependentTag tag = IndependentTag.Create(doc, symId, viewId, fRef, true, TagOrientation.Horizontal, point);
-                                            } 
+                                            }
                                         }
                                     }
                                 }

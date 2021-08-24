@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using Autodesk.Revit.DB.Mechanical;
-using System.Collections;
+using Autodesk.Revit.UI;
 using System.Collections.Generic;
 
 namespace Proficient
@@ -41,7 +40,7 @@ namespace Proficient
                                 {
                                     f.LookupParameter(Names.Parameter.FittingUpDn).Set(0);
                                 }
-                            } 
+                            }
                         }
                     }
                 }

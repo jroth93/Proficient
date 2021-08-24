@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Proficient
+﻿namespace Proficient
 {
     public class Settings
     {
@@ -26,7 +20,7 @@ namespace Proficient
             fricPrec = 3;
             appOnTop = false;
             appVert = false;
-        } 
+        }
         public bool switchEnlarged { get; set; }
         public string defWorkset { get; set; }
         public int pipeDist { get; set; }

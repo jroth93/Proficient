@@ -1,10 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using System.Windows.Controls;
-using System.Windows;
 using Proficient.Forms;
-using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Proficient
 {
@@ -64,7 +63,7 @@ namespace Proficient
                 tm = false;
                 frm.Close();
             };
-                        
+
             if (!frm.ShowDialog() ?? false)
             {
                 return Result.Cancelled;
@@ -74,7 +73,7 @@ namespace Proficient
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    foreach(ElementId elId in elIds)
+                    foreach (ElementId elId in elIds)
                     {
                         if (tm)
                         {
@@ -86,8 +85,8 @@ namespace Proficient
                             Element el = doc.GetElement(elId);
                             el.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).Set(string.Empty);
                         }
-                        
-                        
+
+
                     }
                 }
 

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Proficient.Forms;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Proficient
 {
@@ -21,7 +21,7 @@ namespace Proficient
 
             ICollection<ElementId> selectedIds = uidoc.Selection.GetElementIds();
 
-            if(selectedIds.Count == 0)
+            if (selectedIds.Count == 0)
             {
                 return Result.Succeeded;
             }

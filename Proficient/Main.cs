@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Media.Imaging;
-using Newtonsoft.Json;
 
 namespace Proficient
 {
@@ -19,13 +19,13 @@ namespace Proficient
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
         public RibbonButton suppressSchWarning;
-        public Result OnStartup(UIControlledApplication application)
+        public Result OnStartup(UIControlledApplication app)
         {
             Instance = this;
             InitializeSettings();
 
-            AddEventListeners(application);
-            CreateRibbon(application);
+            AddEventListeners(app);
+            CreateRibbon(app);
 
             //add external resource servers for keynotes
             ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService).AddServer(new ExternalResourceDBServer());
@@ -33,22 +33,48 @@ namespace Proficient
 
             //check toolbar version
             string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.UserDll).FileVersion.ToString();
+            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion.ToString();
             if (thisVersion != currentVersion)
             {
                 Util.BalloonTip("Proficient", "New version of Proficient available.\nClick here, close Revit, and run the installer.", "Proficient Out Of Date", Names.File.ServerAddinFolder);
             }
-                
+
             return Result.Succeeded;
         }
 
-        public void AddEventListeners(UIControlledApplication application)
+        public void AddEventListeners(UIControlledApplication app)
         {
-            application.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(Application_DocumentOpened);
-            application.ViewActivated += Application_ViewActivated;
-            application.DialogBoxShowing += new EventHandler<DialogBoxShowingEventArgs>(Application_DialogBoxShowing);
-            application.ControlledApplication.DocumentPrinting += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintingEventArgs>(Application_DocumentPrinting);
-            application.ControlledApplication.DocumentPrinted += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintedEventArgs>(Application_DocumentPrinted);
+            app.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(Application_DocumentOpened);
+            app.ViewActivated += Application_ViewActivated;
+            app.DialogBoxShowing += new EventHandler<DialogBoxShowingEventArgs>(Application_DialogBoxShowing);
+            app.ControlledApplication.DocumentPrinting += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintingEventArgs>(Application_DocumentPrinting);
+            app.ControlledApplication.DocumentPrinted += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintedEventArgs>(Application_DocumentPrinted);
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        }
+
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            string file = string.Empty;
+            switch (args.Name)
+            {
+                case "Newtonsoft.Json":
+                    file = Names.File.UserDllFolder + args.Name + ".dll";
+                    break;
+                case "System.Text.Json":
+                    file = Names.File.UserDllFolder + args.Name + ".dll";
+                    break;
+                case "System.Runtime.CompilerServices.Unsafe":
+                    file = Names.File.UserDllFolder + args.Name + ".dll";
+                    break;
+            }
+
+            if (File.Exists(file))
+            {
+                return Assembly.LoadFrom(file);
+            }
+
+            return null;
         }
 
         public void CreateRibbon(UIControlledApplication application)
@@ -303,7 +329,7 @@ namespace Proficient
             }
         }
 
-        
+
         public void Application_DocumentPrinting(object sender, Autodesk.Revit.DB.Events.DocumentPrintingEventArgs args)
         {
             if (Settings.hideDesignNotes)
@@ -319,7 +345,7 @@ namespace Proficient
             if (Settings.hideDesignNotes)
             {
                 Document doc = args.Document;
-                UnhideDesignNotes(doc); 
+                UnhideDesignNotes(doc);
             }
         }
 
