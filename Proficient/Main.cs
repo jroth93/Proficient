@@ -325,7 +325,7 @@ namespace Proficient
 
             if (e.Message.StartsWith("The following resources are not up to date"))
             {
-                e.OverrideResult((int)TaskDialogCommonButtons.Ok);
+                e.OverrideResult(1001);
             }
         }
 

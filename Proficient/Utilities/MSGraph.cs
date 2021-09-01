@@ -41,11 +41,22 @@ namespace Proficient
 
             foreach (var ws in xlFile)
             {
-                WorkbookRange rng = await graphClient.Groups[config.AllMorrisseyGroupId].Drive.Items[curFile.Id].Workbook.Worksheets[ws.Id].Range().UsedRange()
-                    .Request()
-                    .Header("workbook-session-id", $"{session.Id}")
-                    .GetAsync();
+                WorkbookRange rng = new WorkbookRange();
+                try
+                {
 
+                    rng = await graphClient.Groups[config.AllMorrisseyGroupId].Drive.Items[curFile.Id].Workbook.Worksheets[ws.Id].Range().UsedRange()
+                        .Request()
+                        .Header("workbook-session-id", $"{session.Id}")
+                        .GetAsync();
+
+                }
+                catch 
+                {
+                    Console.WriteLine($"No used range in {ws.Name}");
+                    continue;
+                    
+                }
                 knList.Add(new KeynoteEntry(ws.Name, string.Empty));
                 foreach (var row in rng.Values.RootElement.EnumerateArray())
                 {
