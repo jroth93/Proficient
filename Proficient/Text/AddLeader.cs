@@ -20,9 +20,6 @@ namespace Proficient
                 ids.Add(doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Element")).Id);
             ElementId txtid = ids.Where(id => (doc.GetElement(id) as TextNote) != null).FirstOrDefault();
 
-            //"MEI Callout"
-
-
             TextNote txt = (doc.GetElement(txtid) as TextNote);
 
             if (txt == null)
@@ -34,7 +31,7 @@ namespace Proficient
             }
             XYZ pl = uidoc.Selection.PickPoint();
 
-            using (Transaction tx = new Transaction(doc, "Remove Line Breaks"))
+            using (Transaction tx = new Transaction(doc, "Add Leader"))
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
@@ -57,7 +54,7 @@ namespace Proficient
 
             }
 
-            return Autodesk.Revit.UI.Result.Succeeded;
+            return Result.Succeeded;
 
         }
     }

@@ -90,15 +90,21 @@ namespace Proficient
         public static string GetProjectFolder(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
+            string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
             bool parExists = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).Count > 0;
             string projFolder = parExists ? doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].AsString() : String.Empty;
 
             if (String.IsNullOrEmpty(projFolder))
             {
-                System.Windows.Forms.FolderBrowserDialog fb = new System.Windows.Forms.FolderBrowserDialog();
-                fb.Description = "Browse to project folder containing keynotes file (legacy) or where keynotes text file should be located.";
-                if (fb.ShowDialog() == System.Windows.Forms.DialogResult.Cancel) return String.Empty;
-                projFolder = fb.SelectedPath;
+                string projDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").ToList().Where(d => d.Contains(pn)).First();
+
+                if (string.IsNullOrEmpty(projDir))
+                {
+                    string parentProjDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").ToList().Where(d => d.Contains(pn.Substring(0, 5))).First();
+                    projDir = Directory.GetDirectories(parentProjDir).Where(d => d.Contains(pn)).First();
+                }
+
+                projFolder = $@"K:\20{pn.Substring(0, 2)}\{projDir}\Construction Documents\Drawings\_MEP Revit";
 
                 if (!parExists)
                 {
@@ -122,32 +128,9 @@ namespace Proficient
         public static string GetProjectNumber(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
-            bool parExists = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber).Count > 0;
+            string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
 
-            string projNum = parExists ? Convert.ToString(doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber)[0].AsDouble()) : String.Empty;
-
-            if (String.IsNullOrEmpty(projNum) || projNum == "0")
-            {
-                EntryBox eb = new EntryBox("Project Number Input", "Enter Project Number (YY### or YY###.#):", typeof(double));
-                if (eb.ShowDialog() == System.Windows.Forms.DialogResult.Cancel) return String.Empty;
-                projNum = eb.Entry;
-
-                if (!parExists)
-                {
-                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectNumber);
-                }
-
-                using (Transaction tx = new Transaction(doc, "Assign Project Number Parameter"))
-                {
-                    if (tx.Start() == TransactionStatus.Started)
-                    {
-                        doc.ProjectInformation.GetParameters(Names.Parameter.ProjectNumber)[0].Set(Convert.ToDouble(projNum));
-                    }
-                    tx.Commit();
-                }
-            }
-
-            return projNum;
+            return pn;
         }
 
         private static void AddSharedParameter(Document doc, UIApplication uiapp, BuiltInCategory bic, BuiltInParameterGroup bipg, string defGroup, string parName)

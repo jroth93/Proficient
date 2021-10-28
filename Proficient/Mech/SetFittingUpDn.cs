@@ -32,13 +32,14 @@ namespace Proficient
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {
-                                if (c.CoordinateSystem.BasisZ.Z == 1)
+                                Parameter fudPar = f.LookupParameter(Names.Parameter.FittingUpDn);
+                                if (c.CoordinateSystem.BasisZ.Z == 1 && fudPar != null)
                                 {
-                                    f.LookupParameter(Names.Parameter.FittingUpDn).Set(1);
+                                    fudPar.Set(1);
                                 }
-                                else if (c.CoordinateSystem.BasisZ.Z == -1)
+                                else if (c.CoordinateSystem.BasisZ.Z == -1 && fudPar != null)
                                 {
-                                    f.LookupParameter(Names.Parameter.FittingUpDn).Set(0);
+                                    fudPar.Set(0);
                                 }
                             }
                         }

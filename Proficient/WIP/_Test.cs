@@ -2,6 +2,10 @@
 using Autodesk.Revit.UI;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.UI.Selection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Proficient
 {
@@ -15,6 +19,21 @@ namespace Proficient
             Document doc = uidoc.Document;
             View view = doc.GetElement(uidoc.ActiveView.Id) as View;
 
+            //add terminal to duct
+            /*
+            ElementId at = uidoc.Selection.PickObject(ObjectType.Element, "Pick Element").ElementId;
+            ElementId dt = uidoc.Selection.PickObject(ObjectType.Element, "Pick Element").ElementId;
+            /*
+
+            //break duct
+            /*
+            var sel = uidoc.Selection.GetElementIds();
+            ElementId eId = sel.Count() > 0 ? sel.First() : uidoc.Selection.PickObject(ObjectType.Element, "Pick Element").ElementId;
+            XYZ pt = uidoc.Selection.PickPoint();
+            */
+
+
+            /*
             Forms.Follower f = new Forms.Follower(revit);
             System.Windows.Controls.TextBox tb = new System.Windows.Controls.TextBox
             {
@@ -40,14 +59,18 @@ namespace Proficient
             };
 
             f.ShowDialog();
-
+            */
 
 
             using (Transaction tx = new Transaction(doc, "commandname"))
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
+                    //break duct
+                    //MechanicalUtils.BreakCurve(doc, eId, pt);
 
+                    //add terminal to duct
+                    //MechanicalUtils.ConnectAirTerminalOnDuct(doc, at, dt);
                 }
 
                 tx.Commit();

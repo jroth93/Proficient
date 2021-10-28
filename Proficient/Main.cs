@@ -55,25 +55,15 @@ namespace Proficient
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            string file = string.Empty;
-            switch (args.Name)
+            string directoryDLLs = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            string pathAssembly = Path.Combine(directoryDLLs, args.Name);
+            if (File.Exists(pathAssembly))
             {
-                case "Newtonsoft.Json":
-                    file = Names.File.UserDllFolder + args.Name + ".dll";
-                    break;
-                case "System.Text.Json":
-                    file = Names.File.UserDllFolder + args.Name + ".dll";
-                    break;
-                case "System.Runtime.CompilerServices.Unsafe":
-                    file = Names.File.UserDllFolder + args.Name + ".dll";
-                    break;
+                return Assembly.LoadFrom(pathAssembly);
             }
 
-            if (File.Exists(file))
-            {
-                return Assembly.LoadFrom(file);
-            }
-
+            // assembly cannot be resolved
             return null;
         }
 
@@ -129,10 +119,6 @@ namespace Proficient
                 new PushButtonData("launchkn", "Open\nKeynotes", thisAssyPath, "Proficient.KNLauncher")) as RibbonButton;
             RibbonButton knUtil = knrib.AddItem(
                 new PushButtonData("knutil", "Keynote\nUtility", thisAssyPath, "Proficient.KeynoteUtil")) as RibbonButton;
-            knrib.AddSlideOut();
-            knrib.AddStackedItems(
-                new PushButtonData("lgknopen", "Legacy Open Keynotes", thisAssyPath, "Proficient.LegacyKNLauncher"),
-                new PushButtonData("legknrl", "Legacy Reload Keynotes", thisAssyPath, "Proficient.LegacyKNReload"));
 
             RibbonButton ductTag = mechrib.AddItem(
                 new PushButtonData("ducttag", "Tag\nDucts", thisAssyPath, "Proficient.DuctTag")) as RibbonButton;
@@ -393,8 +379,7 @@ namespace Proficient
 
             foreach (ElementId id in printViews)
             {
-                ViewSheet vs = doc.GetElement(id) as ViewSheet;
-                if (vs != null)
+                if (doc.GetElement(id) is ViewSheet vs)
                 {
                     foreach (ElementId vid in vs.GetAllPlacedViews())
                     {
