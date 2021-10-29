@@ -21,7 +21,7 @@ namespace Proficient
             Document doc = revit.Application.ActiveUIDocument.Document;
 
             string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath());
-            string fileDir = filePath.Substring(0, 7) == "BIM 360" ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+            string fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
             string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
             bool oldFile = Path.GetExtension(xlPath) == ".xlsm";
 
@@ -34,6 +34,7 @@ namespace Proficient
             try
             {
                 app = Marshal.GetActiveObject("Excel.Application") as XL.Application;
+                
             }
             catch (COMException)
             {

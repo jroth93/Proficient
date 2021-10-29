@@ -104,7 +104,7 @@ namespace Proficient
                     projDir = Directory.GetDirectories(parentProjDir).Where(d => d.Contains(pn)).First();
                 }
 
-                projFolder = $@"K:\20{pn.Substring(0, 2)}\{projDir}\Construction Documents\Drawings\_MEP Revit";
+                projFolder = $@"{projDir}\Construction Documents\Drawings\_MEP Revit";
 
                 if (!parExists)
                 {

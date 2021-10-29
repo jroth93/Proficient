@@ -17,7 +17,7 @@ namespace Proficient
             string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
 
             string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
-            string fileDir = Path.GetDirectoryName(filePath).Substring(0, 7) == "BIM 360" ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+            string fileDir =filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
 
             string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
 
