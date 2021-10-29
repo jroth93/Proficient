@@ -2,10 +2,11 @@
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using XL = Microsoft.Office.Interop.Excel;
-using System.Runtime.InteropServices;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 
 namespace Proficient
@@ -25,45 +26,79 @@ namespace Proficient
             string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
             bool oldFile = Path.GetExtension(xlPath) == ".xlsm";
 
+            if (!File.Exists(xlPath))
+            {
+                File.Copy(Names.File.KnTempFile, xlPath);
+            }
+
             ExternalService externalResourceService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);
             ExternalResourceDBServer knSrv = externalResourceService.GetServer(dbID) as ExternalResourceDBServer;
 
             List<KeynoteEntry> knList = new List<KeynoteEntry>();
 
-            XL.Application app;
-            try
+            using (SpreadsheetDocument xlDoc = SpreadsheetDocument.Open(xlPath, false))
             {
-                app = Marshal.GetActiveObject("Excel.Application") as XL.Application;
-                
-            }
-            catch (COMException)
-            {
-                app = new XL.Application();
-            }
+                WorkbookPart wbp = xlDoc.WorkbookPart;
+                WorksheetPart worksheetPart = wbp.WorksheetParts.First();
+                SharedStringTable sst = wbp.SharedStringTablePart.SharedStringTable;
 
+                wbp.Workbook.Sheets.ToList().ForEach(ws => Console.WriteLine((ws as Sheet).Name));
 
-            XL.Workbook book = app.Workbooks.Open(Filename: xlPath, ReadOnly: true);
-
-            foreach (XL.Worksheet sheet in book.Worksheets)
-            {
-                knList.Add(new KeynoteEntry(sheet.Name, string.Empty, string.Empty));
-
-                XL.Range range = sheet.UsedRange;
-                var vals = range.Value;
-
-                for (int row = 1; row <= vals.GetLength(0); row++)
+                foreach (WorksheetPart wsp in wbp.WorksheetParts)
                 {
-                    var key = Convert.ToString(vals[row, 1]);
-                    var note = Convert.ToString(vals[row, 2]);
-                    if (key != string.Empty && note != string.Empty)
+                    string sheetName = (wbp.Workbook.Sheets.Where(sh => (sh as Sheet).Id.Value == wbp.GetIdOfPart(wsp)).First() as Sheet).Name;
+                    SheetData data = wsp.Worksheet.Elements<SheetData>().First();
+                    foreach (Row r in data.Elements<Row>())
                     {
-                        knList.Add(oldFile ? MacroFilePatch(sheet.Name, key, note) : new KeynoteEntry(key, sheet.Name, note));
+                        string key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
+                        string note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
+
+                        if (key != string.Empty && note != string.Empty)
+                        {
+                            knList.Add(oldFile ? MacroFilePatch(sheetName, key, note) : new KeynoteEntry(key, sheetName, note));
+                        }
                     }
                 }
             }
+
+
+
+
+
+            //XL.Application app;
+            //try
+            //{
+            //    app = Marshal.GetActiveObject("Excel.Application") as XL.Application;
+                
+            //}
+            //catch (COMException)
+            //{
+            //    app = new XL.Application();
+            //}
+
             
-            book.Close(false);
-            app.Quit();
+            //XL.Workbook book = app.Workbooks.Open(Filename: xlPath, ReadOnly: true);
+
+            //foreach (XL.Worksheet sheet in book.Worksheets)
+            //{
+            //    knList.Add(new KeynoteEntry(sheet.Name, string.Empty, string.Empty));
+
+            //    XL.Range range = sheet.UsedRange;
+            //    var vals = range.Value;
+
+            //    for (int row = 1; row <= vals.GetLength(0); row++)
+            //    {
+            //        var key = Convert.ToString(vals[row, 1]);
+            //        var note = Convert.ToString(vals[row, 2]);
+            //        if (key != string.Empty && note != string.Empty)
+            //        {
+            //            knList.Add(oldFile ? MacroFilePatch(sheet.Name, key, note) : new KeynoteEntry(key, sheet.Name, note));
+            //        }
+            //    }
+            //}
+            
+            //book.Close(false);
+            //app.Quit();
 
             knSrv.knList = knList;
 

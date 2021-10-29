@@ -2,8 +2,10 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
 using System.IO;
+using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Excel = Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Interop.Excel;
 
 namespace Proficient
 {
@@ -16,38 +18,30 @@ namespace Proficient
 
             string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
 
-            string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
-            string fileDir =filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+            var ps = Process.GetProcessesByName("excel").Where(p => p.MainWindowTitle.Contains($"{pn} Keynotes.xlsx"));
 
-            string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
-
-            if(!File.Exists(xlPath))
+            if (ps.Any())
             {
-                File.Copy(Names.File.KnTempFile, xlPath);
-            }
-
-            bool isOpen = false;
-            Excel.Application xl;
-            try
+                SetForegroundWindow(ps.First().MainWindowHandle);
+            }          
+            else
             {
-                xl = Marshal.GetActiveObject("Excel.Application") as Excel.Application;
-                foreach (Excel.Workbook wb in xl.Workbooks)
+                string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
+                string fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ?
+                    Util.GetProjectFolder(revit) :
+                    Path.GetDirectoryName(filePath);
+                string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
+
+                if (!File.Exists(xlPath))
                 {
-                    if (wb.Name == Path.GetFileName(xlPath))
-                    {
-                        isOpen = true;
-                    }
+                    File.Copy(Names.File.KnTempFile, xlPath);
                 }
-            }
-            catch (COMException)
-            {
-                xl = new Excel.Application();
-            }
 
-            if (!isOpen) xl.Workbooks.Open(xlPath);
-
-            SetForegroundWindow(FindWindow(null, xl.Caption));
-            xl.Visible = true;
+                Application xlApp = new Application();
+                xlApp.Workbooks.Open(xlPath);
+                xlApp.Visible = true;
+                
+            }
 
             return Result.Succeeded;
         }
@@ -55,8 +49,5 @@ namespace Proficient
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
     }
 }
