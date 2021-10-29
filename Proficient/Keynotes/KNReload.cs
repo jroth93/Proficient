@@ -47,6 +47,7 @@ namespace Proficient
                 foreach (WorksheetPart wsp in wbp.WorksheetParts)
                 {
                     string sheetName = (wbp.Workbook.Sheets.Where(sh => (sh as Sheet).Id.Value == wbp.GetIdOfPart(wsp)).First() as Sheet).Name;
+                    knList.Add(new KeynoteEntry(sheetName, string.Empty));
                     SheetData data = wsp.Worksheet.Elements<SheetData>().First();
                     foreach (Row r in data.Elements<Row>())
                     {
