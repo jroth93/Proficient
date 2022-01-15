@@ -26,7 +26,7 @@ using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 
-namespace Proficient
+namespace Proficient.Keynotes
 {
     class ExternalResourceUIServer : IExternalResourceUIServer
     {

@@ -43,8 +43,7 @@ namespace Proficient.Forms
 
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        private static IntPtr HookCallback(
-            int nCode, IntPtr wParam, IntPtr lParam)
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 &&
                 MouseMessages.WM_MOUSEMOVE == (MouseMessages)wParam)

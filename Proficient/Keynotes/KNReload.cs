@@ -9,7 +9,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
 
-namespace Proficient
+namespace Proficient.Keynotes
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class KNReload : IExternalCommand
@@ -63,16 +63,6 @@ namespace Proficient
                 }
             }
 
-            ReloadKnFile(knList, doc);
-
-            Util.BalloonTip("Keynotes", "Keynotes Reloaded!", string.Empty);
-
-            return Result.Succeeded;
-        }
-
-
-        private static void ReloadKnFile(List<KeynoteEntry> knList, Document doc)
-        {
             ExternalService externalResourceService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);
             ExternalResourceDBServer knSrv = externalResourceService.GetServer(dbID) as ExternalResourceDBServer;
 
@@ -86,8 +76,12 @@ namespace Proficient
                     ExternalResourceReference s = ExternalResourceReference.CreateLocalResource(doc, ExternalResourceTypes.BuiltInExternalResourceTypes.KeynoteTable, p, PathType.Absolute);
                     KeynoteTable.GetKeynoteTable(doc).LoadFrom(s, null);
                 }
-                tx.Commit();
+                if (tx.Commit() == TransactionStatus.Committed) {
+                    Util.BalloonTip("Keynotes", "Keynotes Reloaded!", string.Empty);
+                };
             }
+
+            return Result.Succeeded;
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Proficient.Forms;
 
-namespace Proficient
+namespace Proficient.Mech
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class PipeTag : IExternalCommand
@@ -130,6 +130,7 @@ namespace Proficient
             #region tag pipe drops/rises
             using (Transaction tx = new Transaction(doc, "Add fitting tags"))
             {
+                List<PartType> noTag = new List<PartType>() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
                 if (tx.Start() == TransactionStatus.Started)
                 {
                     ElementId symId = (new FilteredElementCollector(doc)
@@ -141,7 +142,8 @@ namespace Proficient
                     foreach (FamilyInstance f in fittings)
                     {
                         MechanicalFitting mf = f.MEPModel as MechanicalFitting;
-                        if (!Util.IsTagged(doc, view.Id, f))
+
+                        if (!Util.IsTagged(doc, view.Id, f) && mf.ConnectorManager != null && !noTag.Contains(mf.PartType))
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {

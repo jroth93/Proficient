@@ -15,6 +15,9 @@ namespace Proficient
             public const string PipeTagRotating = "MEI Mech Tag Pipe - Rotating";
 
             public const string RoundDuct = "Round Duct";
+
+            public const string BlankLeader = "MEI Blank Leader";
+            public const string KeynoteTag = "MEI Keynote Tag";
         }
         public class Parameter
         {

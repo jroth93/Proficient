@@ -10,6 +10,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;
+
 
 namespace Proficient
 {
@@ -19,17 +21,31 @@ namespace Proficient
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
         public RibbonButton suppressSchWarning;
+        public static bool Leader = true;
         public Result OnStartup(UIControlledApplication app)
         {
             Instance = this;
             InitializeSettings();
+            
+            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.TagByCategory)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
+            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.ElementKeynote)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
+            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.UserKeynote)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
+            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.RoomTag)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
 
             AddEventListeners(app);
             CreateRibbon(app);
 
             //add external resource servers for keynotes
-            ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService).AddServer(new ExternalResourceDBServer());
-            ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceUIService).AddServer(new ExternalResourceUIServer());
+            ExternalServiceRegistry
+                .GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService)
+                .AddServer(new Keynotes.ExternalResourceDBServer());
+            ExternalServiceRegistry.
+                GetService(ExternalServices.BuiltInExternalServices.ExternalResourceUIService)
+                .AddServer(new Keynotes.ExternalResourceUIServer());
 
             //check toolbar version
             string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -42,6 +58,66 @@ namespace Proficient
             return Result.Succeeded;
         }
 
+        private void BeforeTag(object sender, BeforeExecutedEventArgs arg)
+        {
+            _listener?.UnHookKeyboard();
+            _listener = new KeyListener();
+            _listener.OnKeyPressed += _listener_OnKeyPressed;
+            _listener.HookKeyboard();
+        }
+
+        public bool TagLeader { get; set; }
+        public bool AttachedLeader { get; set; }
+
+        private void _listener_OnKeyPressed(object sender, KeyPressedArgs e)
+        {
+            if (e.KeyPressed == Key.LeftShift || e.KeyPressed == Key.RightShift)
+            {
+                try
+                {
+                    Util.ToggleLeader();
+                }
+                catch(Exception ex)
+                {
+                    TaskDialog.Show("Exception", ex.Message + "\n" + ex.StackTrace);
+                }
+            }
+            
+            if(e.KeyPressed == Key.E)
+            {
+                try
+                {
+                    Util.ToggleLeaderEnd();
+                }
+                catch (Exception ex)
+                {
+                    if (!ex.Message.Contains("nonenabled element"))
+                    {
+                        TaskDialog.Show("Exception", ex.Message + "\n" + ex.StackTrace);
+                    }
+                }
+            }
+
+            if (e.KeyPressed == Key.D)
+            {
+                try
+                {
+                    Util.CycleLeaderDistance();
+                }
+                catch (Exception ex)
+                {
+                    if (!ex.Message.Contains("nonenabled element"))
+                    {
+                        TaskDialog.Show("Exception", ex.Message + "\n" + ex.StackTrace);
+                    }
+                }
+            }
+
+
+        }
+
+        private KeyListener _listener;
+
         public void AddEventListeners(UIControlledApplication app)
         {
             app.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(Application_DocumentOpened);
@@ -49,8 +125,19 @@ namespace Proficient
             app.DialogBoxShowing += new EventHandler<DialogBoxShowingEventArgs>(Application_DialogBoxShowing);
             app.ControlledApplication.DocumentPrinting += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintingEventArgs>(Application_DocumentPrinting);
             app.ControlledApplication.DocumentPrinted += new EventHandler<Autodesk.Revit.DB.Events.DocumentPrintedEventArgs>(Application_DocumentPrinted);
+            app.Idling += App_Idling;
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        }
+
+        private void App_Idling(object sender, IdlingEventArgs e)
+        {
+            _listener?.UnHookKeyboard();
+            UIApplication uiapp = sender as UIApplication;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Electrical").First().Visible = app.IsElectricalEnabled;
+            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Mechanical").First().Visible = app.IsMechanicalEnabled;
+
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -67,138 +154,131 @@ namespace Proficient
             return null;
         }
 
-        public void CreateRibbon(UIControlledApplication application)
+        public void CreateRibbon(UIControlledApplication app)
         {
-            string thisAssyPath = Assembly.GetExecutingAssembly().Location;
-            application.CreateRibbonTab("Proficient");
+            string asLoc = Assembly.GetExecutingAssembly().Location;
+            app.CreateRibbonTab("Proficient");
 
             #region add panels
-            RibbonPanel genrib = application.CreateRibbonPanel("Proficient", "General");
-            RibbonPanel togrib = application.CreateRibbonPanel("Proficient", "Toggles");
-            RibbonPanel filtrib = application.CreateRibbonPanel("Proficient", "Filters");
-            RibbonPanel knrib = application.CreateRibbonPanel("Proficient", "Keynotes");
-            RibbonPanel mechrib = application.CreateRibbonPanel("Proficient", "Mechanical");
-            RibbonPanel elecrib = application.CreateRibbonPanel("Proficient", "Electrical");
-            genrib.Title = "General";
-            togrib.Title = "Toggles";
-            knrib.Title = "Keynotes";
-            mechrib.Title = "Mechanical";
-            elecrib.Title = "Electrical";
+            RibbonPanel genRib = app.CreateRibbonPanel("Proficient", "General");
+            RibbonPanel togRib = app.CreateRibbonPanel("Proficient", "Toggles");
+            RibbonPanel filtrib = app.CreateRibbonPanel("Proficient", "Filters");
+            RibbonPanel knRib = app.CreateRibbonPanel("Proficient", "Keynotes");
+            RibbonPanel mechRib = app.CreateRibbonPanel("Proficient", "Mechanical");
+            RibbonPanel elecRib = app.CreateRibbonPanel("Proficient", "Electrical");
+            genRib.Title = "General";
+            togRib.Title = "Toggles";
+            knRib.Title = "Keynotes";
+            mechRib.Title = "Mechanical";
+            elecRib.Title = "Electrical";
             #endregion
 
             #region add buttons
-            RibbonButton settings = genrib.AddItem(
-                new PushButtonData("settings", "Edit\nSettings", thisAssyPath, "Proficient.EditSettings")) as RibbonButton;
-            SplitButton txtSplit = genrib.AddItem(
-                new SplitButtonData("txttools", "Text Tools")) as SplitButton;
-            RibbonButton xl2Rvt = genrib.AddItem(
-                new PushButtonData("excelassign", "Excel\nAssigner", thisAssyPath, "Proficient.ExcelAssign")) as RibbonButton;
-            RibbonButton elPlacer = genrib.AddItem(
-                new PushButtonData("elplacer", "Element\nPlacer", thisAssyPath, "Proficient.ElementPlacer")) as RibbonButton;
-            RibbonButton wipeMark = genrib.AddItem(
-                new PushButtonData("wipemark", "Wipe\nMark", thisAssyPath, "Proficient.WipeMark")) as RibbonButton;
-            RibbonButton calloutRef = genrib.AddItem(
-                new PushButtonData("calloutref", "Change Callout\nReference", thisAssyPath, "Proficient.ChangeCalloutRef")) as RibbonButton;
-            IList<RibbonItem> fliptools = genrib.AddStackedItems(
-                new PushButtonData("flipel", "Flip Element", thisAssyPath, "Proficient.FlipElements"),
-                new PushButtonData("flipplane", "Flip Workplane", thisAssyPath, "Proficient.FlipWorkPlane"));
+            AddRibbonButton(genRib, "EditSettings", "Edit\nSettings", "wkst", "Change Proficient settings");
+            SplitButton txtSplit = genRib.AddItem(new SplitButtonData("txttools", "Text Tools")) as SplitButton;
+            AddRibbonButton(genRib, "ExcelAssign", "Excel\nAssigner", "xl2rvt", "Assign parameters to family types or instances from Excel document");
+            AddRibbonButton(genRib, "ElementPlacer", "Element\nPlacer", "elplc", "");
+            AddRibbonButton(genRib, "OpenSectionView", "Open\nSection", "section", "");
+            AddRibbonButton(genRib, "ChangeCalloutRef", "Change Callout\nReference", "callout", "");
+            AddRibbonButton(genRib, "AddLeader", "Add\nLeader", "leader", "");
+            IList<RibbonItem> scheds = genRib.AddStackedItems(
+               new PushButtonData("schwidth", "Schedule Width", asLoc, "Proficient.MatchSchWidth"),
+               new PushButtonData("schalign", "Align Schedules", asLoc, "Proficient.AlignSchedule"));
+            IList<RibbonItem> flips = genRib.AddStackedItems(
+                new PushButtonData("flipel", "Flip Element", asLoc, "Proficient.FlipElements"),
+                new PushButtonData("flipplane", "Flip Workplane", asLoc, "Proficient.FlipWorkPlane"));
+            IList<RibbonItem> toggles = togRib.AddStackedItems(
+                new PushButtonData("toggleenlwkst", "Enlarged Workset", asLoc, "Proficient.ToggleEnlWkst"),
+                new PushButtonData("toggledesignnotes", "Design Annotations", asLoc, "Proficient.ToggleDesignAnno"),
+                new PushButtonData("toggleschwarning", "Schedule Warning", asLoc, "Proficient.SuppressSchWarning"));
+            IList<RibbonItem> filters = filtrib.AddStackedItems(
+                new PushButtonData("catfilt", "Category", asLoc, "Proficient.CategoryFilter"),
+                new PushButtonData("famfilt", "Family", asLoc, "Proficient.FamilyFilter"),
+                new PushButtonData("typefilt", "Type", asLoc, "Proficient.TypeFilter"));
 
-            IList<RibbonItem> toggletools = togrib.AddStackedItems(
-                new PushButtonData("toggleenlwkst", "Enlarged Workset", thisAssyPath, "Proficient.ToggleEnlWkst"),
-                new PushButtonData("toggledesignnotes", "Design Annotations", thisAssyPath, "Proficient.ToggleDesignAnno"),
-                new PushButtonData("toggleschwarning", "Schedule Warning", thisAssyPath, "Proficient.SuppressSchWarning"));
+            AddRibbonButton(knRib, "Keynotes.KNReload", "Reload\nKeynotes", "reload", "");
+            AddRibbonButton(knRib, "Keynotes.KNLauncher", "Open\nKeynotes", "knxl", "");
+            AddRibbonButton(knRib, "Keynotes.KeynoteUtil", "Keynotes\nUtility", "keynoteutil", "");
 
-            IList<RibbonItem> filttools = filtrib.AddStackedItems(
-                new PushButtonData("catfilt", "Category", thisAssyPath, "Proficient.CategoryFilter"),
-                new PushButtonData("famfilt", "Family", thisAssyPath, "Proficient.FamilyFilter"),
-                new PushButtonData("typefilt", "Type", thisAssyPath, "Proficient.TypeFilter"));
+            IList<RibbonItem> mechTags = mechRib.AddStackedItems(
+                new PushButtonData("tagduct", "Tag Ducts", asLoc, "Proficient.Mech.DuctTag"),
+                new PushButtonData("tagpipe", "Tag Pipes", asLoc, "Proficient.Mech.PipeTag"),
+                new PushButtonData("wipemark", "Wipe Mark", asLoc, "Proficient.Mech.WipeMark"));
 
-            RibbonButton reloadKn = knrib.AddItem(
-                new PushButtonData("reloadkn", "Reload\nKeynotes", thisAssyPath, "Proficient.KNReload")) as RibbonButton;
-            RibbonButton openKn = knrib.AddItem(
-                new PushButtonData("launchkn", "Open\nKeynotes", thisAssyPath, "Proficient.KNLauncher")) as RibbonButton;
-            RibbonButton knUtil = knrib.AddItem(
-                new PushButtonData("knutil", "Keynote\nUtility", thisAssyPath, "Proficient.KeynoteUtil")) as RibbonButton;
+            IList<RibbonItem> mechTogs = mechRib.AddStackedItems(
+                new PushButtonData("ducttoggle", "Duct Elbow Toggle", asLoc, "Proficient.Mech.DuctElbowToggle"),
+                new PushButtonData("dampertoggle", "Damper Toggle", asLoc, "Proficient.Mech.DamperToggle"),
+                new PushButtonData("togupdn", "Up/Dn Toggle", asLoc, "Proficient.Mech.ToggleUpDn"));
 
-            RibbonButton ductTag = mechrib.AddItem(
-                new PushButtonData("ducttag", "Tag\nDucts", thisAssyPath, "Proficient.DuctTag")) as RibbonButton;
-            RibbonButton pipeTag = mechrib.AddItem(
-                new PushButtonData("pipetag", "Tag\nPipes", thisAssyPath, "Proficient.PipeTag")) as RibbonButton;
-            RibbonButton pipeSpacer = mechrib.AddItem(
-                new PushButtonData("pipespacer", "Space\nPipes", thisAssyPath, "Proficient.PipeSpacer")) as RibbonButton;
-            RibbonButton setFitUpDn = mechrib.AddItem(
-                new PushButtonData("setfitupdn", "Set Fitting\nUp/Down", thisAssyPath, "Proficient.SetFittingUpDn")) as RibbonButton;
-            RibbonButton damperToggle = mechrib.AddItem(
-                new PushButtonData("dampertoggle", "Damper\nToggle", thisAssyPath, "Proficient.DamperToggle")) as RibbonButton;
-            RibbonButton elbowToggle = mechrib.AddItem(
-                new PushButtonData("elbowtoggle", "Duct Elbow\nToggle", thisAssyPath, "Proficient.DuctElbowToggle")) as RibbonButton;
-            RibbonButton ductulator = mechrib.AddItem(
-                new PushButtonData("ductulator", "Launch\nDuctulator", thisAssyPath, "Proficient.DuctLauncher")) as RibbonButton;
+            AddRibbonButton(mechRib, "Mech.PipeSpacer", "Space\nPipes", "spacepipe", "");
+            AddRibbonButton(mechRib, "Mech.HardBreak", "Hard\nBreak", "hardbreak", "");
+            AddRibbonButton(mechRib, "Mech.SetFittingUpDn", "Auto-Set\nUp/Dn", "updn", "");
+            AddRibbonButton(mechRib, "Mech.DuctLauncher", "Launch\nDuctulator", "duct", "");
 
-            RibbonButton elpanelbtn = elecrib.AddItem(
-                new PushButtonData("panelcheck", "Panel\nChecker", thisAssyPath, "Proficient.PanelUtil")) as RibbonButton;
+            AddRibbonButton(elecRib, "Elec.PanelUtil", "Panel\nUtility", "elecpanel", "");
 
             PushButton cmbtxt = txtSplit.AddPushButton(
-                new PushButtonData("combinetxt", "Combine\nText", thisAssyPath, "Proficient.CombineText"));
+                new PushButtonData("combinetxt", "Combine\nText", asLoc, "Proficient.CombineText"));
             PushButton txtldr = txtSplit.AddPushButton(
-                new PushButtonData("textleader", "Add Text\nWith Leader", thisAssyPath, "Proficient.TextLeader"));
-            PushButton addldr = txtSplit.AddPushButton(
-                new PushButtonData("addleader", "Add\nLeader", thisAssyPath, "Proficient.AddLeader"));
+                new PushButtonData("textleader", "Add Text\nWith Leader", asLoc, "Proficient.TextLeader"));
             PushButton flattxt = txtSplit.AddPushButton(
-                new PushButtonData("flattentext", "Flatten\nText", thisAssyPath, "Proficient.FlattenText"));
+                new PushButtonData("flattentext", "Flatten\nText", asLoc, "Proficient.FlattenText"));
             #endregion
 
             #region add images
-            settings.LargeImage = NewBitmapImage("wkst");
             cmbtxt.LargeImage = NewBitmapImage("combine");
             txtldr.LargeImage = NewBitmapImage("leadertext");
-            addldr.LargeImage = NewBitmapImage("addleader");
             flattxt.LargeImage = NewBitmapImage("flattentext");
-            xl2Rvt.LargeImage = NewBitmapImage("xl2rvt");
-            elPlacer.LargeImage = NewBitmapImage("elplc");
-            wipeMark.LargeImage = NewBitmapImage("wipe");
-            calloutRef.LargeImage = NewBitmapImage("callout");
-            (fliptools[0] as PushButton).Image = NewBitmapImage("flipel");
-            (fliptools[1] as PushButton).Image = NewBitmapImage("flipwp");
 
-            (toggletools[0] as PushButton).Image = NewBitmapImage("enlwkst");
-            (toggletools[1] as PushButton).Image = NewBitmapImage("notes");
-            (toggletools[2] as PushButton).Image = NewBitmapImage("msg");
+            (scheds[0] as PushButton).Image = NewBitmapImage("width");
+            (scheds[1] as PushButton).Image = NewBitmapImage("align");
 
-            (filttools[0] as PushButton).Image = NewBitmapImage("cat");
-            (filttools[1] as PushButton).Image = NewBitmapImage("fam");
-            (filttools[2] as PushButton).Image = NewBitmapImage("type");
+            (flips[0] as PushButton).Image = NewBitmapImage("flipel");
+            (flips[1] as PushButton).Image = NewBitmapImage("flipwp");
 
-            reloadKn.LargeImage = NewBitmapImage("reload");
-            openKn.LargeImage = NewBitmapImage("knxl");
-            knUtil.LargeImage = NewBitmapImage("keynoteutil");
+            (toggles[0] as PushButton).Image = NewBitmapImage("enlwkst");
+            (toggles[1] as PushButton).Image = NewBitmapImage("notes");
+            (toggles[2] as PushButton).Image = NewBitmapImage("msg");
 
-            ductTag.LargeImage = NewBitmapImage("tagduct");
-            pipeTag.LargeImage = NewBitmapImage("tagpipe");
-            pipeSpacer.LargeImage = NewBitmapImage("spacepipe");
-            setFitUpDn.LargeImage = NewBitmapImage("updown");
-            damperToggle.LargeImage = NewBitmapImage("damper");
-            elbowToggle.LargeImage = NewBitmapImage("ducttoggle");
-            ductulator.LargeImage = NewBitmapImage("duct");
+            (filters[0] as PushButton).Image = NewBitmapImage("cat");
+            (filters[1] as PushButton).Image = NewBitmapImage("fam");
+            (filters[2] as PushButton).Image = NewBitmapImage("type");
 
-            elpanelbtn.LargeImage = NewBitmapImage("elecpanel");
+            (mechTags[0] as PushButton).Image = NewBitmapImage("tagduct");
+            (mechTags[1] as PushButton).Image = NewBitmapImage("tagpipe");
+            (mechTags[2] as PushButton).Image = NewBitmapImage("wipe");
+
+            (mechTogs[0] as PushButton).Image = NewBitmapImage("ducttoggle");
+            (mechTogs[1] as PushButton).Image = NewBitmapImage("damper");
+            (mechTogs[2] as PushButton).Image = NewBitmapImage("togupdown");
+
             #endregion
 
             #region add tooltips
 
-            settings.ToolTip = "Change Proficient settings";
             cmbtxt.ToolTip = "Combine multiple text objects into one";
             txtldr.ToolTip = "Add text object with leader";
-            addldr.ToolTip = "Add leader to existing text object";
             flattxt.ToolTip = "Remove all carriage returns from text object";
-            xl2Rvt.ToolTip = "Assign parameters to family types or instances from Excel document";
 
             #endregion
         }
 
-        public static BitmapImage NewBitmapImage(string imageName)
+        public static void AddRibbonButton(RibbonPanel panel, string className, string title, string imgName, string tooltip)
         {
-            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Main).Namespace + ".images." + imageName + ".png");
+            string cmdName = title.Replace("\n", " ");
+            string aPath = Assembly.GetExecutingAssembly().Location;
+            string fullName = "Proficient." + className;
+            RibbonButton rb = panel.AddItem(new PushButtonData(cmdName, title, aPath, fullName)) as RibbonButton;
+            if(imgName != String.Empty)
+            {
+                rb.LargeImage = NewBitmapImage(imgName);
+            }
+            rb.ToolTip = tooltip;
+        }
+
+        public static BitmapImage NewBitmapImage(string imgName)
+        {
+            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Main).Namespace + ".images." + imgName + ".png");
             BitmapImage img = new BitmapImage();
 
             img.BeginInit();
@@ -215,6 +295,7 @@ namespace Proficient
             app.DialogBoxShowing -= Application_DialogBoxShowing;
             app.ControlledApplication.DocumentPrinting -= Application_DocumentPrinting;
             app.ControlledApplication.DocumentPrinted -= Application_DocumentPrinted;
+            app.Idling -= App_Idling;
             return Result.Succeeded;
         }
 

@@ -17,19 +17,6 @@ namespace Proficient
             KeyBasedTreeEntries kbte = knt.GetKeyBasedTreeEntries();
             IList<ElementId> selectedIds = uidoc.Selection.GetElementIds() as IList<ElementId>;
 
-
-
-
-            using (Transaction tx = new Transaction(doc, "commandname"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-
-                }
-
-                tx.Commit();
-            }
-
             foreach (ElementId id in selectedIds)
             {
                 ElementId idView = new ElementId(id.IntegerValue + 1);

@@ -3,9 +3,10 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 
-namespace Proficient
+namespace Proficient.Mech
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class DuctTag : IExternalCommand
@@ -106,6 +107,7 @@ namespace Proficient
             #region tag duct drops/rises
             using (Transaction tx = new Transaction(doc, "Add fitting tags"))
             {
+                List<PartType> noTag = new List<PartType>() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
                 if (tx.Start() == TransactionStatus.Started)
                 {
                     Family tagFam = new FilteredElementCollector(doc)
@@ -117,7 +119,9 @@ namespace Proficient
                     foreach (FamilyInstance f in fittings)
                     {
                         MechanicalFitting mf = f.MEPModel as MechanicalFitting;
-                        if (!Util.IsTagged(doc, view.Id, f) && mf.ConnectorManager != null)
+
+
+                        if (!Util.IsTagged(doc, view.Id, f) && mf.ConnectorManager != null && !noTag.Contains(mf.PartType))
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {

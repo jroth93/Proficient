@@ -3,7 +3,7 @@ using Autodesk.Revit.UI;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Proficient
+namespace Proficient.Keynotes
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class KeynoteUtil : IExternalCommand

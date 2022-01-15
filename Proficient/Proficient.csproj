@@ -52,7 +52,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AdWindows, Version=2017.11.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -61,11 +61,13 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="RevitAPI">
-      <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
+    <Reference Include="RevitAPI, Version=19.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIUI">
-      <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -83,6 +85,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -91,7 +95,14 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="Keynotes\ExternalResourceUIServer.cs" />
+    <Compile Include="AlignSchedule.cs" />
+    <Compile Include="Mech\ToggleUpDn.cs" />
     <Compile Include="Mech\PipeTag.cs" />
+    <Compile Include="Mech\ClearUpDn.cs" />
+    <Compile Include="KeyListener.cs" />
+    <Compile Include="Utilities\NativeMethods.cs" />
+    <Compile Include="Utilities\Mouse.cs" />
+    <Compile Include="WIP\_Test.cs" />
     <Compile Include="Utilities\Names.cs" />
     <Compile Include="Forms\SettingsForm.xaml.cs">
       <DependentUpon>SettingsForm.xaml</DependentUpon>
@@ -100,6 +111,9 @@
       <DependentUpon>Follower.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utilities\Settings.cs" />
+    <Compile Include="MatchSchWidth.cs" />
+    <Compile Include="ReloadFamily.cs" />
+    <Compile Include="OpenViewTemplate.cs" />
     <Content Include="Graph\GraphConfig.txt" />
     <Compile Include="ChangeCalloutRef.cs" />
     <Content Include="Graph\GraphKNReload.txt" />
@@ -203,7 +217,7 @@
     <Compile Include="Keynotes\ExternalResourceDBServer.cs" />
     <Compile Include="Utilities\RevitTask.cs" />
     <Compile Include="Text\FlattenText.cs" />
-    <Compile Include="Text\AddLeader.cs" />
+    <Compile Include="AddLeader.cs" />
     <Compile Include="Text\TextLeader.cs" />
     <Compile Include="Elec\PanelUtil.cs" />
     <Compile Include="Keynotes\KeynoteUtil.cs" />
@@ -259,11 +273,17 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ExcelAssign.cs" />
-    <Compile Include="WIP\OpenSectionView.cs" />
-    <Compile Include="WIP\_Test.cs" />
+    <Compile Include="OpenSectionView.cs" />
+    <Compile Include="Mech\HardBreak.cs" />
     <Compile Include="Toggles\SuppressSchWarning.cs" />
-    <Compile Include="WipeMark.cs" />
+    <Compile Include="Mech\WipeMark.cs" />
     <Compile Include="Toggles\ToggleDesignAnno.cs" />
+    <EmbeddedResource Include="images\updn.png" />
+    <EmbeddedResource Include="images\align.png" />
+    <EmbeddedResource Include="images\width.png" />
+    <EmbeddedResource Include="images\leader.png" />
+    <EmbeddedResource Include="images\section.png" />
+    <EmbeddedResource Include="images\hardbreak.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
@@ -313,6 +333,7 @@
     <EmbeddedResource Include="Forms\ViewForm.resx">
       <DependentUpon>ViewForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="images\togupdown.png" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -347,13 +368,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="images\addleader.png" />
     <EmbeddedResource Include="images\flattentext.png" />
     <EmbeddedResource Include="images\leadertext.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Ductulator\mxparser\syntaxchecker\csjavacc.jar" />
-    <EmbeddedResource Include="images\updown.png" />
     <EmbeddedResource Include="images\type.png" />
     <EmbeddedResource Include="images\fam.png" />
     <EmbeddedResource Include="images\cat.png" />

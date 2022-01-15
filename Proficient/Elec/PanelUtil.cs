@@ -4,7 +4,7 @@ using Autodesk.Revit.UI;
 using System.Linq;
 
 
-namespace Proficient
+namespace Proficient.Elec
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class PanelUtil : IExternalCommand

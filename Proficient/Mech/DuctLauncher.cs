@@ -2,7 +2,7 @@
 using Autodesk.Revit.UI;
 
 
-namespace Proficient
+namespace Proficient.Mech
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class DuctLauncher : IExternalCommand

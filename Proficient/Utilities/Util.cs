@@ -5,14 +5,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Automation;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Test.Input;
+using System.Windows.Forms;
 
 namespace Proficient
 {
     class Util
     {
-        public static bool IsTagged(Document doc, ElementId viewid, Element el)
+        public static bool IsTagged(Document doc, ElementId viewId, Element el)
         {
-            FilteredElementCollector fec = new FilteredElementCollector(doc, viewid).OfClass(typeof(IndependentTag));
+            var fec = new FilteredElementCollector(doc).OfClass(typeof(IndependentTag)).Where(tg => tg.OwnerViewId == viewId);
             foreach (IndependentTag it in fec)
             {
                 if (it.TaggedLocalElementId == el.Id)
@@ -23,12 +28,97 @@ namespace Proficient
             return false;
         }
 
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+        public static void ToggleLeader()
+        {
+            PropertyCondition typeCond = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox);
+            PropertyCondition nameCond = new PropertyCondition(AutomationElement.NameProperty, "Leader");
+            AndCondition ac = new AndCondition(typeCond, nameCond);
+
+            AutomationElement revitElement = AutomationElement.FromHandle(GetForegroundWindow());
+            AutomationElement check = revitElement.FindFirst(TreeScope.Descendants, ac);
+
+            TogglePattern tp = check.GetCurrentPattern(TogglePattern.Pattern) as TogglePattern;
+            tp.Toggle();
+        }
+
+        public static void ToggleLeaderEnd()
+        {
+            PropertyCondition typeCond = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ComboBox);
+
+            AutomationElement revitElement = AutomationElement.FromHandle(GetForegroundWindow());
+            var aec = revitElement.FindAll(TreeScope.Descendants, typeCond);
+            foreach (AutomationElement ae in aec)
+            {
+                if (ae.Current.Name == "Free End")
+                {
+                    ExpandCollapsePattern ecp = ae.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+                    AutomationElement listItem = ae.FindFirst(TreeScope.Subtree, new PropertyCondition(AutomationElement.NameProperty, "Attached End"));
+                    SelectionItemPattern sip = listItem.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+                    sip.Select();
+                }
+                else if (ae.Current.Name == "Attached End")
+                {
+                    ExpandCollapsePattern ecp = ae.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+                    AutomationElement listItem = ae.FindFirst(TreeScope.Subtree, new PropertyCondition(AutomationElement.NameProperty, "Free End"));
+                    SelectionItemPattern sip = listItem.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+                    sip.Select();
+                }
+            }
+        }
+
+        public static void CycleLeaderDistance()
+        {
+            string[] vals = new string[] { "1/4\"", "1/2\"", "3/4\"", "1\"" };
+            PropertyCondition typeCond = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit);
+            AutomationElement revitElement = AutomationElement.FromHandle(GetForegroundWindow());
+            var aec = revitElement.FindAll(TreeScope.Descendants, typeCond);
+
+            foreach (AutomationElement ae in aec)
+            {
+                ValuePattern vp = ae.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                int index = Array.IndexOf(vals, vp.Current.Value);
+                if (vp.Current.Value.Contains("\""))
+                {
+                    if (index != -1 && index != vals.Length - 1)
+                    {
+                        vp.SetValue(vals[index + 1]);
+                    }
+                    else
+                    {
+                        vp.SetValue(vals[0]);
+                    }
+                    break;
+                }
+            }
+
+            PropertyCondition vpCond = new PropertyCondition(AutomationElement.NameProperty, "Xceed.Wpf.AvalonDock.Layout.LayoutDocument");
+            PropertyCondition paneCond = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Pane);
+            var vpaec = revitElement.FindAll(TreeScope.Descendants, vpCond);
+
+            foreach(AutomationElement ae in vpaec)
+            {
+                if(ae.FindFirst(TreeScope.Descendants, paneCond) != null)
+                {
+                    ae.SetFocus();
+                    break;
+                }
+            }
+
+            System.Drawing.Point origin = Cursor.Position;
+            Mouse.MoveTo(new System.Drawing.Point(origin.X, origin.Y + 1));
+            Mouse.MoveTo(origin);
+            Mouse.Click(MouseButton.Middle);
+
+        }
+
         public enum ViewPlane
         {
             Top = 1,
             Bottom = 2
         }
-        public static double GetViewBound(Document doc, View view, ViewPlane vp)
+        public static double GetViewBound(Document doc, Autodesk.Revit.DB.View view, ViewPlane vp)
         {
             if (view is ViewPlan)
             {
@@ -71,45 +161,32 @@ namespace Proficient
             Autodesk.Windows.ComponentManager.InfoCenterPaletteManager.ShowBalloon(ri);
         }
 
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern int SetWindowText(IntPtr hWnd, string lpString);
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
-        public static void SetStatusText(string text)
-        {
-            IntPtr mainWindow = Process.GetCurrentProcess().MainWindowHandle;
-            IntPtr statusBar = FindWindowEx(mainWindow, IntPtr.Zero, "msctls_statusbar32", "");
-
-            if (statusBar != IntPtr.Zero)
-            {
-                SetWindowText(statusBar, text);
-            }
-        }
-
         public static string GetProjectFolder(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
             string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
             bool parExists = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).Count > 0;
-            string projFolder = parExists ? doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].AsString() : String.Empty;
+            string projFolder;
 
-            if (String.IsNullOrEmpty(projFolder))
+            if (parExists)
             {
-                string projDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").ToList().Where(d => d.Contains(pn)).First();
+                projFolder = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].AsString();
+            }
+            else
+            {
+                var projDirList = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn));
 
-                if (string.IsNullOrEmpty(projDir))
+                if (projDirList.Count() == 0)
                 {
-                    string parentProjDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").ToList().Where(d => d.Contains(pn.Substring(0, 5))).First();
-                    projDir = Directory.GetDirectories(parentProjDir).Where(d => d.Contains(pn)).First();
+                    string parentProjDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn.Substring(0, 5))).First();
+                    projFolder = Directory.GetDirectories(parentProjDir).Where(d => d.Contains(pn)).First();
+                }
+                else
+                {
+                    projFolder = projDirList.First();
                 }
 
-                projFolder = $@"{projDir}\Construction Documents\Drawings\_MEP Revit";
-
-                if (!parExists)
-                {
-                    AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
-                }
+                AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
 
                 using (Transaction tx = new Transaction(doc, "Assign Project Folder Parameter"))
                 {
@@ -133,14 +210,37 @@ namespace Proficient
             return pn;
         }
 
-        private static void AddSharedParameter(Document doc, UIApplication uiapp, BuiltInCategory bic, BuiltInParameterGroup bipg, string defGroup, string parName)
+        public static void AddSharedParameter(Document doc, UIApplication uiapp, BuiltInCategory bic, BuiltInParameterGroup bipg, string defGroup, string parName)
         {
             CategorySet cset = uiapp.Application.Create.NewCategorySet();
             cset.Insert(doc.Settings.Categories.get_Item(bic));
-            uiapp.Application.SharedParametersFilename = Names.File.SharedParameters;
+
             DefinitionFile spFile = uiapp.Application.OpenSharedParameterFile();
 
-            ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup).FirstOrDefault().Definitions.Where(ed => ed.Name == parName).FirstOrDefault() as ExternalDefinition;
+            ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup)
+                                                    .FirstOrDefault().Definitions
+                                                    .Where(ed => ed.Name == parName)
+                                                    .FirstOrDefault() as ExternalDefinition;
+
+            using (Transaction tx = new Transaction(doc, $"Add {parName} Parameter"))
+            {
+                if (tx.Start() == TransactionStatus.Started)
+                {
+                    doc.ParameterBindings.Insert(eDef, uiapp.Application.Create.NewInstanceBinding(cset), bipg);
+                }
+                tx.Commit();
+            }
+        }
+        
+
+        public static void AddSharedParameter(Document doc, UIApplication uiapp, CategorySet cset, BuiltInParameterGroup bipg, string defGroup, string parName)
+        {
+            DefinitionFile spFile = uiapp.Application.OpenSharedParameterFile();
+
+            ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup)
+                                                    .FirstOrDefault().Definitions
+                                                    .Where(ed => ed.Name == parName)
+                                                    .FirstOrDefault() as ExternalDefinition;
 
             using (Transaction tx = new Transaction(doc, $"Add {parName} Parameter"))
             {
@@ -152,47 +252,5 @@ namespace Proficient
             }
         }
 
-        public static string GetKNXLPath(string fileDir, string pn)
-        {
-            string xlPath;
-
-            if (File.Exists($"{fileDir}\\{pn} Keynotes.xlsx"))
-            {
-                return $"{fileDir}\\{pn} Keynotes.xlsx";
-            }
-            else if (File.Exists($"{fileDir}\\{pn} Keynotes.xlsm"))
-            {
-                return $"{fileDir}\\{pn} Keynotes.xlsm";
-            }
-            else
-            {
-                string spDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Morrissey Engineering, Inc\All Morrissey - Documents\Keynotes\";
-                xlPath = $"{spDir}{pn}.xlsx";
-                //create new file or generate error if file does not exist
-                if (!File.Exists(xlPath))
-                {
-                    try
-                    {
-                        File.Copy($"{spDir}Template.xlsx", xlPath);
-                    }
-                    catch
-                    {
-                        TaskDialog td = new TaskDialog("SharePoint Sync Required");
-                        td.MainContent = @"All Morrissey Team SharePoint sync is required to use this feature.";
-                        td.Show();
-                        return String.Empty;
-                    }
-
-                    if (!File.Exists(fileDir + $"\\Keynotes.lnk"))
-                    {
-                        IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-                        IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(fileDir + $"\\Keynotes.lnk");
-                        shortcut.TargetPath = xlPath;
-                        shortcut.Save();
-                    }
-                }
-            }
-            return xlPath;
-        }
     }
 }

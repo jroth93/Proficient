@@ -25,7 +25,7 @@ using Autodesk.Revit.DB.ExternalService;
 using System;
 using System.Collections.Generic;
 
-namespace Proficient
+namespace Proficient.Keynotes
 {
 
     /// <summary>

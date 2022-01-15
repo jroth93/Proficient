@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Office.Interop.Excel;
 
-namespace Proficient
+namespace Proficient.Keynotes
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class KNLauncher : IExternalCommand
@@ -30,7 +30,7 @@ namespace Proficient
                 string fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ?
                     Util.GetProjectFolder(revit) :
                     Path.GetDirectoryName(filePath);
-                string xlPath = File.Exists($"{fileDir}\\{pn} Keynotes.xlsm") ? $"{fileDir}\\{pn} Keynotes.xlsm" : $"{fileDir}\\{pn} Keynotes.xlsx";
+                string xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
 
                 if (!File.Exists(xlPath))
                 {
@@ -40,6 +40,7 @@ namespace Proficient
                 Application xlApp = new Application();
                 xlApp.Workbooks.Open(xlPath);
                 xlApp.Visible = true;
+                SetForegroundWindow(new IntPtr(xlApp.ActiveWindow.Hwnd));
                 
             }
 
