@@ -41,6 +41,7 @@ namespace Proficient
             public const string CommonSettings = @"Z:\Revit\Custom Add Ins\Proficient Config Files\appsettings.json";
             public const string UserDllFolder = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents";
             public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
+            public const string SilentUpdateExe = @"Z:\Revit\Custom Add Ins\Proficient Silent Update\ProficientSilentUpdate.exe";
         }
 
         public class Guids

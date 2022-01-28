@@ -9,12 +9,8 @@ namespace Proficient
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
-            UIApplication app = revit.Application;
             UIDocument uidoc = revit.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
-            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
-            KeynoteTable knt = KeynoteTable.GetKeynoteTable(doc);
-            KeyBasedTreeEntries kbte = knt.GetKeyBasedTreeEntries();
             IList<ElementId> selectedIds = uidoc.Selection.GetElementIds() as IList<ElementId>;
 
             foreach (ElementId id in selectedIds)

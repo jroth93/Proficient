@@ -18,15 +18,18 @@ namespace Proficient
             View view = doc.GetElement(uidoc.ActiveView.Id) as View;
 
             IList<ElementId> ids = uidoc.Selection.GetElementIds() as IList<ElementId>;
-            Element el;
+            Element el = ids.Count() == 0 ? doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Element")) : doc.GetElement(ids[0]);
 
-            if (ids.Count() == 0)
+            if(view.SketchPlane == null)
             {
-                el = doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Element"));
-            }
-            else
-            {
-                el = doc.GetElement(ids[0]);
+                using (Transaction tx = new Transaction(doc, "Add Sketch Plane"))
+                {
+                    if (tx.Start() == TransactionStatus.Started)
+                    {
+                        view.SketchPlane = SketchPlane.Create(doc, view.GenLevel.Id);
+                        tx.Commit();
+                    }
+                }
             }
 
             XYZ endPt = uidoc.Selection.PickPoint();

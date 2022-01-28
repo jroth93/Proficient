@@ -11,13 +11,13 @@ namespace Proficient
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class ElementPlacer : IExternalCommand
     {
-        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
+        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
             UIApplication app = revit.Application;
             UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Autodesk.Revit.DB.Document doc = revit.Application.ActiveUIDocument.Document;
+            Document doc = revit.Application.ActiveUIDocument.Document;
             ElementId viewid = uidoc.ActiveView.Id;
-            Autodesk.Revit.DB.View view = doc.GetElement(viewid) as Autodesk.Revit.DB.View;
+            View view = doc.GetElement(viewid) as View;
             Reference cref = uidoc.Selection.PickObject(ObjectType.Element, "Pick path line");
             Reference elref = uidoc.Selection.PickObject(ObjectType.Element, "Pick element to be placed");
 
@@ -27,7 +27,7 @@ namespace Proficient
             {
                 pathcurve = (doc.GetElement(cref).Location as LocationCurve).Curve;
             }
-            catch (System.NullReferenceException)
+            catch (NullReferenceException)
             {
                 TaskDialog td = new TaskDialog("Invalid Path Selection");
                 td.MainContent = "Invalid Path Selection. Please try again.";
@@ -43,14 +43,14 @@ namespace Proficient
                 return Result.Failed;
             }
 
-            bool ishosted = false;
+            bool hosted = false;
             FamilySymbol elfs = null;
             FamilyInstance elfi = null;
             try
             {
                 elfi = doc.GetElement(elref.ElementId) as FamilyInstance;
                 elfs = elfi.Symbol;
-                ishosted = elfi.Host == null ? false : true;
+                hosted = elfi.Host == null ? false : true;
             }
             catch (System.NullReferenceException)
             {
@@ -75,7 +75,7 @@ namespace Proficient
                     offset = rbnm ? 0 : Convert.ToDouble(pef.startoffset.Text);
                     break;
                 }
-                catch (System.FormatException)
+                catch (FormatException)
                 {
                     TaskDialog td = new TaskDialog("Invalid Form Entry");
                     td.MainContent = "Invalid Entry. Please try again.";
@@ -171,13 +171,38 @@ namespace Proficient
                 {
                     foreach (XYZ pt in pts)
                     {
-                        FamilyInstance newel = ishosted ?
-                            doc.Create.NewFamilyInstance(elfi.HostFace, pt, new XYZ(1, 0, 0), elfs) :
-                            doc.Create.NewFamilyInstance(pt, elfs, view.GenLevel, Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+                        FamilyInstance newel = hosted ?
+                            doc.Create.NewFamilyInstance(elfi.HostFace ?? new Reference(elfi.Host), pt, new XYZ(1, 0, 0), elfs) : 
+                            (elfi.ViewSpecific ?
+                                doc.Create.NewFamilyInstance(pt, elfs, view) :
+                                doc.Create.NewFamilyInstance(pt, elfs, view.GenLevel, Autodesk.Revit.DB.Structure.StructuralType.NonStructural));
+                        foreach(Parameter par in newel.Parameters)
+                        {
+                            Parameter elPar = elfi.LookupParameter(par.Definition.Name);
+                            if (!par.IsReadOnly && elPar.HasValue && par.Definition.Name != "Mark")
+                            {
+                                switch (par.StorageType)
+                                {
+                                    case StorageType.Integer:
+                                        par.Set(elPar.AsInteger());
+                                        break;
+                                    case StorageType.Double:
+                                        par.Set(elPar.AsDouble());
+                                        break;
+                                    case StorageType.String:
+                                        par.Set(elPar.AsString());
+                                        break;
+                                    case StorageType.ElementId:
+                                        par.Set(elPar.AsElementId());
+                                        break;
 
-                        Line rotax = Line.CreateBound(pt, pt.Add(XYZ.BasisZ));
-                        double rotangle = newdir[pts.IndexOf(pt)].Y < 0 ? -XYZ.BasisX.AngleTo(newdir[pts.IndexOf(pt)]) : XYZ.BasisX.AngleTo(newdir[pts.IndexOf(pt)]);
-                        ElementTransformUtils.RotateElement(doc, newel.Id, rotax, rotangle);
+                                }
+                            }
+                        }
+
+                        Line rotAx = Line.CreateBound(pt, pt.Add(XYZ.BasisZ));
+                        double rotAng = newdir[pts.IndexOf(pt)].Y < 0 ? -XYZ.BasisX.AngleTo(newdir[pts.IndexOf(pt)]) : XYZ.BasisX.AngleTo(newdir[pts.IndexOf(pt)]);
+                        ElementTransformUtils.RotateElement(doc, newel.Id, rotAx, rotAng);
 
                     }
                 }

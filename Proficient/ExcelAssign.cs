@@ -193,15 +193,16 @@ namespace Proficient
 
         public static String[] GetFamiliesOfCategory(string catName)
         {
-            string[] fn = (new FilteredElementCollector(doc)
+            string[] fn = new FilteredElementCollector(doc)
             .OfClass(typeof(Family))
             .Where(q => (q as Family).FamilyCategory.Name == catName)
-            .Select(q => q.Name) as IEnumerable<string>).ToArray();
+            .Select(q => q.Name)
+            .ToArray();
 
             return fn;
         }
 
-        public static String[] GetFamilyParameters(string familyName)
+        public static string[] GetFamilyParameters(string familyName)
         {
             List<string> pars = new List<string>();
 
