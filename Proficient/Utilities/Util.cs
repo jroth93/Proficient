@@ -179,37 +179,43 @@ namespace Proficient
         {
             Document doc = revit.Application.ActiveUIDocument.Document;
             string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
-            string projFolder = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0]?.AsString();
+            var pfPars = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder);
+            string pfPar = pfPars.Count == 0 ? null : pfPars[0].AsString();
 
-            if(projFolder == null || projFolder == String.Empty)
+            if(pfPar == null || pfPar == String.Empty)
             {
-                var projDirList = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn));
+                string pfPath;
+                var dirs = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn));
 
-                if (projDirList.Any())
+                if (dirs.Any())
                 {
-                    projFolder = projDirList.First();
+                    pfPath = dirs.First();
                 }
                 else
                 {
-                    string parentProjDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn.Substring(0, 5))).First();
-                    projFolder = Directory.GetDirectories(parentProjDir).Where(d => d.Contains(pn)).First();
+                    string parentDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn.Substring(0, 5))).First();
+                    pfPath = Directory.GetDirectories(parentDir).Where(d => d.Contains(pn)).First();
                 }
 
-                if(projFolder == null)
+                if(pfPar == null)
                 {
                     AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
                 }
-                
+
+                string knPath = pfPath + @"\Construction Documents\Drawings\_MEP Revit";
+
+
                 using (Transaction tx = new Transaction(doc, "Assign Project Folder Parameter"))
                 {
                     if (tx.Start() == TransactionStatus.Started)
                     {
-                        doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].Set(projFolder);
+                        doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder)[0].Set(knPath);
                     }
                     tx.Commit();
                 }
+                return knPath;
             }
-            return projFolder;
+            return pfPar;
         }
 
         public static string GetProjectNumber(ExternalCommandData revit)
