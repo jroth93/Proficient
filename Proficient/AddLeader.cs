@@ -20,7 +20,14 @@ namespace Proficient
             IList<ElementId> ids = uidoc.Selection.GetElementIds() as IList<ElementId>;
             Element el = ids.Count() == 0 ? doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Element")) : doc.GetElement(ids[0]);
 
-            if(view.SketchPlane == null)
+            List<ViewType> DrawingVTs = new List<ViewType>
+            {
+                ViewType.DraftingView,
+                ViewType.DrawingSheet,
+                ViewType.Legend
+            };
+
+            if(view.SketchPlane == null && !DrawingVTs.Contains(view.ViewType))
             {
                 using (Transaction tx = new Transaction(doc, "Add Sketch Plane"))
                 {
