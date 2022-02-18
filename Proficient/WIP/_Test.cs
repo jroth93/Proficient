@@ -7,6 +7,7 @@ using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI.Selection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 using System;
 using System.Windows.Automation;
 using System.Windows.Forms;
@@ -14,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Proficient.Forms;
 using Microsoft.Test.Input;
+using Autodesk.Revit.DB.Electrical;
 
 namespace Proficient
 {
@@ -26,9 +28,13 @@ namespace Proficient
             UIDocument uidoc = revit.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
             //View view = doc.GetElement(uidoc.ActiveView.Id) as View;
-            app.GetDockablePane(Main.PaneId).Hide();
-            // ElementId eid = uidoc.Selection.GetElementIds().First();
+            //app.GetDockablePane(Main.PaneId).Hide();
+            //ElementId eid = uidoc.Selection.GetElementIds().First();
             // Element el = doc.GetElement(eid);
+
+
+
+
 
             #region follower entry box
             /*

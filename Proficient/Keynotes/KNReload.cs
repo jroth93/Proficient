@@ -36,31 +36,53 @@ namespace Proficient.Keynotes
 
             List<KeynoteEntry> knList = new List<KeynoteEntry>();
 
-            using (SpreadsheetDocument xlDoc = SpreadsheetDocument.Open(xlPath, false))
+            try
             {
-                WorkbookPart wbp = xlDoc.WorkbookPart;
-                WorksheetPart worksheetPart = wbp.WorksheetParts.First();
-                SharedStringTable sst = wbp.SharedStringTablePart.SharedStringTable;
-
-                wbp.Workbook.Sheets.ToList().ForEach(ws => Console.WriteLine((ws as Sheet).Name));
-
-                foreach (WorksheetPart wsp in wbp.WorksheetParts)
+                using (SpreadsheetDocument xlDoc = SpreadsheetDocument.Open(xlPath, false))
                 {
-                    string sheetName = (wbp.Workbook.Sheets.Where(sh => (sh as Sheet).Id.Value == wbp.GetIdOfPart(wsp)).First() as Sheet).Name;
-                    knList.Add(new KeynoteEntry(sheetName, string.Empty));
-                    SheetData data = wsp.Worksheet.Elements<SheetData>().First();
-                    foreach (Row r in data.Elements<Row>())
-                    {
+                    WorkbookPart wbp = xlDoc.WorkbookPart;
+                    WorksheetPart worksheetPart = wbp.WorksheetParts.First();
+                    SharedStringTable sst = wbp.SharedStringTablePart.SharedStringTable;
 
-                        try
+                    wbp.Workbook.Sheets.ToList().ForEach(ws => Console.WriteLine((ws as Sheet).Name));
+
+                    foreach (WorksheetPart wsp in wbp.WorksheetParts)
+                    {
+                        string sheetName = (wbp.Workbook.Sheets.Where(sh => (sh as Sheet).Id.Value == wbp.GetIdOfPart(wsp)).First() as Sheet).Name;
+                        knList.Add(new KeynoteEntry(sheetName, string.Empty));
+                        SheetData data = wsp.Worksheet.Elements<SheetData>().First();
+                        foreach (Row r in data.Elements<Row>())
                         {
-                            string key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
-                            string note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
-                            knList.Add(new KeynoteEntry(key, sheetName, note));
+
+                            try
+                            {
+                                string key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
+                                string note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
+                                knList.Add(new KeynoteEntry(key, sheetName, note));
+                            }
+                            catch { }
                         }
-                        catch { }
                     }
                 }
+            }
+            catch (IOException e)
+            {
+                if(e.Message.Contains("cannot access the file"))
+                {
+                    TaskDialog td = new TaskDialog("File Access Denied");
+                    td.MainContent = "Enable Excel Sharing";
+                    td.MainContent = "File could not be opened due to incorrect Excel file sharing settings.";
+                    td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "How to turn on Excel Legacy Sharing");
+                    td.CommonButtons = TaskDialogCommonButtons.Close;
+                    td.DefaultButton = TaskDialogResult.Close;
+
+                    if(td.Show() == TaskDialogResult.CommandLink1)
+                    {
+                        System.Diagnostics.Process.Start(
+                            "https://support.microsoft.com/en-us/office/what-happened-to-shared-workbooks-150fc205-990a-4763-82f1-6c259303fe05");
+                    }
+                }
+                return Result.Failed;
             }
 
             ExternalService externalResourceService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);

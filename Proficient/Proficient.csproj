@@ -170,6 +170,7 @@
     <Compile Include="Ductulator\mxparser\syntaxchecker\Token.cs" />
     <Compile Include="Ductulator\mxparser\syntaxchecker\TokenMgrError.cs" />
     <Compile Include="Ductulator\mxparser\Tutorial.cs" />
+    <Compile Include="Elec\LoadNameUpdate.cs" />
     <Compile Include="Forms\Blank.xaml.cs">
       <DependentUpon>Blank.xaml</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -183,6 +184,8 @@
     <Compile Include="Mech\PipeTag.cs" />
     <Compile Include="Mech\ClearUpDn.cs" />
     <Compile Include="KeyListener.cs" />
+    <Compile Include="Elec\ElecLoadDMU.cs" />
+    <Compile Include="Utilities\Icons.cs" />
     <Compile Include="Utilities\NativeMethods.cs" />
     <Compile Include="Utilities\Mouse.cs" />
     <Compile Include="WIP\_Test.cs" />
@@ -296,24 +299,20 @@
     <Compile Include="Toggles\FlipElements.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="ExcelAssign.cs" />
     <Compile Include="OpenSectionView.cs" />
     <Compile Include="Mech\HardBreak.cs" />
     <Compile Include="Toggles\SuppressSchWarning.cs" />
     <Compile Include="Mech\WipeMark.cs" />
     <Compile Include="Toggles\ToggleDesignAnno.cs" />
-    <EmbeddedResource Include="images\alignflip.png" />
-    <EmbeddedResource Include="images\updn.png" />
-    <EmbeddedResource Include="images\align.png" />
-    <EmbeddedResource Include="images\width.png" />
-    <EmbeddedResource Include="images\leader.png" />
-    <EmbeddedResource Include="images\section.png" />
-    <EmbeddedResource Include="images\hardbreak.png" />
+    <EmbeddedResource Include="Icons\settings.png" />
+    <EmbeddedResource Include="Icons\alignflip.png" />
+    <EmbeddedResource Include="Icons\updn.png" />
+    <EmbeddedResource Include="Icons\align.png" />
+    <EmbeddedResource Include="Icons\width.png" />
+    <EmbeddedResource Include="Icons\leader.png" />
+    <EmbeddedResource Include="Icons\section.png" />
+    <EmbeddedResource Include="Icons\hardbreak.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
@@ -363,30 +362,29 @@
     <EmbeddedResource Include="Forms\ViewForm.resx">
       <DependentUpon>ViewForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="images\togupdown.png" />
+    <EmbeddedResource Include="Icons\togupdown.png" />
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>ResXFileCodeGenerator</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="images\callout.png" />
-    <EmbeddedResource Include="images\combine.png" />
-    <EmbeddedResource Include="images\duct.png" />
-    <EmbeddedResource Include="images\elecpanel.png" />
-    <EmbeddedResource Include="images\elplc.png" />
-    <EmbeddedResource Include="images\flipel.png" />
-    <EmbeddedResource Include="images\flipwp.png" />
-    <EmbeddedResource Include="images\keynoteutil.png" />
-    <EmbeddedResource Include="images\knxl.png" />
-    <EmbeddedResource Include="images\reload.png" />
-    <EmbeddedResource Include="images\spacepipe.png" />
-    <EmbeddedResource Include="images\tagduct.png" />
-    <EmbeddedResource Include="images\wkst.png" />
-    <EmbeddedResource Include="images\xl2rvt.png" />
+    <EmbeddedResource Include="Icons\callout.png" />
+    <EmbeddedResource Include="Icons\combine.png" />
+    <EmbeddedResource Include="Icons\duct.png" />
+    <EmbeddedResource Include="Icons\elecpanel.png" />
+    <EmbeddedResource Include="Icons\elplc.png" />
+    <EmbeddedResource Include="Icons\flipel.png" />
+    <EmbeddedResource Include="Icons\flipwp.png" />
+    <EmbeddedResource Include="Icons\keynoteutil.png" />
+    <EmbeddedResource Include="Icons\knxl.png" />
+    <EmbeddedResource Include="Icons\reload.png" />
+    <EmbeddedResource Include="Icons\spacepipe.png" />
+    <EmbeddedResource Include="Icons\tagduct.png" />
+    <EmbeddedResource Include="Icons\wkst.png" />
+    <EmbeddedResource Include="Icons\xl2rvt.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -398,20 +396,20 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="images\flattentext.png" />
-    <EmbeddedResource Include="images\leadertext.png" />
+    <EmbeddedResource Include="Icons\flattentext.png" />
+    <EmbeddedResource Include="Icons\leadertext.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="images\type.png" />
-    <EmbeddedResource Include="images\fam.png" />
-    <EmbeddedResource Include="images\cat.png" />
-    <EmbeddedResource Include="images\wipe.png" />
-    <EmbeddedResource Include="images\tagpipe.png" />
-    <EmbeddedResource Include="images\notes.png" />
-    <EmbeddedResource Include="images\enlwkst.png" />
-    <EmbeddedResource Include="images\msg.png" />
-    <EmbeddedResource Include="images\ducttoggle.png" />
-    <EmbeddedResource Include="images\damper.png" />
+    <EmbeddedResource Include="Icons\type.png" />
+    <EmbeddedResource Include="Icons\fam.png" />
+    <EmbeddedResource Include="Icons\cat.png" />
+    <EmbeddedResource Include="Icons\wipe.png" />
+    <EmbeddedResource Include="Icons\tagpipe.png" />
+    <EmbeddedResource Include="Icons\notes.png" />
+    <EmbeddedResource Include="Icons\enlwkst.png" />
+    <EmbeddedResource Include="Icons\msg.png" />
+    <EmbeddedResource Include="Icons\ducttoggle.png" />
+    <EmbeddedResource Include="Icons\damper.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml">

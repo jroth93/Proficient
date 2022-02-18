@@ -25,6 +25,7 @@ namespace Proficient
             public const string ProjectFolder = "MEI Project Folder";
             public const string ProjectNumber = "MEI Project Number";
             public const string ViewSubdiscipline = "MEI Discipline-Sub";
+            public const string DisplaySeparation = "MEI Display Separation";
         }
         public class Workset
         {

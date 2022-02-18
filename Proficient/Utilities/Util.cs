@@ -48,7 +48,6 @@ namespace Proficient
             TogglePattern tp = check.GetCurrentPattern(TogglePattern.Pattern) as TogglePattern;
             tp.Toggle();
         }
-
         public static void ToggleLeaderEnd()
         {
             PropertyCondition typeCond = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ComboBox);
@@ -77,7 +76,6 @@ namespace Proficient
                 }
             }
         }
-
         public static void CycleLeaderDistance()
         {
             string[] vals = new string[] { "1/4\"", "1/2\"", "3/4\"", "1\"" };
@@ -217,7 +215,6 @@ namespace Proficient
             }
             return pfPar;
         }
-
         public static string GetProjectNumber(ExternalCommandData revit)
         {
             Document doc = revit.Application.ActiveUIDocument.Document;

@@ -11,6 +11,8 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
+using Proficient.Elec;
+using Proficient.Utilities;
 
 
 namespace Proficient
@@ -20,27 +22,32 @@ namespace Proficient
     {
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
-        public RibbonButton suppressSchWarning;
+        public static UIControlledApplication app;
+        public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
+        private static ElecLoadDMU elecLoadDMU;
+
         private Dictionary<View, ICollection<ElementId>> DesignNoteViews = new Dictionary<View, ICollection<ElementId>>();
         private KeyListener _listener;
         public static Forms.ProficientPane Pane;
         public static DockablePaneId PaneId { get; set; }
 
-        public Result OnStartup(UIControlledApplication app)
+        public Result OnStartup(UIControlledApplication uicApp)
         {
             Instance = this;
+            app = uicApp;
             InitializeSettings();
-            AddCommandBindings(app);
-            AddEventListeners(app);
-            CreateRibbon(app);
+            AddCommandBindings();
+            AddEventListeners();
+            CreateRibbon();
             AddExternalService();
             CheckToolbarVersion();
-            //RegisterDockablePane(app);
+            RegisterElecLoadDMU();
+            //RegisterDockablePane();
 
 
             return Result.Succeeded;
         }
-        public Result OnShutdown(UIControlledApplication app)
+        public Result OnShutdown(UIControlledApplication uicApp)
         {
             app.ControlledApplication.DocumentOpened -= App_DocumentOpened;
             app.ViewActivated -= App_ViewActivated;
@@ -51,7 +58,7 @@ namespace Proficient
             return Result.Succeeded;
         }
 
-        public void AddEventListeners(UIControlledApplication app)
+        public void AddEventListeners()
         {
             app.ControlledApplication.DocumentOpened += App_DocumentOpened;
             app.ViewActivated += App_ViewActivated;
@@ -68,13 +75,12 @@ namespace Proficient
         private void App_ApplicationClosing(object sender, ApplicationClosingEventArgs e)
         {
             string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion.ToString();
+            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
             if (thisVersion != currentVersion)
             {
                 Process.Start(Names.File.SilentUpdateExe);
             }
         }
-
         private void App_Idling(object sender, IdlingEventArgs e)
         {
             _listener?.UnHookKeyboard();
@@ -100,6 +106,19 @@ namespace Proficient
                 {
                     wst.SetActiveWorksetId(workset.Id);
                     transaction.Commit();
+                }
+            }
+
+            var mec = new FilteredElementCollector(args.Document).OfCategory(BuiltInCategory.OST_MechanicalEquipment).Where(e => e is FamilyInstance);
+            ElementCategoryFilter f = new ElementCategoryFilter(BuiltInCategory.OST_MechanicalEquipment);
+
+            foreach (Element el in mec)
+            {
+                Parameter par = el.LookupParameter(Names.Parameter.DisplaySeparation);
+                
+                if (par != null)
+                {
+                    UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), f, Element.GetChangeTypeParameter(par));
                 }
             }
         }
@@ -238,7 +257,7 @@ namespace Proficient
                 File.WriteAllText(configPath, jsonSettings);
             }
         }
-        public void AddCommandBindings(UIControlledApplication app)
+        public void AddCommandBindings()
         {
             app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.TagByCategory)).BeforeExecuted +=
                 new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
@@ -251,7 +270,7 @@ namespace Proficient
         }
         
 
-        public void CreateRibbon(UIControlledApplication app)
+        public void CreateRibbon()
         {
             string asLoc = Assembly.GetExecutingAssembly().Location;
             app.CreateRibbonTab("Proficient");
@@ -271,7 +290,7 @@ namespace Proficient
             #endregion
 
             #region add buttons
-            AddRibbonButton(genRib, "EditSettings", "Edit\nSettings", "wkst", "Change Proficient settings");
+            AddRibbonButton(genRib, "EditSettings", "Edit\nSettings", "settings", "Change Proficient settings");
             SplitButton txtSplit = genRib.AddItem(new SplitButtonData("txttools", "Text Tools")) as SplitButton;
             AddRibbonButton(genRib, "ExcelAssign", "Excel\nAssigner", "xl2rvt", "Assign parameters to family types or instances from Excel document");
             AddRibbonButton(genRib, "ElementPlacer", "Element\nPlacer", "elplc", "");
@@ -312,7 +331,7 @@ namespace Proficient
             AddRibbonButton(mechRib, "Mech.PipeSpacer", "Space\nPipes", "spacepipe", "");
             AddRibbonButton(mechRib, "Mech.HardBreak", "Hard\nBreak", "hardbreak", "");
             AddRibbonButton(mechRib, "Mech.SetFittingUpDn", "Auto-Set\nUp/Dn", "updn", "");
-            AddRibbonButton(mechRib, "Mech.DuctLauncher", "Launch\nDuctulator", "duct", "");
+            AddRibbonButton(mechRib, "Mech.DuctLauncher", "Launch\nDuctulator", "duct", "", true);
 
             AddRibbonButton(elecRib, "Elec.PanelUtil", "Panel\nUtility", "elecpanel", "");
 
@@ -325,32 +344,32 @@ namespace Proficient
             #endregion
 
             #region add images
-            cmbtxt.LargeImage = NewBitmapImage("combine");
-            txtldr.LargeImage = NewBitmapImage("leadertext");
-            flattxt.LargeImage = NewBitmapImage("flattentext");
+            cmbtxt.LargeImage = Icons.ScaledIcon("combine",32,32);
+            txtldr.LargeImage = Icons.ScaledIcon("leadertext", 32, 32);
+            flattxt.LargeImage = Icons.ScaledIcon("flattentext", 32, 32);
 
-            (scheds[0] as PushButton).Image = NewBitmapImage("width");
-            (scheds[1] as PushButton).Image = NewBitmapImage("align");
-            (scheds[2] as PushButton).Image = NewBitmapImage("alignflip");
+            (scheds[0] as PushButton).Image = Icons.ScaledIcon("width", 16, 16);
+            (scheds[1] as PushButton).Image = Icons.ScaledIcon("align", 16, 16);
+            (scheds[2] as PushButton).Image = Icons.ScaledIcon("alignflip", 16, 16);
 
-            (flips[0] as PushButton).Image = NewBitmapImage("flipel");
-            (flips[1] as PushButton).Image = NewBitmapImage("flipwp");
+            (flips[0] as PushButton).Image = Icons.ScaledIcon("flipel", 16, 16);
+            (flips[1] as PushButton).Image = Icons.ScaledIcon("flipwp", 16, 16);
 
-            (toggles[0] as PushButton).Image = NewBitmapImage("enlwkst");
-            (toggles[1] as PushButton).Image = NewBitmapImage("notes");
-            (toggles[2] as PushButton).Image = NewBitmapImage("msg");
+            (toggles[0] as PushButton).Image = Icons.ScaledIcon("enlwkst", 16, 16);
+            (toggles[1] as PushButton).Image = Icons.ScaledIcon("notes", 16, 16);
+            (toggles[2] as PushButton).Image = Icons.ScaledIcon("msg", 16, 16);
 
-            (filters[0] as PushButton).Image = NewBitmapImage("cat");
-            (filters[1] as PushButton).Image = NewBitmapImage("fam");
-            (filters[2] as PushButton).Image = NewBitmapImage("type");
+            (filters[0] as PushButton).Image = Icons.ScaledIcon("cat", 16, 16);
+            (filters[1] as PushButton).Image = Icons.ScaledIcon("fam", 16, 16);
+            (filters[2] as PushButton).Image = Icons.ScaledIcon("type", 16, 16);
 
-            (mechTags[0] as PushButton).Image = NewBitmapImage("tagduct");
-            (mechTags[1] as PushButton).Image = NewBitmapImage("tagpipe");
-            (mechTags[2] as PushButton).Image = NewBitmapImage("wipe");
+            (mechTags[0] as PushButton).Image = Icons.ScaledIcon("tagduct", 16, 16);
+            (mechTags[1] as PushButton).Image = Icons.ScaledIcon("tagpipe", 16, 16);
+            (mechTags[2] as PushButton).Image = Icons.ScaledIcon("wipe", 16, 16);
 
-            (mechTogs[0] as PushButton).Image = NewBitmapImage("ducttoggle");
-            (mechTogs[1] as PushButton).Image = NewBitmapImage("damper");
-            (mechTogs[2] as PushButton).Image = NewBitmapImage("togupdown");
+            (mechTogs[0] as PushButton).Image = Icons.ScaledIcon("ducttoggle", 16, 16);
+            (mechTogs[1] as PushButton).Image = Icons.ScaledIcon("damper", 16, 16);
+            (mechTogs[2] as PushButton).Image = Icons.ScaledIcon("togupdown", 16, 16);
 
             #endregion
 
@@ -380,11 +399,26 @@ namespace Proficient
                 Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
             }
         }
-        private void RegisterDockablePane(UIControlledApplication app)
+        private void RegisterDockablePane()
         {
             PaneId = new DockablePaneId(new Guid("F984D829-98D6-46F7-A35A-B3B8C0B6A55A"));
             Pane = new Forms.ProficientPane();
             app.RegisterDockablePane(PaneId, "Proficient", Pane);
+        }
+        private void RegisterElecLoadDMU()
+        {
+
+            elecLoadDMU = new ElecLoadDMU();
+            UpdaterRegistry.RegisterUpdater(elecLoadDMU);
+            ElementCategoryFilter fme = new ElementCategoryFilter(BuiltInCategory.OST_MechanicalEquipment);
+            ElementCategoryFilter fec = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
+
+            UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fme, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ALL_MODEL_MARK)));
+            UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fme, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_MARK)));
+            UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fme, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ELEM_TYPE_PARAM)));
+            UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fme, Element.GetChangeTypeElementAddition());
+            UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fec, Element.GetChangeTypeElementAddition());
+
         }
 
         private void BeforeTag(object sender, BeforeExecutedEventArgs arg)
@@ -445,24 +479,30 @@ namespace Proficient
         {
             string cmdName = title.Replace("\n", " ");
             string aPath = Assembly.GetExecutingAssembly().Location;
-            string fullName = "Proficient." + className;
+            string fullName = $"Proficient.{className}";
             RibbonButton rb = panel.AddItem(new PushButtonData(cmdName, title, aPath, fullName)) as RibbonButton;
             if(imgName != String.Empty)
             {
-                rb.LargeImage = NewBitmapImage(imgName);
+                rb.LargeImage = Icons.ScaledIcon(imgName, 32, 32);
             }
             rb.ToolTip = tooltip;
         }
-        public static BitmapImage NewBitmapImage(string imgName)
+        public static void AddRibbonButton(RibbonPanel panel, string className, string title, string imgName, string tooltip, bool zeroBtn)
         {
-            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Main).Namespace + ".images." + imgName + ".png");
-            BitmapImage img = new BitmapImage();
-
-            img.BeginInit();
-            img.StreamSource = s;
-            img.EndInit();
-
-            return img;
+            string cmdName = title.Replace("\n", " ");
+            string aPath = Assembly.GetExecutingAssembly().Location;
+            string fullName = $"Proficient.{className}";
+            PushButtonData d = new PushButtonData(cmdName, title, aPath, fullName);
+            if (zeroBtn)
+            {
+                d.AvailabilityClassName = "Proficient.CommandAvailability";
+            }
+            RibbonButton rb = panel.AddItem(d) as RibbonButton;
+            if (imgName != String.Empty)
+            {
+                rb.LargeImage = Icons.ScaledIcon(imgName, 32, 32);
+            }
+            rb.ToolTip = tooltip;
         }
 
         private void HideDesignNotes(Document doc, List<ElementId> printViews)
@@ -558,11 +598,7 @@ namespace Proficient
     {
         public bool IsCommandAvailable(UIApplication app, CategorySet cs)
         {
-            if (app.ActiveUIDocument == null)
-            {
-                return true;
-            }
-            return false;
+            return true;
         }
     }
 
