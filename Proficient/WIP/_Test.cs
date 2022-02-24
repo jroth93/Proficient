@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Proficient.Forms;
 using Microsoft.Test.Input;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.ApplicationServices;
 
 namespace Proficient
 {
@@ -32,8 +33,9 @@ namespace Proficient
             //ElementId eid = uidoc.Selection.GetElementIds().First();
             // Element el = doc.GetElement(eid);
 
-
-
+            app.Application.SharedParametersFilename = string.Empty;
+            TaskDialog.Show("", Main.app.ControlledApplication.VersionNumber);
+            
 
 
             #region follower entry box
