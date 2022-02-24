@@ -41,7 +41,10 @@ namespace Proficient
             CreateRibbon();
             AddExternalService();
             CheckToolbarVersion();
-            RegisterElecLoadDMU();
+            if(app.ControlledApplication.VersionNumber != "2022")
+            {
+                RegisterElecLoadDMU();
+            }
             //RegisterDockablePane();
 
 

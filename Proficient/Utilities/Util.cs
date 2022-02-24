@@ -230,6 +230,12 @@ namespace Proficient
 
             DefinitionFile spFile = uiapp.Application.OpenSharedParameterFile();
 
+            if(spFile == null)
+            {
+                uiapp.Application.SharedParametersFilename = Names.File.SharedParameters;
+                spFile = uiapp.Application.OpenSharedParameterFile();
+            }
+
             ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup)
                                                     .FirstOrDefault().Definitions
                                                     .Where(ed => ed.Name == parName)
@@ -247,6 +253,12 @@ namespace Proficient
         public static void AddSharedParameter(Document doc, UIApplication uiapp, CategorySet cset, BuiltInParameterGroup bipg, string defGroup, string parName)
         {
             DefinitionFile spFile = uiapp.Application.OpenSharedParameterFile();
+
+            if (spFile == null)
+            {
+                uiapp.Application.SharedParametersFilename = Names.File.SharedParameters;
+                spFile = uiapp.Application.OpenSharedParameterFile();
+            }
 
             ExternalDefinition eDef = spFile.Groups.Where(dg => dg.Name == defGroup)
                                                     .FirstOrDefault().Definitions
