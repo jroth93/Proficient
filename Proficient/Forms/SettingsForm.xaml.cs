@@ -1,5 +1,4 @@
-﻿using MahApps.Metro.Controls;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Input;
 
@@ -9,7 +8,7 @@ namespace Proficient.Forms
     /// Interaction logic for SettingsForm.xaml
     /// </summary>
     [CLSCompliant(false)]
-    public partial class SettingsForm : MetroWindow
+    public partial class SettingsForm : Window
     {
         public SettingsForm()
         {
@@ -32,6 +31,16 @@ namespace Proficient.Forms
         {
             DialogResult = false;
             Hide();
+        }
+
+        private void Increment(object sender, RoutedEventArgs e)
+        {
+            PipeDist.Text = Convert.ToString(Convert.ToInt32(PipeDist.Text) + 1);
+        }
+
+        private void Decrement(object sender, RoutedEventArgs e)
+        {
+            PipeDist.Text = Convert.ToString(Convert.ToInt32(PipeDist.Text) - 1);
         }
     }
 }

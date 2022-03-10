@@ -48,12 +48,12 @@ namespace Proficient
             List<Button> btnList = new List<Button>();
             string selectedFamily = string.Empty;
             string selectedType = string.Empty;
-
+            Style s = frm.FindResource("smallBtn") as Style;
             foreach (Element type in types)
             {
                 string fam = (doc.GetElement(type.GetTypeId()) as ElementType).FamilyName;
                 string display = fam + " - " + type.Name;
-                btnList.Add(new Button { Content = display, Margin = new Thickness(0, 3, 0, 0) });
+                btnList.Add(new Button { Content = display, Style = s });
                 frm.sp.Children.Add(btnList.Last());
 
                 btnList.Last().Click += (object sender, RoutedEventArgs e) =>

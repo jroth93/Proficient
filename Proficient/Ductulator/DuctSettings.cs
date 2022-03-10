@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Proficient
 {
@@ -34,6 +36,9 @@ namespace Proficient
             Main.Settings.appOnTop = checkBox1.Checked;
             Main.Settings.appVert = radiovert.Checked;
             MessageBox.Show("Please restart program for new settings to take effect.", "Restart Program");
+
+            string jsonSettings = JsonConvert.SerializeObject(Main.Settings);
+            File.WriteAllText(Names.File.UserSettings, jsonSettings);
             this.Close();
         }
 

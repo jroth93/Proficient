@@ -1,5 +1,5 @@
-﻿using MahApps.Metro.Controls;
-using System;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Proficient.Forms
@@ -8,7 +8,7 @@ namespace Proficient.Forms
     /// Interaction logic for Blank.xaml
     /// </summary>
     [CLSCompliant(false)]
-    public partial class Blank : MetroWindow
+    public partial class Blank : Window
     {
         public Blank()
         {

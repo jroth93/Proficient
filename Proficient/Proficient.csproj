@@ -1,119 +1,295 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{16BC830B-3511-46DA-93DC-F9A0C8AC16F7}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Proficient</RootNamespace>
-    <AssemblyName>Proficient</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Publish|x64'">
-    <OutputPath>bin\Publish\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'wpf|x64'">
-    <OutputPath>bin\x64\wpf\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'wpf|Win32'">
-    <OutputPath>bin\Win32\wpf\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Release\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Publish|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Publish\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'wpf|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\wpf\</OutputPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="AdWindows, Version=2017.11.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="RevitAPI, Version=19.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Web.Services" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UIAutomationClient" />
-    <Reference Include="UIAutomationTypes" />
-    <Reference Include="WindowsBase" />
+      <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+      <PropertyGroup>
+        <ProjectGuid>{16BC830B-3511-46DA-93DC-F9A0C8AC16F7}</ProjectGuid>
+		<ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+		  <UseWPF>true</UseWPF>
+        <OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>Proficient</RootNamespace>
+        <AssemblyName>Proficient</AssemblyName>
+		<TargetFrameworks>net48;net471;net47</TargetFrameworks>
+	    <LangVersion>8.0</LangVersion>
+        <FileAlignment>512</FileAlignment>
+        <Deterministic>true</Deterministic>
+        <SignAssembly>false</SignAssembly>
+        <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+		<Configurations>Debug2019;Release2019;Publish2019;Debug2020;Release2020;Publish2020;Debug2021;Release2021;Publish2021;Debug2022;Release2022;Publish2022</Configurations>
+		<PlatformTarget>x64</PlatformTarget>
+		<Platforms>x64</Platforms>
+		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+		<ErrorReport>prompt</ErrorReport>
+      </PropertyGroup>    
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug2019'">
+	    <DebugSymbols>true</DebugSymbols>
+	    <OutputPath>bin\Debug\2019</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R19</DefineConstants>
+	    <DebugType>full</DebugType>
+	    <TargetFramework>net47</TargetFramework>
+		<TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+	    <StartAction>Program</StartAction>
+	    <StartProgram>C:\Program Files\Autodesk\Revit 2019\Revit.exe</StartProgram>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release2019'">
+	    <OutputPath>bin\Release\2019</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R19</DefineConstants>
+		<DebugType>full</DebugType>
+		<TargetFramework>net47</TargetFramework>
+		<TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Publish2019'">
+		<OutputPath>bin\Publish\2019</OutputPath>
+		<DefineConstants>TRACE;R19</DefineConstants>
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+		<TargetFramework>net47</TargetFramework>
+		<TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug2020'">
+	    <DebugSymbols>true</DebugSymbols>
+	    <OutputPath>bin\Debug\2020</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R20</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net471</TargetFramework>
+		<TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+	    <StartAction>Program</StartAction>
+	    <StartProgram>C:\Program Files\Autodesk\Revit 2020\Revit.exe</StartProgram>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release2020'">
+	    <OutputPath>bin\Release\2020</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R20</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net471</TargetFramework>
+		<TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Publish2020'">
+		<OutputPath>bin\Publish\2020</OutputPath>
+		<DefineConstants>TRACE;R20</DefineConstants>
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+		<TargetFramework>net471</TargetFramework>
+		<TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug2021'">
+	    <DebugSymbols>true</DebugSymbols>
+	    <OutputPath>bin\Debug\2021</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R21;FORGE</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<StartAction>Program</StartAction>
+		<StartProgram>C:\Program Files\Autodesk\Revit 2021\Revit.exe</StartProgram>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release2021'">
+	    <OutputPath>bin\Release\2021</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R21;FORGE</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<RevitVersion>2021</RevitVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Publish2021'">
+		<OutputPath>bin\Publish\2021</OutputPath>
+		<DefineConstants>TRACE;R21;FORGE</DefineConstants>
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug2022'">
+	    <DebugSymbols>true</DebugSymbols>
+	    <OutputPath>bin\Debug\2022</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R22;FORGE</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<StartAction>Program</StartAction>
+	    <StartProgram>C:\Program Files\Autodesk\Revit 2022\Revit.exe</StartProgram>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release2022'">
+	    <OutputPath>bin\Release\2022</OutputPath>
+	    <DefineConstants>TRACE;DEBUG;R22;FORGE</DefineConstants>
+	    <DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Publish2022'">
+		<OutputPath>bin\Publish\2022</OutputPath>
+		<DefineConstants>TRACE;R22;FORGE</DefineConstants>
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	</PropertyGroup>
+	<ItemGroup Label="Revit References">
+		<Reference Include="DocumentFormat.OpenXml">
+		  <HintPath>..\packages\DocumentFormat.OpenXml.2.15.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+		  <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="PresentationFramework.Aero2.dll" />
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+	
+	<ItemGroup Label="System References">
+        <Reference Include="System" />
+        <Reference Include="System.ComponentModel.DataAnnotations" />
+        <Reference Include="System.Configuration" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Drawing" />
+        <Reference Include="System.IdentityModel" />
+        <Reference Include="System.Net.Http" />
+        <Reference Include="System.Runtime.Serialization" />
+        <Reference Include="System.ServiceModel" />
+        <Reference Include="System.Web" />
+        <Reference Include="System.Web.Extensions" />
+        <Reference Include="System.Web.Services" />
+        <Reference Include="System.Windows.Forms" />
+        <Reference Include="System.Xaml" />
+        <Reference Include="System.Xml.Linq" />
+        <Reference Include="System.Data.DataSetExtensions" />
+        <Reference Include="Microsoft.CSharp" />
+        <Reference Include="System.Data" />
+        <Reference Include="System.Xml" />
+        <Reference Include="UIAutomationClient" />
+        <Reference Include="UIAutomationTypes" />
+        <Reference Include="WindowsBase" />
+        <Reference Include="PresentationCore" />
+        <Reference Include="PresentationFramework" />
+    </ItemGroup>
+  <ItemGroup Label="Code Files">
+    <Compile Include="Ribbon.cs" />
+    <Compile Include="Forms\Blank.xaml.cs" />
+    <Compile Include="Forms\UpDn.xaml.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="General\AlignScheduleR.cs" />
+    <Compile Include="General\AlignScheduleL.cs" />
+    <Compile Include="General\AlignSchedule.cs" />
+    <Compile Include="KeyListener.cs" />
+    <Compile Include="General\MatchSchWidth.cs" />
+    <Compile Include="ReloadFamily.cs" />
+    <Compile Include="OpenViewTemplate.cs" />
+    <Compile Include="ShowPane.cs" />
+    <Compile Include="General\ChangeCalloutRef.cs" />
+    <Compile Include="General\AddLeader.cs" />
+    <Compile Include="General\EditSettings.cs" />
+    <Compile Include="General\ElementPlacer.cs" />
+    <Compile Include="General\ExcelAssign.cs" />
+    <Compile Include="General\OpenSectionView.cs" />
+    <Compile Include="Keynotes\ExternalResourceUIServer.cs" />
+    <Compile Include="Keynotes\ExternalResourceDBServer.cs" />
+    <Compile Include="Keynotes\KeynoteUtil.cs" />
+    <Compile Include="Keynotes\KNLauncher.cs" />
+    <Compile Include="Keynotes\KNReload.cs" />
+    <Compile Include="Elec\LoadNameUpdate.cs" />
+    <Compile Include="Elec\ElecLoadDMU.cs" />
+    <Compile Include="Elec\PanelUtil.cs" />
+    <Compile Include="Mech\ToggleUpDn.cs" />
+    <Compile Include="Mech\PipeTag.cs" />
+    <Compile Include="Mech\ClearUpDn.cs" />
+    <Compile Include="Mech\DuctElbowToggle.cs" />
+    <Compile Include="Mech\DamperToggle.cs" />
+    <Compile Include="Mech\SetFittingUpDn.cs" />
+    <Compile Include="Mech\DuctLauncher.cs" />
+    <Compile Include="Mech\DuctTag.cs" />
+    <Compile Include="Mech\PipeSpacer.cs" />
+    <Compile Include="Mech\HardBreak.cs" />
+    <Compile Include="Mech\WipeMark.cs" />
+    <Compile Include="Utilities\Icons.cs" />
+    <Compile Include="Utilities\NativeMethods.cs" />
+    <Compile Include="Utilities\Mouse.cs" />
+    <Compile Include="Utilities\Names.cs" />
+    <Compile Include="Utilities\Settings.cs" />
+    <Compile Include="Utilities\RevitTask.cs" />
+    <Compile Include="Utilities\Util.cs" />
+    <Compile Include="Text\FlattenText.cs" />
+    <Compile Include="Text\TextLeader.cs" />
+    <Compile Include="Text\CombineText.cs" />
+    <Compile Include="WIP\_Test.cs" />
+    <Compile Include="WIP\_Template.cs" />
+    <Compile Include="WIP\ReceptaclePlacer.cs" />
+    <Compile Include="WIP\RoomSep2SpaceSep.cs" />
+    <Compile Include="WIP\TagElKn.cs" />
+    <Content Include="Graph\GraphConfig.txt" />
+    <Content Include="Graph\GraphKNReload.txt" />
+    <Content Include="Graph\GraphKNLauncher.txt" />
+    <Content Include="Graph\MSGraph.txt" />
+    <Compile Include="Filters\TypeFilter.cs" />
+    <Compile Include="Filters\FamilyFilter.cs" />
+    <Compile Include="Filters\CategoryFilter.cs" />
+    <Compile Include="Toggles\ToggleEnlWkst.cs" />
+    <Compile Include="Toggles\FlipWorkPlane.cs" />
+    <Compile Include="Toggles\FlipElements.cs" />
+    <Compile Include="Toggles\SuppressSchWarning.cs" />
+    <Compile Include="Toggles\ToggleDesignAnno.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AlignScheduleR.cs" />
-    <Compile Include="AlignScheduleL.cs" />
+  <ItemGroup Label="Ductulator Files">
+    <Compile Include="Ductulator\Backend.cs" />
+    <Compile Include="Ductulator\FunctionsConstants.cs" />
+    <Compile Include="Ductulator\DuctMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Ductulator\DuctMain.Designer.cs">
+      <DependentUpon>DuctMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Ductulator\DuctSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Ductulator\DuctSettings.Designer.cs">
+      <DependentUpon>DuctSettings.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup Label="Mxparser Files">
     <Compile Include="Ductulator\mxparser\Argument.cs" />
     <Compile Include="Ductulator\mxparser\ArgumentExtension.cs" />
     <Compile Include="Ductulator\mxparser\Constant.cs" />
@@ -169,59 +345,15 @@
     <Compile Include="Ductulator\mxparser\syntaxchecker\SyntaxCheckerTokenManager.cs" />
     <Compile Include="Ductulator\mxparser\syntaxchecker\Token.cs" />
     <Compile Include="Ductulator\mxparser\syntaxchecker\TokenMgrError.cs" />
-    <Compile Include="Ductulator\mxparser\Tutorial.cs" />
-    <Compile Include="Elec\LoadNameUpdate.cs" />
-    <Compile Include="Forms\Blank.xaml.cs">
-      <DependentUpon>Blank.xaml</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="Forms\ProficientPane.xaml.cs">
-      <DependentUpon>ProficientPane.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Keynotes\ExternalResourceUIServer.cs" />
-    <Compile Include="AlignSchedule.cs" />
-    <Compile Include="Mech\ToggleUpDn.cs" />
-    <Compile Include="Mech\PipeTag.cs" />
-    <Compile Include="Mech\ClearUpDn.cs" />
-    <Compile Include="KeyListener.cs" />
-    <Compile Include="Elec\ElecLoadDMU.cs" />
-    <Compile Include="Utilities\Icons.cs" />
-    <Compile Include="Utilities\NativeMethods.cs" />
-    <Compile Include="Utilities\Mouse.cs" />
-    <Compile Include="WIP\_Test.cs" />
-    <Compile Include="Utilities\Names.cs" />
-    <Compile Include="Forms\SettingsForm.xaml.cs">
-      <DependentUpon>SettingsForm.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\Follower.xaml.cs">
-      <DependentUpon>Follower.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utilities\Settings.cs" />
-    <Compile Include="MatchSchWidth.cs" />
-    <Compile Include="ReloadFamily.cs" />
-    <Compile Include="OpenViewTemplate.cs" />
-    <Compile Include="ShowPane.cs" />
     <Content Include="Ductulator\mxparser\syntaxchecker\csjavacc.jar" />
-    <Content Include="Graph\GraphConfig.txt" />
-    <Compile Include="ChangeCalloutRef.cs" />
-    <Content Include="Graph\GraphKNReload.txt" />
-    <Content Include="Graph\GraphKNLauncher.txt" />
-    <Compile Include="Mech\DuctElbowToggle.cs" />
-    <Content Include="Graph\MSGraph.txt" />
-    <Compile Include="Ductulator\Backend.cs" />
-    <Compile Include="Ductulator\DuctMain.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Ductulator\DuctMain.Designer.cs">
-      <DependentUpon>DuctMain.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Ductulator\DuctSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Ductulator\DuctSettings.Designer.cs">
-      <DependentUpon>DuctSettings.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Ductulator\FunctionsConstants.cs" />
+    <EmbeddedResource Include="Icons\motor.png" />
+    <EmbeddedResource Include="Icons\flattentext.png" />
+    <EmbeddedResource Include="Icons\leadertext.png" />
+    <Compile Include="Ductulator\mxparser\Tutorial.cs" />
+    <None Include="Ductulator\mxparser\syntaxchecker\generate-SyntaxChecker.bat" />
+    <None Include="Ductulator\mxparser\syntaxchecker\SyntaxChecker.jj" />
+  </ItemGroup>
+  <ItemGroup Label="Winforms Files">
     <Compile Include="Forms\KeynoteUtilFrm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,23 +378,12 @@
     <Compile Include="Forms\MsgBox.Designer.cs">
       <DependentUpon>MsgBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Keynotes\ExternalResourceDBServer.cs" />
-    <Compile Include="Utilities\RevitTask.cs" />
-    <Compile Include="Text\FlattenText.cs" />
-    <Compile Include="AddLeader.cs" />
-    <Compile Include="Text\TextLeader.cs" />
-    <Compile Include="Elec\PanelUtil.cs" />
-    <Compile Include="Keynotes\KeynoteUtil.cs" />
-    <Compile Include="Mech\DamperToggle.cs" />
-    <Compile Include="Utilities\Util.cs" />
-    <Compile Include="Filters\TypeFilter.cs" />
-    <Compile Include="Filters\FamilyFilter.cs" />
-    <Compile Include="WIP\ReceptaclePlacer.cs" />
-    <Compile Include="Toggles\ToggleEnlWkst.cs" />
-    <Compile Include="Mech\SetFittingUpDn.cs" />
-    <Compile Include="Filters\CategoryFilter.cs" />
-    <Compile Include="WIP\_Template.cs" />
-    <Compile Include="ElementPlacer.cs" />
+    <Compile Include="Forms\ViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ViewForm.Designer.cs">
+      <DependentUpon>ViewForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\EntryBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -275,36 +396,79 @@
     <Compile Include="Forms\PlaceElFrm.Designer.cs">
       <DependentUpon>PlaceElFrm.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditSettings.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
+  </ItemGroup>
+	<ItemGroup Label="Winforms Resx Files">
+		<EmbeddedResource Include="Ductulator\DuctMain.resx">
+			<DependentUpon>DuctMain.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Ductulator\DuctSettings.resx">
+			<DependentUpon>DuctSettings.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\KeynoteUtilFrm.resx">
+			<DependentUpon>KeynoteUtilFrm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\ElecPanelDataFrm.resx">
+			<DependentUpon>ElecPanelDataFrm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\ExcelAssignFrm.resx">
+			<DependentUpon>ExcelAssignFrm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\EntryBox.resx">
+			<DependentUpon>EntryBox.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\MsgBox.resx">
+			<DependentUpon>MsgBox.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\PlaceElFrm.resx">
+			<DependentUpon>PlaceElFrm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Forms\ViewForm.resx">
+			<DependentUpon>ViewForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Properties\Resources.resx">
+			<CustomToolNamespace>ResXFileCodeGenerator</CustomToolNamespace>
+		</EmbeddedResource>
+	</ItemGroup>
+  <ItemGroup Label="WPF Code Files">
+    <Compile Include="Forms\ProficientPane.xaml.cs">
+      <DependentUpon>ProficientPane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Keynotes\KNLauncher.cs" />
-    <Compile Include="WIP\RoomSep2SpaceSep.cs" />
-    <Compile Include="WIP\TagElKn.cs" />
-    <Compile Include="Text\CombineText.cs" />
-    <Compile Include="Toggles\FlipWorkPlane.cs" />
-    <Compile Include="Mech\DuctLauncher.cs" />
-    <Compile Include="Forms\ViewForm.cs">
-      <SubType>Form</SubType>
+    <Compile Include="Forms\SettingsForm.xaml.cs">
+      <DependentUpon>SettingsForm.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ViewForm.Designer.cs">
-      <DependentUpon>ViewForm.cs</DependentUpon>
+    <Compile Include="Forms\Follower.xaml.cs">
+      <DependentUpon>Follower.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Keynotes\KNReload.cs" />
-    <Compile Include="Mech\DuctTag.cs" />
-    <Compile Include="Mech\PipeSpacer.cs" />
-    <Compile Include="Toggles\FlipElements.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExcelAssign.cs" />
-    <Compile Include="OpenSectionView.cs" />
-    <Compile Include="Mech\HardBreak.cs" />
-    <Compile Include="Toggles\SuppressSchWarning.cs" />
-    <Compile Include="Mech\WipeMark.cs" />
-    <Compile Include="Toggles\ToggleDesignAnno.cs" />
+  </ItemGroup>
+  <ItemGroup Label="WPF XAML Files">
+    <Page Include="Forms\Blank.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\FormStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\ProficientPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\SettingsForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\Follower.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\UpDn.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+	<ItemGroup>
+		<WCFMetadata Include="Connected Services\" />
+	</ItemGroup>
+  <ItemGroup Label="Icons">
+    <EmbeddedResource Include="Icons\togupdown.png" />
     <EmbeddedResource Include="Icons\settings.png" />
     <EmbeddedResource Include="Icons\alignflip.png" />
     <EmbeddedResource Include="Icons\updn.png" />
@@ -313,8 +477,36 @@
     <EmbeddedResource Include="Icons\leader.png" />
     <EmbeddedResource Include="Icons\section.png" />
     <EmbeddedResource Include="Icons\hardbreak.png" />
+    <EmbeddedResource Include="Icons\type.png" />
+    <EmbeddedResource Include="Icons\fam.png" />
+    <EmbeddedResource Include="Icons\cat.png" />
+    <EmbeddedResource Include="Icons\wipe.png" />
+    <EmbeddedResource Include="Icons\tagpipe.png" />
+    <EmbeddedResource Include="Icons\notes.png" />
+    <EmbeddedResource Include="Icons\enlwkst.png" />
+    <EmbeddedResource Include="Icons\msg.png" />
+    <EmbeddedResource Include="Icons\ducttoggle.png" />
+    <EmbeddedResource Include="Icons\damper.png" />
+    <EmbeddedResource Include="Icons\callout.png" />
+    <EmbeddedResource Include="Icons\combine.png" />
+    <EmbeddedResource Include="Icons\duct.png" />
+    <EmbeddedResource Include="Icons\elecpanel.png" />
+    <EmbeddedResource Include="Icons\elplc.png" />
+    <EmbeddedResource Include="Icons\flipel.png" />
+    <EmbeddedResource Include="Icons\flipwp.png" />
+    <EmbeddedResource Include="Icons\keynoteutil.png" />
+    <EmbeddedResource Include="Icons\knxl.png" />
+    <EmbeddedResource Include="Icons\reload.png" />
+    <EmbeddedResource Include="Icons\spacepipe.png" />
+    <EmbeddedResource Include="Icons\tagduct.png" />
+    <EmbeddedResource Include="Icons\wkst.png" />
+    <EmbeddedResource Include="Icons\xl2rvt.png" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="Nones">
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup Label="COM References">
     <COMReference Include="IWshRuntimeLibrary">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -334,132 +526,10 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Ductulator\DuctMain.resx">
-      <DependentUpon>DuctMain.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Ductulator\DuctSettings.resx">
-      <DependentUpon>DuctSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\KeynoteUtilFrm.resx">
-      <DependentUpon>KeynoteUtilFrm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ElecPanelDataFrm.resx">
-      <DependentUpon>ElecPanelDataFrm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ExcelAssignFrm.resx">
-      <DependentUpon>ExcelAssignFrm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\EntryBox.resx">
-      <DependentUpon>EntryBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\MsgBox.resx">
-      <DependentUpon>MsgBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\PlaceElFrm.resx">
-      <DependentUpon>PlaceElFrm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ViewForm.resx">
-      <DependentUpon>ViewForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\togupdown.png" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <CustomToolNamespace>ResXFileCodeGenerator</CustomToolNamespace>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icons\callout.png" />
-    <EmbeddedResource Include="Icons\combine.png" />
-    <EmbeddedResource Include="Icons\duct.png" />
-    <EmbeddedResource Include="Icons\elecpanel.png" />
-    <EmbeddedResource Include="Icons\elplc.png" />
-    <EmbeddedResource Include="Icons\flipel.png" />
-    <EmbeddedResource Include="Icons\flipwp.png" />
-    <EmbeddedResource Include="Icons\keynoteutil.png" />
-    <EmbeddedResource Include="Icons\knxl.png" />
-    <EmbeddedResource Include="Icons\reload.png" />
-    <EmbeddedResource Include="Icons\spacepipe.png" />
-    <EmbeddedResource Include="Icons\tagduct.png" />
-    <EmbeddedResource Include="Icons\wkst.png" />
-    <EmbeddedResource Include="Icons\xl2rvt.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Ductulator\mxparser\syntaxchecker\generate-SyntaxChecker.bat" />
-    <None Include="Ductulator\mxparser\syntaxchecker\SyntaxChecker.jj" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icons\flattentext.png" />
-    <EmbeddedResource Include="Icons\leadertext.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icons\type.png" />
-    <EmbeddedResource Include="Icons\fam.png" />
-    <EmbeddedResource Include="Icons\cat.png" />
-    <EmbeddedResource Include="Icons\wipe.png" />
-    <EmbeddedResource Include="Icons\tagpipe.png" />
-    <EmbeddedResource Include="Icons\notes.png" />
-    <EmbeddedResource Include="Icons\enlwkst.png" />
-    <EmbeddedResource Include="Icons\msg.png" />
-    <EmbeddedResource Include="Icons\ducttoggle.png" />
-    <EmbeddedResource Include="Icons\damper.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml">
-      <Version>2.15.0</Version>
-    </PackageReference>
-    <PackageReference Include="MahApps.Metro">
-      <Version>2.4.9</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.1072.54</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>11.0.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Forms\MAFormStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Forms\FormStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Forms\Blank.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Page>
-    <Page Include="Forms\ProficientPane.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Forms\SettingsForm.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Forms\Follower.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release copy "$(TargetPath)" "C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents"
-if $(ConfigurationName) == Release "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /t "http://timestamp.digicert.com" /fd SHA256 /f "C:\Users\jroth\Documents\Certs\JRCert.pfx" /p "mei" "$(TargetPath)"
-if $(ConfigurationName) == Publish copy "$(TargetPath)" "Z:\Revit\Custom Add Ins\Proficient.bundle\Contents"
-if $(ConfigurationName) == Publish "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /t "http://timestamp.digicert.com" /fd SHA256 /f "C:\Users\jroth\Documents\Certs\JRCert.pfx" /p "mei" "$(TargetPath)"
-
-</PostBuildEvent>
+  <PropertyGroup Label="Post Build Events">
+    <PostBuildEvent>
+		call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath)
+	</PostBuildEvent>
   </PropertyGroup>
 </Project>

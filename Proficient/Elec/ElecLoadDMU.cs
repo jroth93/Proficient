@@ -31,7 +31,8 @@ namespace Proficient.Elec
                     foreach(ElementId id in addedIds)
                     {
                         MEPSystem circ = doc.GetElement(id) as MEPSystem;
-                        if(circ.get_Parameter(BuiltInParameter.CIRCUIT_LOAD_CLASSIFICATION_PARAM).AsString() == "HVAC -")
+                        string circClass = circ.get_Parameter(BuiltInParameter.CIRCUIT_LOAD_CLASSIFICATION_PARAM).AsString();
+                        if (circClass == "HVAC -" || circClass == "ELEC HEAT -" || circClass == "MOTOR -")
                         {
                             fis.AddRange(circ.Elements.Cast<FamilyInstance>());
                         }                     
@@ -54,14 +55,22 @@ namespace Proficient.Elec
                         .Where(el => el is FamilyInstance)
                         .Cast<FamilyInstance>()
                         .Where(fi => fi.Symbol.Id == (els.First() as FamilySymbol).Id)
+#if (R21 || R22)
+                        .Where(fi => fi.MEPModel.GetElectricalSystems() != null)
+#else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null)
+#endif
                         .ToList();
                 }
                 else
                 {
                     fis = els
                         .Cast<FamilyInstance>()
+#if (R21 || R22)
+                        .Where(fi => fi.MEPModel.GetElectricalSystems() != null)
+#else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null)
+#endif
                         .ToList();
                 }
             }
@@ -73,10 +82,18 @@ namespace Proficient.Elec
                 string planTag = fi.Symbol.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString()
                         + fi.LookupParameter("MEI Display Separation").AsString()
                         + fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
+
+#if (R21 || R22)
+                foreach (ElectricalSystem es in fi.MEPModel.GetElectricalSystems())
+                {
+                    es.LoadName = planTag;
+                }
+#else
                 foreach (ElectricalSystem es in fi.MEPModel.ElectricalSystems)
                 {
                     es.LoadName = planTag;
                 }
+#endif
             }
                 
         }

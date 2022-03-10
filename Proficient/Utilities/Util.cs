@@ -20,10 +20,17 @@ namespace Proficient
             var fec = new FilteredElementCollector(doc).OfClass(typeof(IndependentTag)).Where(tg => tg.OwnerViewId == viewId);
             foreach (IndependentTag it in fec)
             {
+#if R22
+                if (it.GetTaggedLocalElementIds().Contains(el.Id))
+                {
+                    return true;
+                }
+#else
                 if (it.TaggedLocalElementId == el.Id)
                 {
                     return true;
                 }
+#endif
             }
             return false;
         }
@@ -153,22 +160,24 @@ namespace Proficient
 
         public static void BalloonTip(string category, string title, string text)
         {
-            Autodesk.Internal.InfoCenter.ResultItem ri = new Autodesk.Internal.InfoCenter.ResultItem();
-
-            ri.Category = category;
-            ri.Title = title;
-            ri.TooltipText = text;
+            Autodesk.Internal.InfoCenter.ResultItem ri = new Autodesk.Internal.InfoCenter.ResultItem
+            {
+                Category = category,
+                Title = title,
+                TooltipText = text
+            };
 
             Autodesk.Windows.ComponentManager.InfoCenterPaletteManager.ShowBalloon(ri);
         }
         public static void BalloonTip(string category, string title, string text, string uri)
         {
-            Autodesk.Internal.InfoCenter.ResultItem ri = new Autodesk.Internal.InfoCenter.ResultItem();
-
-            ri.Category = category;
-            ri.Title = title;
-            ri.TooltipText = text;
-            ri.Uri = new Uri(uri);
+            Autodesk.Internal.InfoCenter.ResultItem ri = new Autodesk.Internal.InfoCenter.ResultItem
+            {
+                Category = category,
+                Title = title,
+                TooltipText = text,
+                Uri = new Uri(uri)
+            };
 
             Autodesk.Windows.ComponentManager.InfoCenterPaletteManager.ShowBalloon(ri);
         }

@@ -1,65 +1,87 @@
-﻿<mah:MetroWindow
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Proficient"
-        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        x:Class="Proficient.Forms.SettingsForm"
-        mc:Ignorable="d"
-        Style="{DynamicResource MyWindowStyle}" SizeToContent="WidthAndHeight" WindowStartupLocation="Manual" WindowStyle="None" AllowsTransparency="True" Opacity="1" MouseDown="Window_MouseDown" ShowTitleBar="False" ShowCloseButton="False" ShowMaxRestoreButton="False" ShowMinButton="False" >
-    
-    <!--
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Proficient"
+    x:Class="Proficient.Forms.SettingsForm"
+    mc:Ignorable="d"
+    SizeToContent="WidthAndHeight" 
+    WindowStartupLocation="Manual" 
+    WindowStyle="None" 
+    AllowsTransparency="True" 
+    Opacity="1" 
+    MouseDown="Window_MouseDown"
+    FontFamily="Roboto">
+
+
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
             <BeginStoryboard>
                 <Storyboard>
                     <DoubleAnimation Duration="00:00:00.0" Storyboard.TargetProperty="Opacity" To="0" />
-                    <DoubleAnimation Duration="00:00:00.2" Storyboard.TargetProperty="Opacity" To="0.99" />
+                    <DoubleAnimation Duration="00:00:00.3" Storyboard.TargetProperty="Opacity" To="0.98" />
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
-    </Window.Triggers> -->
-    
+    </Window.Triggers>
+
     <Window.Resources>
-        <ResourceDictionary Source="MAFormStyles.xaml"/>
+        <ResourceDictionary Source="FormStyles.xaml"/>
     </Window.Resources>
     
     <Border>
         <StackPanel>
-
-            <Button FontWeight="Bold" Content="✖" Margin="0,10,0,0" FontSize="8" Width="25" Height="25" HorizontalAlignment="Right" Click="CloseButton_Click"/>
+            <Button FontWeight="Bold" Content="✖" Margin="0,10,0,0" HorizontalAlignment="Right"  FontSize="8" Width="25" Height="25"  Click="CloseButton_Click"/>
 
             <StackPanel>
-                <Label Style="{StaticResource HeaderLabel}" Content="Text"/>
-                <Label Style="{StaticResource ControlLabel}" Content="Default font family"/>
-                <ComboBox Name="DefaultFont" x:FieldModifier="public" Margin="0,0,100,10"/>
-                <mah:ToggleSwitch IsOn="True" Name="HideDesignNotes" x:FieldModifier="public" OnContent="Hide design annotations on print" OffContent="Hide design note text families on print" Margin="0,0,0,0"/>
+                <Label Style="{StaticResource Header}" Content="Text"/>
+                <Label Content="Default font family"/>
+                <ComboBox Template="{DynamicResource ComboBoxTemplate}" Name="DefaultFont" x:FieldModifier="public"/>
+                <CheckBox Name="HideDesignNotes" Style="{StaticResource circleCheck}" x:FieldModifier="public" Content="Hide design note text families on print" Margin="0,0,0,0"/>
             </StackPanel>
 
             <StackPanel>
-                <Label Style="{StaticResource HeaderLabel}" Content="Mechanical"/>
-                <Label Style="{StaticResource ControlLabel}" Content="Pipe Spacing on 1/8&quot; Plan"/>
-                <mah:NumericUpDown Name="PipeDist" x:FieldModifier="public" ButtonsAlignment="Opposite" FlowDirection="RightToLeft" HorizontalAlignment="Left"/>
+                <Label Style="{StaticResource Header}" Content="Mechanical"/>
+                <Label Content="Pipe Spacing on 1/8&quot; Plan"/>
+                <Border HorizontalAlignment="Left" Background="#FF999999" CornerRadius="5" BorderThickness="0" Margin="5,0,0,0" Padding="5,5,5,5" Height="30" Width="80">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Button Click="Decrement" BorderThickness="0" Grid.Column="0">
+                            <Path Grid.Column="0" x:Name="Minus" Width="10" Height="10" Stretch="Uniform" Fill="White" HorizontalAlignment="Center"
+                              Data="M1600 736v192q0 40-28 68t-68 28h-1216q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h1216q40 0 68 28t28 68z"/>
+                        </Button>
+                        <TextBlock x:Name="PipeDist" x:FieldModifier="public" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Text="9" Grid.Column="1" />
+                        <Button Click="Increment" Grid.Column="2" >
+                            <Path Width="10" Height="10" Stretch="Uniform"  Fill="White" HorizontalAlignment="Center"
+                              Data="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/>
+                        </Button>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Style="{StaticResource Header}" Content="Worksets"/>
+                <Label Content="Default Workset"/>
+                <ComboBox Template="{DynamicResource ComboBoxTemplate}" Name="DefaultWorkset" x:FieldModifier="public"/>
+                <CheckBox Name="SwitchEnlWorkset" Style="{StaticResource circleCheck}" IsChecked="False" x:FieldModifier="public"  Content="Switch to enlarged &amp; site worksets automatically" Margin="0,0,20,0"/>
             </StackPanel>
             
-            <StackPanel>
-                <Label Style="{StaticResource HeaderLabel}" Content="Worksets"/>
-                <Label Style="{StaticResource ControlLabel}" Content="Default Workset"/>
-                <ComboBox Name="DefaultWorkset" x:FieldModifier="public"  Margin="0,0,100,10"/>
-                <mah:ToggleSwitch Name="SwitchEnlWorkset" x:FieldModifier="public"  OnContent="Switch to enlarged &amp; site worksets automatically" OffContent="Switch to enlarged &amp; site worksets automatically" Margin="0,0,20,0"/>
-            </StackPanel>
-
-            <Grid>
+            <Grid Margin="0,5,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="4*"/>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
                 <Label Name="Version" Content="Proficient Version X.X.X.X" Padding="10,10,10,10" Grid.Column="0"/>
-                <Button Content="Save" Grid.Column="1" Height="30" Width ="70" Padding="0,0,0,2" FontSize="11" Click="SaveButton_Click" HorizontalAlignment="Right"/>
-                <Button Content="Close" Grid.Column="2" Height="30" Width ="70" Margin="0,0,10,0" Padding="0,0,0,2" FontSize="11" Click="CloseButton_Click" HorizontalAlignment="Right"/>
+                <Button Content="Save" Click="SaveButton_Click" Grid.Column="1" Height="30" Width="65" Margin="10,0,5,0"/>
+                <Button Content="Close" Click="CloseButton_Click" Grid.Column="2" Height="30" Width="65" Margin="5,0,10,0"/>
+
             </Grid>
         </StackPanel>
     </Border>
-</mah:MetroWindow>
+</Window>

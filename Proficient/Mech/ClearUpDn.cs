@@ -11,6 +11,9 @@ namespace Proficient.Mech
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
+#if R19
+            return Result.Failed;
+#else
             UIApplication uiapp = revit.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
@@ -79,6 +82,7 @@ namespace Proficient.Mech
                     ReplaceOldSP(uiapp, el.Id);
                 }         
             }
+#endif
         }
 
         private static void ReplaceOldSP(UIApplication uiapp, ElementId elId)

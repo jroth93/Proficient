@@ -28,8 +28,14 @@ namespace Proficient.Mech
 
             Blank frm = new Blank();
             frm.sp.Orientation = Orientation.Horizontal;
+            Style s = frm.FindResource("smallBtn") as Style;
 
-            Button btnTm = new Button();
+
+            Button btnTm = new Button
+            {
+                Content = "Type Mark",
+                Style = s
+            };
             btnTm.Content = "Type Mark";
             frm.sp.Children.Add(btnTm);
 
@@ -37,7 +43,11 @@ namespace Proficient.Mech
             spacer.Content = " ";
             frm.sp.Children.Add(spacer);
 
-            Button btnM = new Button();
+            Button btnM = new Button
+            {
+                Content = "Mark",
+                Style = s
+            };
             btnM.Content = "Mark";
             frm.sp.Children.Add(btnM);
 

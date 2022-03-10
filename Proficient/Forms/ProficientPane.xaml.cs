@@ -11,8 +11,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using Microsoft.Web.WebView2.Wpf;
-using Microsoft.Web.WebView2.Core;
 using System.IO;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -27,7 +25,6 @@ namespace Proficient.Forms
         public ProficientPane()
         {
             InitializeComponent();
-            InitializeAsync();
         }
 
         public void SetupDockablePane(DockablePaneProviderData data)
@@ -36,20 +33,13 @@ namespace Proficient.Forms
             data.InitialState = new DockablePaneState
             {
                 DockPosition = DockPosition.Right,
+#if R19
+#else
                 MinimumWidth = 200
+#endif
             };
             data.VisibleByDefault = true;
             data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
-        }
-        private async void InitializeAsync()
-        {
-            var env = await CoreWebView2Environment.CreateAsync(
-                userDataFolder: Path.Combine(Path.GetTempPath(), "ProficientPanel"),
-                options: new CoreWebView2EnvironmentOptions(allowSingleSignOnUsingOSPrimaryAccount: true));
-            await WebView.EnsureCoreWebView2Async(env);
-
-            WebView.Source = new Uri("https://www.google.com/");
-            WebView.Visibility = System.Windows.Visibility.Visible;
         }
     }
 }

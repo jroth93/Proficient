@@ -19,9 +19,9 @@ namespace Proficient
             Document doc = revit.Application.ActiveUIDocument.Document;
 
             SettingsForm sf = new SettingsForm();
-            sf.HideDesignNotes.IsOn = Main.Settings.hideDesignNotes;
-            sf.PipeDist.Value = Main.Settings.pipeDist;
-            sf.SwitchEnlWorkset.IsOn = Main.Settings.switchEnlarged;
+            sf.HideDesignNotes.IsChecked = Main.Settings.hideDesignNotes;
+            sf.PipeDist.Text = Convert.ToString(Main.Settings.pipeDist);
+            sf.SwitchEnlWorkset.IsChecked = Main.Settings.switchEnlarged;
 
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             sf.Version.Content = $"Proficient Version {assemblyVersion}";
@@ -47,10 +47,10 @@ namespace Proficient
             if (sf.ShowDialog() ?? false)
             {
                 Main.Settings.defWorkset = sf.DefaultWorkset.SelectedItem as string;
-                Main.Settings.switchEnlarged = sf.SwitchEnlWorkset.IsOn;
-                Main.Settings.pipeDist = Convert.ToInt32(sf.PipeDist.Value);
+                Main.Settings.switchEnlarged = (bool)sf.SwitchEnlWorkset.IsChecked;
+                Main.Settings.pipeDist = Convert.ToInt32(sf.PipeDist.Text);
                 Main.Settings.defFont = sf.DefaultFont.SelectedItem.ToString();
-                Main.Settings.hideDesignNotes = sf.HideDesignNotes.IsOn;
+                Main.Settings.hideDesignNotes = (bool)sf.HideDesignNotes.IsChecked;
 
                 string jsonSettings = JsonConvert.SerializeObject(Main.Settings);
                 File.WriteAllText(Names.File.UserSettings, jsonSettings);

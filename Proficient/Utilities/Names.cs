@@ -6,16 +6,18 @@ namespace Proficient
     {
         public class Family
         {
+            //Tags
+            public const string PipeFittingTag = "MEI Mech Tag Pipe Fitting";
+            public const string PipeTag = "MEI Mech Tag Pipe";
+            public const string PipeTagRotating = "MEI Mech Tag Pipe - Rotating";
             public const string DuctFittingTag = "MEI Mech Tag Duct Fitting";
             public const string DuctTag = "MEI Mech Tag Duct";
             public const string DuctTagRotating = "MEI Mech Tag Duct - Rotating";
 
-            public const string PipeFittingTag = "MEI Mech Tag Pipe Fitting";
-            public const string PipeTag = "MEI Mech Tag Pipe";
-            public const string PipeTagRotating = "MEI Mech Tag Pipe - Rotating";
-
+            //Ducts
             public const string RoundDuct = "Round Duct";
 
+            //Annotations
             public const string BlankLeader = "MEI Blank Leader";
             public const string KeynoteTag = "MEI Keynote Tag";
         }
@@ -35,14 +37,13 @@ namespace Proficient
         }
         public class File
         {
+            public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
+            public const string DependencyDir = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\Dependencies\";
             public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
-            public const string ServerDll = @"Z:\Revit\Custom Add Ins\Proficient.bundle\Contents\Proficient.dll";
-            public const string ServerAddinFolder = @"Z:\Revit\Custom Add Ins";
-            public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\config.json";
-            public const string CommonSettings = @"Z:\Revit\Custom Add Ins\Proficient Config Files\appsettings.json";
-            public const string UserDllFolder = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents";
+            public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R22\Proficient.dll";
+            public const string CommonSettings = @"Z:\Revit\Proficient\Proficient Config Files\appsettings.json";
             public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
-            public const string SilentUpdateExe = @"Z:\Revit\Custom Add Ins\Proficient Silent Update\ProficientSilentUpdate.exe";
+            public const string SilentUpdateExe = @"Z:\Revit\Proficient\ProficientSilentUpdate.exe";
         }
 
         public class Guids

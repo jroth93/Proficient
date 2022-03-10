@@ -39,16 +39,24 @@ namespace Proficient.Mech
             Blank frm = new Blank();
             frm.sp.Orientation = Orientation.Horizontal;
 
-            Button btnLdr = new Button();
-            btnLdr.Content = "Leader";
+            Style s = frm.FindResource("smallBtn") as Style;
+
+            Button btnLdr = new Button
+            {
+                Content = "Leader",
+                Style = s
+            }; 
             frm.sp.Children.Add(btnLdr);
 
             Label spacer = new Label();
             spacer.Content = " ";
             frm.sp.Children.Add(spacer);
 
-            Button btnNoLdr = new Button();
-            btnNoLdr.Content = "No Leader";
+            Button btnNoLdr = new Button
+            {
+                Content = "No Leader",
+                Style = s                
+            };
             frm.sp.Children.Add(btnNoLdr);
             
             bool ldr = true;

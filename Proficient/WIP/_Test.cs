@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System;
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
@@ -33,9 +34,35 @@ namespace Proficient
             //ElementId eid = uidoc.Selection.GetElementIds().First();
             // Element el = doc.GetElement(eid);
 
-            app.Application.SharedParametersFilename = string.Empty;
-            TaskDialog.Show("", Main.app.ControlledApplication.VersionNumber);
-            
+
+
+            SettingsForm sf = new SettingsForm();
+
+
+
+            sf.Loaded += (object sender, RoutedEventArgs e) =>
+            {
+                Rectangle mwe = revit.Application.MainWindowExtents;
+                sf.Left = (mwe.Left + mwe.Right) / 2 - sf.Width / 2;
+                sf.Top = (mwe.Top + mwe.Bottom) / 2 - sf.Height / 2;
+            };
+
+            sf.DefaultWorkset.ItemsSource = new FilteredWorksetCollector(doc).ToWorksets()
+                .Where(ws => ws.Kind == WorksetKind.UserWorkset)
+                .Select(ws => ws.Name);
+            sf.DefaultWorkset.SelectedIndex = 0;
+
+
+            sf.DefaultFont.ItemsSource = new FilteredElementCollector(doc)
+                .WherePasses(new ElementClassFilter(typeof(TextNoteType)))
+                .Select(txt => txt.Name)
+                .ToList();
+            sf.DefaultFont.SelectedIndex = 0;
+            sf.ShowDialog();
+
+
+            sf.Close();
+
 
 
             #region follower entry box

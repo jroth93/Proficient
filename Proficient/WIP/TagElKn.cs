@@ -39,8 +39,11 @@ namespace Proficient
                                 newkn.get_Parameter(BuiltInParameter.KEY_VALUE).Set(fel.LookupParameter("Keynote").AsString());
                                 newkn.LeaderEndCondition = LeaderEndCondition.Attached;
                                 newkn.TagHeadPosition = (el.Location as LocationPoint).Point + new XYZ(4, 2, 0);
+#if R22
+                                newkn.SetLeaderElbow(newref, newkn.TagHeadPosition + new XYZ(-2, -0.04, 0));
+#else
                                 newkn.LeaderElbow = newkn.TagHeadPosition + new XYZ(-2, -0.04, 0);
-
+#endif
                             }
                         }
                     }

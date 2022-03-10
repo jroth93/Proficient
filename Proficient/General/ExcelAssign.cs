@@ -79,10 +79,50 @@ namespace Proficient
                 wslist.Add((ws.Item[i] as XL.Worksheet).Name);
 
             return wslist.ToArray();
-
-
         }
+#if (R21 || R22)
+        private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
+        {
+            switch (parType)
+            {
+                case "String":
+                    return Convert.ToString(ws.Cells[row, col].Value);
+                case "Integer":
+                    try
+                    {
+                        int val = Convert.ToInt32(ws.Cells[row, col].Value);
+                        val = (int)UnitUtils.ConvertToInternalUnits(val, dispUnit);
+                        return val;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                case "Double":
+                    try
+                    {
+                        double val = Convert.ToDouble(ws.Cells[row, col].Value);
+                        val = UnitUtils.ConvertToInternalUnits(val, dispUnit);
+                        return val;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
 
+                case "ElementId":
+                    try
+                    {
+                        return new ElementId(Convert.ToInt32(ws.Cells[row, col].Value));
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+            }
+            return null;
+        }
+#else
         private static dynamic GetCellVal(int row, int col, string parType, DisplayUnitType dispUnit)
         {
             switch (parType)
@@ -124,7 +164,7 @@ namespace Proficient
             }
             return null;
         }
-
+#endif
         private static dynamic GetCellVal(int row, int col, string parType)
         {
             switch (parType)
@@ -260,9 +300,16 @@ namespace Proficient
                     if (typeMark == keyCellVal)
                     {
                         bool hasUnits;
+
+                        
+
                         try
                         {
+#if (R21 || R22)
+                            var dut = fs.LookupParameter(parName).GetUnitTypeId();
+#else
                             DisplayUnitType dut = fs.LookupParameter(parName).DisplayUnitType;
+#endif
                             hasUnits = true;
                         }
                         catch (Autodesk.Revit.Exceptions.InvalidOperationException)
@@ -270,12 +317,16 @@ namespace Proficient
                             hasUnits = false;
                         }
 
-                        using (Transaction tx = new Transaction(doc, "Assign Type Parameter"))
+
+                                using (Transaction tx = new Transaction(doc, "Assign Type Parameter"))
                         {
                             if (tx.Start() == TransactionStatus.Started)
                             {
+#if (R21 || R22)
+                                var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
+#else
                                 var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
-
+#endif
                                 if (newVal != null)
                                 {
                                     fs.LookupParameter(parName).Set(newVal);
@@ -327,7 +378,11 @@ namespace Proficient
                     bool hasUnits;
                     try
                     {
-                        DisplayUnitType dut = par.DisplayUnitType;
+#if (R21 || R22)
+                        var dut = fi.LookupParameter(parName).GetUnitTypeId();
+#else
+                        DisplayUnitType dut = fi.LookupParameter(parName).DisplayUnitType;
+#endif
                         hasUnits = true;
                     }
                     catch (Autodesk.Revit.Exceptions.InvalidOperationException)
@@ -335,8 +390,11 @@ namespace Proficient
                         hasUnits = false;
                     }
 
+#if (R21 || R22)
+                    var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.GetUnitTypeId()) : GetCellVal(markRowIndex[mark], parCol, parType);
+#else
                     var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.DisplayUnitType) : GetCellVal(markRowIndex[mark], parCol, parType);
-
+#endif
                     if (newVal == null)
                     {
                         errorLog += $"Incorrect data type in Excel File for element '{mark}' parameter '{parName}.' Expecting type of {par.StorageType}. Parameter will not be assigned.\n";

@@ -78,7 +78,7 @@ namespace Proficient.Utilities
         /// Scale down large icon to desired size for Revit 
         /// ribbon button, e.g., 32 x 32 or 16 x 16
         /// </summary>
-        public static BitmapSource ScaledIcon(string imgName, int w, int h)
+        public static BitmapSource ScaledIcon(string imgName, int size)
         {
 
             Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Proficient.Icons.{imgName}.png");
@@ -88,7 +88,7 @@ namespace Proficient.Utilities
             icon.StreamSource = s;
             icon.EndInit();
 
-            return BitmapToBitmapSource(ResizeImage(BitmapImageToBitmap(icon), w, h));
+            return BitmapToBitmapSource(ResizeImage(BitmapImageToBitmap(icon), size, size));
         }
     }
 }

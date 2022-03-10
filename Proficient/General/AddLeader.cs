@@ -112,11 +112,18 @@ namespace Proficient
                         fias.addLeader();
                         Leader ldr = fias.GetLeaders()[0];
                         ldr.End = endPt;
-
+#if R22
+                        Reference itRef = it.GetTaggedReferences().First();
+                        if (knt && it.HasLeader && it.HasLeaderElbow(itRef))
+                        {
+                            ldr.Elbow = it.GetLeaderElbow(itRef);
+                        }
+#else
                         if (knt && it.HasLeader && it.HasElbow)
                         {
                             ldr.Elbow = it.LeaderElbow;
                         }
+#endif
                         
                     }
                     tx.Commit();

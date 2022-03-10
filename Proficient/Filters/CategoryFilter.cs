@@ -46,10 +46,10 @@ namespace Proficient
 
             List<Button> btnList = new List<Button>();
             string selectedCat = string.Empty;
-
+            Style s = frm.FindResource("smallBtn") as Style;
             foreach (Category cat in cats)
             {
-                btnList.Add(new Button { Content = cat.Name, Margin = new Thickness(0, 3, 0, 0) });
+                btnList.Add(new Button { Content = cat.Name, Style = s });
                 frm.sp.Children.Add(btnList.Last());
 
                 btnList.Last().Click += (object sender, RoutedEventArgs e) =>
