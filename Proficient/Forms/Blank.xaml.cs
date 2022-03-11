@@ -7,7 +7,7 @@ namespace Proficient.Forms
     /// <summary>
     /// Interaction logic for Blank.xaml
     /// </summary>
-    [CLSCompliant(false)]
+
     public partial class Blank : Window
     {
         public Blank()

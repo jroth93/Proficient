@@ -1,5 +1,5 @@
-﻿using org.mariuszgromada.math.mxparser;
-using System;
+﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -40,10 +40,10 @@ namespace Proficient
                 TotalCFM.Text = "Not Valid Input";
                 return;
             }
-            double airflow = new Expression(inputs[0]).calculate();
-            double friction = new Expression(inputs[1]).calculate();
-            int mindepth = Convert.ToInt32(new Expression(inputs[2]).calculate());
-            int maxdepth = Convert.ToInt32(new Expression(inputs[3]).calculate());
+            double airflow = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+            double friction = Convert.ToDouble(new DataTable().Compute(inputs[1], null));
+            int mindepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+            int maxdepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
             Match result = Regex.Match(inputs[0], Constants.numpattern);
             TotalCFM.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
@@ -71,10 +71,10 @@ namespace Proficient
                 return;
             }
 
-            double airflow = new Expression(inputs[0]).calculate();
-            int velocity = Convert.ToInt32(new Expression(inputs[1]).calculate());
-            int mindepth = Convert.ToInt32(new Expression(inputs[2]).calculate());
-            int maxdepth = Convert.ToInt32(new Expression(inputs[3]).calculate());
+            double airflow = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+            int velocity = Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+            int mindepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+            int maxdepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
             Match result = Regex.Match(inputs[0], Constants.numpattern);
             TotalCFM2.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
@@ -121,10 +121,10 @@ namespace Proficient
                 return;
             }
 
-            double airflow = new Expression(inputs[0]).calculate();
-            int dia = boolrnd ? Convert.ToInt32(new Expression(inputs[1]).calculate()) : 0;
-            int width = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[1]).calculate());
-            int depth = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[2]).calculate());
+            double airflow = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+            int dia = boolrnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+            int width = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+            int depth = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
             Match result = Regex.Match(inputs[0], Constants.numpattern);
             TotalCFM3.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
@@ -166,10 +166,10 @@ namespace Proficient
                 return;
             }
 
-            double friction = new Expression(inputs[0]).calculate();
-            int dia = boolrnd ? Convert.ToInt32(new Expression(inputs[1]).calculate()) : 0;
-            int width = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[1]).calculate());
-            int depth = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[2]).calculate());
+            double friction = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+            int dia = boolrnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+            int width = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+            int depth = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
             int airflow = Convert.ToInt32(Functions.Airflowsolver(friction, dia, width, depth, boolrnd));
             int velocity = Convert.ToInt32(Functions.Velocitysolver(airflow, dia, width, depth, boolrnd));
@@ -207,10 +207,10 @@ namespace Proficient
                 return;
             }
 
-            double velocity = new Expression(inputs[0]).calculate();
-            int dia = boolrnd ? Convert.ToInt32(new Expression(inputs[1]).calculate()) : 0;
-            int width = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[1]).calculate());
-            int depth = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[2]).calculate());
+            double velocity = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+            int dia = boolrnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+            int width = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+            int depth = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
             int airflow = Convert.ToInt32(boolrnd ? velocity * Math.PI * Math.Pow(dia, 2) / 576 : velocity * width * depth / 144.0);
             double friction = Convert.ToInt32(Functions.Frictionsolver(airflow, dia, width, depth, boolrnd) * Constants.fprecision) / Constants.fprecision;
@@ -252,11 +252,11 @@ namespace Proficient
                 return;
             }
 
-            int dia = boolrnd ? Convert.ToInt32(new Expression(inputs[0]).calculate()) : 0;
-            int width = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[0]).calculate());
-            int depth = boolrnd ? 0 : Convert.ToInt32(new Expression(inputs[1]).calculate());
-            int mindepth = Convert.ToInt32(new Expression(inputs[2]).calculate());
-            int maxdepth = Convert.ToInt32(new Expression(inputs[3]).calculate());
+            int dia = boolrnd ? Convert.ToInt32(new DataTable().Compute(inputs[0], null)) : 0;
+            int width = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[0], null));
+            int depth = boolrnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+            int mindepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+            int maxdepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
             string output = Backend.EquivalentDuct(dia, width, depth, mindepth, maxdepth, boolrnd);
 
@@ -275,7 +275,7 @@ namespace Proficient
                 {
                     return false;
                 }
-                if (new Expression(input).calculate() <= 0 || new Expression(input).calculate() > 2147483647)
+                if (Convert.ToDouble(new DataTable().Compute(input, null)) <= 0 || Convert.ToDouble(new DataTable().Compute(input, null)) > 2147483647)
                 {
                     return false;
                 }
@@ -288,11 +288,11 @@ namespace Proficient
         {
             if (Main.Settings.appVert)
             {
-                this.Height = size > 170 ? size + 300 : 450;
+                Height = size > 170 ? size + 300 : 450;
             }
             else
             {
-                this.Height = size > 150 ? size + 130 : 275;
+                Height = size > 150 ? size + 130 : 275;
             }
 
         }

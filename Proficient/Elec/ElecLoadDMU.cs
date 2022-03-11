@@ -25,24 +25,40 @@ namespace Proficient.Elec
 
             if (data.GetAddedElementIds().Any())
             {
-                addedIds = data.GetAddedElementIds();
-                if ((BuiltInCategory)doc.GetElement(addedIds.First()).Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
+                try
                 {
-                    foreach(ElementId id in addedIds)
+                    addedIds = data.GetAddedElementIds();
+                    if ((BuiltInCategory)doc.GetElement(addedIds.First()).Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
                     {
-                        MEPSystem circ = doc.GetElement(id) as MEPSystem;
-                        string circClass = circ.get_Parameter(BuiltInParameter.CIRCUIT_LOAD_CLASSIFICATION_PARAM).AsString();
-                        if (circClass == "HVAC -" || circClass == "ELEC HEAT -" || circClass == "MOTOR -")
+                        foreach (ElementId id in addedIds)
                         {
-                            fis.AddRange(circ.Elements.Cast<FamilyInstance>());
-                        }                     
+                            MEPSystem circ = doc.GetElement(id) as MEPSystem;
+                            string circClass = circ.get_Parameter(BuiltInParameter.CIRCUIT_LOAD_CLASSIFICATION_PARAM).AsString();
+                            if (circClass == "HVAC -" || circClass == "ELEC HEAT -" || circClass == "MOTOR -")
+                            {
+                                foreach (Element el in circ.Elements)
+                                {
+                                    if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_MechanicalEquipment)
+                                    {
+                                        fis.Add(el as FamilyInstance);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Main.app.Idling += AddNewElementTriggers;
+                        return;
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Main.app.Idling += AddNewElementTriggers;
-                    return;
+                    TaskDialog.Show("exception", ex.Message);
+                    TaskDialog.Show("exception", ex.StackTrace);
                 }
+                
             }
             else
             {

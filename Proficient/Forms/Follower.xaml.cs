@@ -9,7 +9,7 @@ namespace Proficient.Forms
     /// <summary>
     /// Interaction logic for Follower.xaml
     /// </summary>
-    [CLSCompliant(false)]
+
     public partial class Follower : Window
     {
         static Follower mw;

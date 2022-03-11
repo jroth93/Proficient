@@ -7,7 +7,7 @@ namespace Proficient.Forms
     /// <summary>
     /// Interaction logic for SettingsForm.xaml
     /// </summary>
-    [CLSCompliant(false)]
+
     public partial class SettingsForm : Window
     {
         public SettingsForm()

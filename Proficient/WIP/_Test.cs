@@ -36,35 +36,6 @@ namespace Proficient
 
 
 
-            SettingsForm sf = new SettingsForm();
-
-
-
-            sf.Loaded += (object sender, RoutedEventArgs e) =>
-            {
-                Rectangle mwe = revit.Application.MainWindowExtents;
-                sf.Left = (mwe.Left + mwe.Right) / 2 - sf.Width / 2;
-                sf.Top = (mwe.Top + mwe.Bottom) / 2 - sf.Height / 2;
-            };
-
-            sf.DefaultWorkset.ItemsSource = new FilteredWorksetCollector(doc).ToWorksets()
-                .Where(ws => ws.Kind == WorksetKind.UserWorkset)
-                .Select(ws => ws.Name);
-            sf.DefaultWorkset.SelectedIndex = 0;
-
-
-            sf.DefaultFont.ItemsSource = new FilteredElementCollector(doc)
-                .WherePasses(new ElementClassFilter(typeof(TextNoteType)))
-                .Select(txt => txt.Name)
-                .ToList();
-            sf.DefaultFont.SelectedIndex = 0;
-            sf.ShowDialog();
-
-
-            sf.Close();
-
-
-
             #region follower entry box
             /*
             Forms.Follower f = new Forms.Follower(revit);
