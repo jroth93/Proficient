@@ -47,7 +47,7 @@ namespace Proficient.Elec
                 }
                 else
                 {
-                    Main.app.Idling += AddNewElementTriggers;
+                    Main.App.Idling += AddNewElementTriggers;
                     return;
                 }            
             }
@@ -125,7 +125,7 @@ namespace Proficient.Elec
                 }
             }
 
-            Main.app.Idling -= AddNewElementTriggers;
+            Main.App.Idling -= AddNewElementTriggers;
         }
 
         public string GetAdditionalInformation()

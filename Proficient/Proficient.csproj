@@ -124,10 +124,19 @@
 	</PropertyGroup>
 	<ItemGroup Label="Revit References">
 		<Reference Include="DocumentFormat.OpenXml">
-		  <HintPath>..\packages\DocumentFormat.OpenXml.2.15.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+		  <HintPath>..\packages\DocumentFormat.OpenXml.2.16.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
 		</Reference>
+		<Reference Include="EntityFramework">
+		  <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+		</Reference>
+		<Reference Include="EntityFramework.SqlServer">
+		  <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+		</Reference>
+		<Reference Include="MySql.Data, Version=8.0.28.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" />
+		<Reference Include="MySql.Data.EntityFramework, Version=8.0.28.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" />
 		<Reference Include="Newtonsoft.Json">
 		  <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+		  <CopyLocal>False</CopyLocal>
 		</Reference>
 		<Reference Include="PresentationFramework.Aero2.dll" />
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
@@ -157,10 +166,12 @@
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
 			<Private>False</Private>
+			<CopyLocal>False</CopyLocal>
 		</Reference>
 		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPIUI.dll</HintPath>
 			<Private>False</Private>
+			<CopyLocal>False</CopyLocal>
 		</Reference>
 		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
@@ -207,18 +218,25 @@
         <Reference Include="PresentationFramework" />
     </ItemGroup>
   <ItemGroup Label="Code Files">
-    <Compile Include="Ribbon.cs" />
+    <Compile Include="Forms\MarkdownEditor.xaml.cs" />
+    <Compile Include="Forms\NotesPane.xaml.cs" />
+    <Compile Include="Forms\ProficientPane.xaml.cs" />
+    <Compile Include="Mech\DuctFittingDMU.cs" />
+    <Compile Include="Elec\BreakerDMU.cs" />
+    <Compile Include="Utilities\EQI.cs" />
+    <Compile Include="Utilities\MarkdownParser.cs" />
+    <Compile Include="Utilities\Ribbon.cs" />
     <Compile Include="Forms\Blank.xaml.cs" />
     <Compile Include="Forms\UpDn.xaml.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="General\AlignScheduleR.cs" />
     <Compile Include="General\AlignScheduleL.cs" />
     <Compile Include="General\AlignSchedule.cs" />
-    <Compile Include="KeyListener.cs" />
+    <Compile Include="Utilities\KeyListener.cs" />
     <Compile Include="General\MatchSchWidth.cs" />
-    <Compile Include="ReloadFamily.cs" />
-    <Compile Include="OpenViewTemplate.cs" />
-    <Compile Include="ShowPane.cs" />
+    <Compile Include="WIP\ReloadFamily.cs" />
+    <Compile Include="WIP\OpenViewTemplate.cs" />
+    <Compile Include="WIP\ShowPane.cs" />
     <Compile Include="General\ChangeCalloutRef.cs" />
     <Compile Include="General\AddLeader.cs" />
     <Compile Include="General\EditSettings.cs" />
@@ -244,6 +262,7 @@
     <Compile Include="Mech\PipeSpacer.cs" />
     <Compile Include="Mech\HardBreak.cs" />
     <Compile Include="Mech\WipeMark.cs" />
+    <Compile Include="Utilities\DesignNotes.cs" />
     <Compile Include="Utilities\Icons.cs" />
     <Compile Include="Utilities\NativeMethods.cs" />
     <Compile Include="Utilities\Mouse.cs" />
@@ -371,9 +390,6 @@
 		</EmbeddedResource>
 	</ItemGroup>
   <ItemGroup Label="WPF Code Files">
-    <Compile Include="Forms\ProficientPane.xaml.cs">
-      <DependentUpon>ProficientPane.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Forms\SettingsForm.xaml.cs">
       <DependentUpon>SettingsForm.xaml</DependentUpon>
     </Compile>
@@ -389,8 +405,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Forms\MarkdownEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\NotesPane.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\MarkdownStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\NotesPaneStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Forms\ProficientPane.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Forms\SettingsForm.xaml">

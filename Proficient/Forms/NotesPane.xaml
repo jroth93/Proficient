@@ -1,0 +1,65 @@
+﻿<Page x:Class="Proficient.Forms.NotesPane"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Proficient.Forms"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="400"
+      Title=""
+      Background="White"
+      FontFamily="Roboto">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MarkdownStyles.xaml"/>
+                <ResourceDictionary Source="NotesPaneStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
+    </Page.Resources>
+    <TabControl>
+        <TabControl.Resources>
+            <Style TargetType="{x:Type TabPanel}">
+                <Setter Property="Background" Value="Gray"></Setter>
+            </Style>
+        </TabControl.Resources>
+
+        <TabItem Header="View" Background="White">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.Column="0" x:FieldModifier="public" x:Name="viewFdsv" Grid.Row="0"/>
+                <Button Grid.Row="1" Grid.Column="0" Content="Edit" FontSize="14" Click="ViewEditButton_OnClick" />
+            </Grid>
+        </TabItem>
+        <TabItem Header="EQI" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.ColumnSpan="3" Grid.Column="0" x:FieldModifier="public" x:Name="fdsv" Grid.Row="0"/>
+                <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Content="Edit" FontSize="14"  Click="EQIEditButton_OnClick" />
+                <Button Grid.Row="2" Grid.Column="0" Content="Create Global Link" FontSize="12" Click="AddLinkButton_OnClick"/>
+                <Button Grid.Row="2" Grid.Column="1" Content="Edit Global Link" FontSize="12" Click="EditLinkButton_OnClick"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="Remove Global Link" FontSize="12" Click="RemoveLinkButton_OnClick" />
+            </Grid>
+        </TabItem>
+        <TabItem Header="Project" Background="White">
+        </TabItem>
+
+    </TabControl>
+
+</Page>

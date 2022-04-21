@@ -1,0 +1,98 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Thickness x:Key="Tab_Border_Thickness">0,0,0,0</Thickness>
+    <!--border thickness for a selected tab, the bottom has no border to look like the TabItem is part of the main selected area-->
+    <Thickness x:Key="TabItem_Border_Thickness_Selected">0,0,0,0</Thickness>
+    <Thickness x:Key="TabItem_Spacer_Between_Tabs">2,0,1,0</Thickness>
+    <CornerRadius x:Key="TabItem_Corner_Radius">8,8,0,0</CornerRadius>
+    <!--we leave the top left a square so it blends nicely with the tab item-->
+    <CornerRadius x:Key="TabControl_Corner_Radius">0,0,0,0</CornerRadius>
+    <SolidColorBrush x:Key="Tab_Border_Color">White</SolidColorBrush>
+    <SolidColorBrush x:Key="Tab_Background_Color">LightGray</SolidColorBrush>
+    <SolidColorBrush x:Key="TabItem_Background_Color_Selected">White</SolidColorBrush>
+    <SolidColorBrush x:Key="TabItem_Border_Color_Selected">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="RibbonTopBackground">Gray</SolidColorBrush>
+    <DropShadowEffect x:Key="TabShadowSelected" BlurRadius="3" Direction="90" ShadowDepth="1.5"/>
+    <DropShadowEffect x:Key="TabShadowUnselected" BlurRadius="3" Direction="90" ShadowDepth="0.5"/>
+
+
+<!--style for the top tab items-->
+    <Style TargetType="{x:Type TabItem}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TabItem}">
+                    <Border x:Name="tabBorder"
+                                Height="20"
+                                Width="60"
+                                BorderBrush="{StaticResource Tab_Border_Color}"
+                                BorderThickness="{StaticResource Tab_Border_Thickness}"
+                                VerticalAlignment="Bottom"
+                                Margin="{StaticResource TabItem_Spacer_Between_Tabs}"
+                                CornerRadius="{StaticResource TabItem_Corner_Radius}"
+                                Background="{StaticResource Tab_Background_Color}"
+                                Effect="{StaticResource TabShadowUnselected}">
+                        <ContentPresenter x:Name="tabContent"
+                                          ContentSource="Header"
+                                          RecognizesAccessKey="True"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                    <!--here we create a trigger so that
+                        selected tabs will be taller, will be highlighted and
+                        will not have a bottom border-->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected"
+                                     Value="True">
+                            <Setter TargetName="tabBorder" Property="Effect" Value="{StaticResource TabShadowSelected}"/>
+                            
+                            <!--remove bottom border-->
+                            <Setter TargetName="tabBorder"
+                                        Property="BorderThickness"
+                                        Value="{StaticResource TabItem_Border_Thickness_Selected}" />
+                            <Setter TargetName="tabBorder"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource TabItem_Border_Color_Selected}" />
+                            <Setter TargetName="tabBorder"
+                                        Property="Background"
+                                        Value="{StaticResource TabItem_Background_Color_Selected}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--style for the whole tab control-->
+    <Style TargetType="{x:Type TabControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid UseLayoutRounding="True">
+                        <Grid.RowDefinitions>
+                            <!--3 rows for the TabPanel, overlap, and the selected content-->
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!--TabPanel needs to be on top of the selected content border-->
+                        <Grid Background="{StaticResource RibbonTopBackground}"></Grid>
+                        <TabPanel IsItemsHost="True"
+                                      Grid.Row="1"
+                                      Panel.ZIndex="1" />
+                        <Border Grid.Row="1"
+                                    Grid.RowSpan="2"
+                                    CornerRadius="{StaticResource TabControl_Corner_Radius}"
+                                    Panel.ZIndex="0"
+                                    BorderThickness="{StaticResource Tab_Border_Thickness}"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                            <ContentPresenter Margin="4"
+                                                  ContentSource="SelectedContent" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

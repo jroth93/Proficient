@@ -1,25 +1,15 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Events;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Windows.Input;
-using Proficient.Elec;
-using Proficient.Utilities;
 
-namespace Proficient
+namespace Proficient.Utilities
 {
     static class Ribbon
     {
         internal static void Create()
         {
-            UIControlledApplication app = Main.app;
+            UIControlledApplication app = Main.App;
             string al = Assembly.GetExecutingAssembly().Location;
             string ugUrl = "https://github.com/jroth93/Proficient/wiki/Proficient-User-Guide";
             app.CreateRibbonTab("Proficient");
@@ -235,7 +225,7 @@ namespace Proficient
             setUpDnBtn.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, $"{ugUrl}#auto-set-updn"));
 
             PushButtonData ductulatorData = new PushButtonData("LaunchDuctulator", "Launch\nDuctulator", al, "Proficient.Mech.DuctLauncher");
-            ductulatorData.AvailabilityClassName = "Proficient.CommandAvailability";
+            ductulatorData.AvailabilityClassName = "Proficient.Utilities.CommandAvailability";
             var ductulatorBtn = mechRib.AddItem(ductulatorData) as RibbonButton;
             ductulatorBtn.LargeImage = Icons.ScaledIcon("duct",32);
             ductulatorBtn.ToolTip = "Launch ductulator tool";
@@ -255,6 +245,8 @@ namespace Proficient
             elecLoadBtn.LargeImage = Icons.ScaledIcon("motor", 32);
             elecLoadBtn.ToolTip = "Sync mechanical equipment tags to circuit load names";
             elecLoadBtn.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, $"{ugUrl}#sync-circuit-names"));
+
+            //elecRib.AddItem(new PushButtonData("ShowPane", "Show Pane", al, "Proficient.ShowPane"));
         }
     }
 

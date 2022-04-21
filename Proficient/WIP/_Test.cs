@@ -31,9 +31,20 @@ namespace Proficient
             Document doc = uidoc.Document;
             //View view = doc.GetElement(uidoc.ActiveView.Id) as View;
             //app.GetDockablePane(Main.PaneId).Hide();
-            //ElementId eid = uidoc.Selection.GetElementIds().First();
-            // Element el = doc.GetElement(eid);
+            ElementId eid = uidoc.Selection.GetElementIds().First();
+            Element el = doc.GetElement(eid);
 
+            string newVal = el.LookupParameter(Names.Parameter.BreakerOptions).AsString();
+            Element ec = doc.GetElement((el as Wire).GetMEPSystems().First());
+
+            var ws = new FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Wire)
+                .Where(w => w is Wire)
+                .Cast<Wire>()
+                .Where(w => w.GetMEPSystems().Any())
+                .Where(w => w.GetMEPSystems().First() == ec.Id)
+                .Where(w => w.Id != el.Id);
+            
 
 
             #region follower entry box

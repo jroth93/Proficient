@@ -1,0 +1,19 @@
+﻿<Window x:Class="Proficient.Forms.MarkdownEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Proficient.Forms"
+        mc:Ignorable="d"
+        Title="Edit" Height="400" Width="400"
+        Closing="Window_Closing"
+        WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <TextBox x:FieldModifier="public" x:Name="tb" AcceptsReturn="True" TextChanged="tb_TextChanged" VerticalScrollBarVisibility="Auto" Grid.Row="0"/>
+        <Button Grid.Row="1" Content="Save" Click="Button_Click"/>
+    </Grid>
+</Window>

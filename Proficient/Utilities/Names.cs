@@ -16,6 +16,7 @@ namespace Proficient
 
             //Ducts
             public const string RoundDuct = "Round Duct";
+            public const string MiteredElbow = "MEI Rect Elbow Mitered";
 
             //Annotations
             public const string BlankLeader = "MEI Blank Leader";
@@ -28,6 +29,8 @@ namespace Proficient
             public const string ProjectNumber = "MEI Project Number";
             public const string ViewSubdiscipline = "MEI Discipline-Sub";
             public const string DisplaySeparation = "MEI Display Separation";
+            public const string BreakerOptions = "MEI Breaker Options";
+            public const string DisplayVanes = "MEI Display Vanes";
         }
         public class Workset
         {

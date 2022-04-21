@@ -63,7 +63,7 @@ namespace Proficient
                 knt = true;
                 it = el as IndependentTag;
                 dir = Math.Sign(endPt.X - it.TagHeadPosition.X);
-                loc = new XYZ(it.TagHeadPosition.X + dir * (Convert.ToDouble(view.Scale) * 157 / 1024 / 12), it.TagHeadPosition.Y, it.TagHeadPosition.Z);
+                loc = new XYZ(it.TagHeadPosition.X + dir * (Convert.ToDouble(view.Scale) * 190 / 1024 / 12), it.TagHeadPosition.Y, it.TagHeadPosition.Z);
             }
             else if (elType == "View Reference")
             {

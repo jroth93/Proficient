@@ -2,6 +2,8 @@
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Autodesk.Revit.DB.Events;
+using Autodesk.Revit.DB.Electrical;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,6 +14,7 @@ using System.Reflection;
 using System.Windows.Input;
 using Proficient.Elec;
 using Proficient.Utilities;
+using Proficient.Forms;
 
 
 namespace Proficient
@@ -21,76 +24,42 @@ namespace Proficient
     {
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
-        public static UIControlledApplication app;
-        public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
-        private static ElecLoadDMU elecLoadDMU;
+        public static UIControlledApplication App { get; set; }
 
-        private Dictionary<View, ICollection<ElementId>> DesignNoteViews = new Dictionary<View, ICollection<ElementId>>();
+        public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
+
+        private static ElecLoadDMU elecLoadDMU;
+        private static BreakerDMU breakerDMU;
+        private static DuctFittingDMU ductFittingDMU;
         private KeyListener _listener;
-        public static Forms.ProficientPane Pane;
-        public static DockablePaneId PaneId { get; set; }
 
         public Result OnStartup(UIControlledApplication uicApp)
         {
             Instance = this;
-            app = uicApp;
+            App = uicApp;
+            AddEventListeners();
             InitializeSettings();
             AddCommandBindings();
-            AddEventListeners();
             Ribbon.Create();
             AddExternalService();
             CheckToolbarVersion();
-            RegisterElecLoadDMU();
-            //RegisterDockablePane();
 
+            RegisterElecLoadDMU();
+            RegisterBreakerDMU();
+            RegisterDuctFittingDMU();
+            //RegisterPanes();
 
             return Result.Succeeded;
         }
         public Result OnShutdown(UIControlledApplication uicApp)
         {
-            app.ControlledApplication.DocumentOpened -= App_DocumentOpened;
-            app.ViewActivated -= App_ViewActivated;
-            app.DialogBoxShowing -= App_DialogBoxShowing;
-            app.ControlledApplication.DocumentPrinting -= App_DocumentPrinting;
-            app.ControlledApplication.DocumentPrinted -= App_DocumentPrinted;
-            app.Idling -= App_Idling;
+            RemoveEventListeners();
             return Result.Succeeded;
         }
 
-        public void AddEventListeners()
+        private void App_DocumentOpened(object sender, DocumentOpenedEventArgs args)
         {
-            app.ControlledApplication.DocumentOpened += App_DocumentOpened;
-            app.ViewActivated += App_ViewActivated;
-            app.DialogBoxShowing += App_DialogBoxShowing;
-            app.ControlledApplication.DocumentPrinting += App_DocumentPrinting;
-            app.ControlledApplication.DocumentPrinted += App_DocumentPrinted;
-            app.ApplicationClosing += App_ApplicationClosing;
-
-            app.Idling += App_Idling;
-
-            //AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        private void App_ApplicationClosing(object sender, ApplicationClosingEventArgs e)
-        {
-            string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
-            if (thisVersion != currentVersion)
-            {
-                Process.Start(Names.File.SilentUpdateExe);
-            }
-        }
-        private void App_Idling(object sender, IdlingEventArgs e)
-        {
-            _listener?.UnHookKeyboard();
-            UIApplication uiapp = sender as UIApplication;
-            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
-            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Electrical").First().Visible = app.IsElectricalEnabled;
-            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Mechanical").First().Visible = app.IsMechanicalEnabled;
-
-        }
-        private void App_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs args)
-        {
+            //change workset to user setting
             if (args.Document.IsWorkshared)
             {
                 Document doc = args.Document;
@@ -108,26 +77,91 @@ namespace Proficient
                 }
             }
 
-            var mec = new FilteredElementCollector(args.Document).OfCategory(BuiltInCategory.OST_MechanicalEquipment).Where(e => e is FamilyInstance);
+
+
+            //add display separation parameter listeners for Elec Load DMU
+            IEnumerable<Element> mec = new FilteredElementCollector(args.Document)
+                .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
+                .Where(e => e is FamilyInstance);
+
             ElementCategoryFilter f = new ElementCategoryFilter(BuiltInCategory.OST_MechanicalEquipment);
 
             foreach (Element el in mec)
             {
                 Parameter par = el.LookupParameter(Names.Parameter.DisplaySeparation);
-                
+
                 if (par != null)
                 {
                     UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), f, Element.GetChangeTypeParameter(par));
                 }
             }
-        }
-        private void App_DocumentClosing(object sender, Autodesk.Revit.DB.Events.DocumentClosingEventArgs e)
-        {
-            if (e.Document.Application.Documents.Size == 1)
+
+            //add listeners for Breaker DMU
+            var wec = new FilteredElementCollector(args.Document)
+                .OfCategory(BuiltInCategory.OST_Wire)
+                .Where(el => el is Wire);
+            
+            ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
+
+            foreach (Element el in wec)
             {
-                e.Document.DocumentClosing -= App_DocumentClosing;
+                Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
+
+                if (par != null)
+                {
+                    UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(par));
+                }
             }
-            throw new NotImplementedException();
+
+            var cec = new FilteredElementCollector(args.Document)
+                .OfCategory(BuiltInCategory.OST_ElectricalCircuit);
+
+            ElementCategoryFilter fc = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
+
+            foreach (Element el in wec)
+            {
+                Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
+
+                if (par != null)
+                {
+                    UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fc, Element.GetChangeTypeParameter(par));
+                }
+            }
+        }
+        private void App_Idling(object sender, IdlingEventArgs args)
+        {
+            _listener?.UnHookKeyboard();
+            UIApplication uiapp = sender as UIApplication;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Electrical").First().Visible = app.IsElectricalEnabled;
+            uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Mechanical").First().Visible = app.IsMechanicalEnabled;
+
+
+            try
+            {
+                ElecLoadDMU eldmu = new ElecLoadDMU();
+                if (!UpdaterRegistry.IsUpdaterEnabled(eldmu.GetUpdaterId()))
+                {
+                    UpdaterRegistry.EnableUpdater(eldmu.GetUpdaterId());
+                }
+
+                BreakerDMU bdmu = new BreakerDMU();
+
+                if (!UpdaterRegistry.IsUpdaterEnabled(bdmu.GetUpdaterId()))
+                {
+                    UpdaterRegistry.EnableUpdater(bdmu.GetUpdaterId());
+                }
+
+                DuctFittingDMU dfdmu = new DuctFittingDMU();
+                if (!UpdaterRegistry.IsUpdaterEnabled(dfdmu.GetUpdaterId()))
+                {
+                    UpdaterRegistry.EnableUpdater(dfdmu.GetUpdaterId());
+                }
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("Error Enabling Updaters", ex.ToString(), TaskDialogCommonButtons.Ok);
+            }
         }
         public void App_ViewActivated(object sender, EventArgs args)
         {
@@ -205,31 +239,54 @@ namespace Proficient
                 e.OverrideResult(1001);
             }
         }
-        public void App_DocumentPrinting(object sender, Autodesk.Revit.DB.Events.DocumentPrintingEventArgs args)
+        public void App_DocumentPrinting(object sender, DocumentPrintingEventArgs args)
         {
             if (Settings.hideDesignNotes)
             {
                 Document doc = args.Document;
                 List<ElementId> printViews = args.GetViewElementIds().ToList();
-                HideDesignNotes(doc, printViews);
+                DesignNotes.Hide(doc, printViews);
             }
         }
-        public void App_DocumentPrinted(object sender, Autodesk.Revit.DB.Events.DocumentPrintedEventArgs args)
+        public void App_DocumentPrinted(object sender, DocumentPrintedEventArgs args)
         {
             if (Settings.hideDesignNotes)
             {
                 Document doc = args.Document;
-                UnhideDesignNotes(doc);
+                DesignNotes.Unhide(doc);
+            }
+        }
+        private void App_DocumentClosing(object sender, DocumentClosingEventArgs args)
+        {
+            if (args.Document.Application.Documents.Size == 1)
+            {
+                args.Document.DocumentClosing -= App_DocumentClosing;
+            }
+            throw new NotImplementedException();
+        }
+        private void App_ApplicationClosing(object sender, ApplicationClosingEventArgs e)
+        {
+            string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
+            if (thisVersion != currentVersion)
+            {
+                Process.Start(Names.File.SilentUpdateExe);
             }
         }
 
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        public void AddEventListeners()
         {
-            
+            App.ControlledApplication.DocumentOpened += App_DocumentOpened;
+            App.Idling += App_Idling;
+            App.ViewActivated += App_ViewActivated;
+            App.DialogBoxShowing += App_DialogBoxShowing;
+            App.ControlledApplication.DocumentPrinting += App_DocumentPrinting;
+            App.ControlledApplication.DocumentPrinted += App_DocumentPrinted;
+            App.ApplicationClosing += App_ApplicationClosing;
 
-            return null;
+
+            //AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
-
         public void InitializeSettings()
         {
             string configPath = Names.File.UserSettings;
@@ -249,16 +306,20 @@ namespace Proficient
         }
         public void AddCommandBindings()
         {
-            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.TagByCategory)).BeforeExecuted +=
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.TagByCategory)).BeforeExecuted +=
                 new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
-            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.ElementKeynote)).BeforeExecuted +=
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.ElementKeynote)).BeforeExecuted +=
                 new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
-            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.UserKeynote)).BeforeExecuted +=
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.UserKeynote)).BeforeExecuted +=
                 new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
-            app.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.RoomTag)).BeforeExecuted +=
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.RoomTag)).BeforeExecuted +=
                 new EventHandler<BeforeExecutedEventArgs>(BeforeTag);
+
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.SynchronizeAndModifySettings)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeSync);
+            App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.SynchronizeNow)).BeforeExecuted +=
+                new EventHandler<BeforeExecutedEventArgs>(BeforeSync);
         }
-        
         public void AddExternalService()
         {
             ExternalServiceRegistry
@@ -277,12 +338,6 @@ namespace Proficient
                 Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
             }
         }
-        private void RegisterDockablePane()
-        {
-            PaneId = new DockablePaneId(new Guid("F984D829-98D6-46F7-A35A-B3B8C0B6A55A"));
-            Pane = new Forms.ProficientPane();
-            app.RegisterDockablePane(PaneId, "Proficient", Pane);
-        }
         private void RegisterElecLoadDMU()
         {
 
@@ -297,6 +352,44 @@ namespace Proficient
             UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fme, Element.GetChangeTypeElementAddition());
             UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), fec, Element.GetChangeTypeElementAddition());
 
+        }
+        private void RegisterBreakerDMU()
+        {
+            breakerDMU = new BreakerDMU();
+            UpdaterRegistry.RegisterUpdater(breakerDMU);
+            ElementCategoryFilter fec = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
+            ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
+
+            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
+            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
+
+            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fec, Element.GetChangeTypeElementAddition());
+            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeElementAddition());
+
+        }
+        private void RegisterDuctFittingDMU()
+        {
+            ductFittingDMU = new DuctFittingDMU();
+            UpdaterRegistry.RegisterUpdater(ductFittingDMU);
+            ElementCategoryFilter fdf = new ElementCategoryFilter(BuiltInCategory.OST_DuctFitting);
+
+            UpdaterRegistry.AddTrigger(ductFittingDMU.GetUpdaterId(), fdf, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ELEM_TYPE_PARAM)));
+            UpdaterRegistry.AddTrigger(ductFittingDMU.GetUpdaterId(), fdf, Element.GetChangeTypeElementAddition());
+
+        }
+        private void RegisterPanes()
+        {
+            
+            App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", new NotesPane());
+        }
+        private void RemoveEventListeners()
+        {
+            App.ControlledApplication.DocumentOpened -= App_DocumentOpened;
+            App.ViewActivated -= App_ViewActivated;
+            App.DialogBoxShowing -= App_DialogBoxShowing;
+            App.ControlledApplication.DocumentPrinting -= App_DocumentPrinting;
+            App.ControlledApplication.DocumentPrinted -= App_DocumentPrinted;
+            App.Idling -= App_Idling;
         }
 
         private void BeforeTag(object sender, BeforeExecutedEventArgs arg)
@@ -353,92 +446,25 @@ namespace Proficient
 
         }
 
-        private void HideDesignNotes(Document doc, List<ElementId> printViews)
+        private void BeforeSync(object sender, BeforeExecutedEventArgs arg)
         {
-            var textEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_TextNotes)
-                .Where(x => x.Name.ToLower().Contains("design"));
-
-            var lineEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Lines)
-                .Where(x => (x as CurveElement).LineStyle.Name.ToLower().Contains("design"));
-
-            var dimEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Dimensions)
-                .Where(x => x.Name.ToLower().Contains("design"));
-
-            List<Element> designEl = new List<Element>();
-
-            designEl.AddRange(textEl);
-            designEl.AddRange(lineEl);
-            designEl.AddRange(dimEl);
-
-            List<ElementId> printViewsSub = new List<ElementId>();
-            printViewsSub.AddRange(printViews);
-
-            foreach (ElementId id in printViews)
+            try
             {
-                if (doc.GetElement(id) is ViewSheet vs)
-                {
-                    foreach (ElementId vid in vs.GetAllPlacedViews())
-                    {
-                        printViewsSub.Add(vid);
-                        ElementId pvid = (doc.GetElement(vid) as View).GetPrimaryViewId();
-                        if (pvid == ElementId.InvalidElementId) printViewsSub.Add(pvid);
-                    }
-                }
-                else
-                {
-                    ElementId pvid = (doc.GetElement(id) as View).GetPrimaryViewId();
-                    if (pvid != ElementId.InvalidElementId) printViewsSub.Add(pvid);
-                }
+                ElecLoadDMU eldmu = new ElecLoadDMU();
+                UpdaterRegistry.DisableUpdater(eldmu.GetUpdaterId());
+
+                BreakerDMU bdmu = new BreakerDMU();
+                UpdaterRegistry.DisableUpdater(bdmu.GetUpdaterId());
+
+                DuctFittingDMU dfdmu = new DuctFittingDMU();
+                UpdaterRegistry.DisableUpdater(dfdmu.GetUpdaterId());
             }
-
-            var noteViews = designEl
-                .Select(x => x.OwnerViewId)
-                .Distinct()
-                .ToList();
-            var noteDependentViews = new FilteredElementCollector(doc)
-                .OfClass(typeof(View))
-                .Where(x => noteViews.Contains((x as View).GetPrimaryViewId()))
-                .Select(x => x.Id);
-            noteViews.AddRange(noteDependentViews);
-            var views = printViewsSub.Intersect(noteViews);
-
-            DesignNoteViews.Clear();
-
-            using (Transaction tx = new Transaction(doc, "Hide Design Notes"))
+            catch(Exception ex)
             {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    foreach (ElementId viewId in views)
-                    {
-                        View curView = doc.GetElement(viewId) as View;
-                        ICollection<ElementId> viewDesignEl = designEl
-                            .Where(x => x.OwnerViewId == viewId || x.OwnerViewId == curView.GetPrimaryViewId())
-                            .Select(x => x.Id)
-                            .ToList();
-                        DesignNoteViews.Add(curView, viewDesignEl);
-                        curView.HideElements(viewDesignEl);
-                    }
-                }
-                tx.Commit();
+                TaskDialog.Show("Error Disabling Updaters", ex.ToString(), TaskDialogCommonButtons.Ok);
             }
         }
-        private void UnhideDesignNotes(Document doc)
-        {
-            using (Transaction tx = new Transaction(doc, "Unhide Design Notes"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    foreach (View curView in DesignNoteViews.Keys)
-                    {
-                        curView.UnhideElements(DesignNoteViews[curView]);
-                    }
-                }
-                tx.Commit();
-            }
-        }
+
 
     }
 

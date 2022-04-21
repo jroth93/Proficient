@@ -1,6 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
     <SolidColorBrush x:Key="GreyLight" Color="#FF999999"/>
     <SolidColorBrush x:Key="GreyMed" Color="#FF777777"/>

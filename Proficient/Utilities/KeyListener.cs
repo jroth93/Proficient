@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Windows.Input;
 
-namespace Proficient
+namespace Proficient.Utilities
 {
     public class KeyListener
     {

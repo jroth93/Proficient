@@ -27,8 +27,10 @@ namespace Proficient.Mech
                 {
                     foreach (FamilyInstance f in fList)
                     {
+                        List<PartType> noSet = new List<PartType>() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
+
                         MechanicalFitting mf = f.MEPModel as MechanicalFitting;
-                        if (mf.ConnectorManager != null)
+                        if (mf.ConnectorManager != null && !noSet.Contains(mf.PartType))
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {
