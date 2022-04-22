@@ -36,7 +36,13 @@ namespace Proficient.Elec
                     {
                         string newVal = doc.GetElement(w.GetMEPSystems().First())
                             .LookupParameter(Names.Parameter.BreakerOptions).AsString();
-                        w.LookupParameter(Names.Parameter.BreakerOptions).Set(newVal);
+
+                        Parameter wPar = w.LookupParameter(Names.Parameter.BreakerOptions);
+                        
+                        if(wPar != null)
+                        {
+                            wPar.Set(newVal);
+                        }
                     }
                 }
 
@@ -51,14 +57,17 @@ namespace Proficient.Elec
                 {
                     Wire w = doc.GetElement(id) as Wire;
                     Parameter par = w.LookupParameter(Names.Parameter.BreakerOptions);
-                    if (w.GetMEPSystems().Any())
+                    if (par != null)
                     {
-                        string newVal = doc.GetElement(w.GetMEPSystems().First()).LookupParameter(Names.Parameter.BreakerOptions).AsString();
-                        par.Set(newVal);
-                    }
-                    else
-                    {
-                        par.Set(string.Empty);
+                        if (w.GetMEPSystems().Any())
+                        {
+                            string newVal = doc.GetElement(w.GetMEPSystems().First()).LookupParameter(Names.Parameter.BreakerOptions).AsString();
+                            par.Set(newVal);
+                        }
+                        else
+                        {
+                            par.Set(string.Empty);
+                        } 
                     }
                     continue;
                 }
@@ -82,7 +91,12 @@ namespace Proficient.Elec
 
                     foreach(Wire w in ws)
                     {
-                        w.LookupParameter(Names.Parameter.BreakerOptions).Set(newVal);
+                        Parameter wPar = w.LookupParameter(Names.Parameter.BreakerOptions);
+
+                        if (wPar != null)
+                        {
+                            wPar.Set(newVal);
+                        }
                     }
 
                 }
@@ -99,7 +113,12 @@ namespace Proficient.Elec
 
                     foreach (Wire w in ws)
                     {
-                        w.LookupParameter(Names.Parameter.BreakerOptions).Set(newVal);
+                        Parameter wPar = w.LookupParameter(Names.Parameter.BreakerOptions);
+
+                        if (wPar != null)
+                        {
+                            wPar.Set(newVal);
+                        }
                     }
                 }
             }
