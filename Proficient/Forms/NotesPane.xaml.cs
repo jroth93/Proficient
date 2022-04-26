@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using System.Diagnostics;
 using System.IO;
 using Proficient.Utilities;
@@ -26,17 +28,8 @@ namespace Proficient.Forms
     public partial class NotesPane : Page, IDockablePaneProvider
     {
         public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
-        private MarkdownParser Mdp { get; set; }
-        private string _state;
-        public string State
-        {
-            get => _state;
-            set
-            {
-                _state = value;
-                fdsv.Document = Mdp.Transform(value);
-            }
-        }
+        private MarkdownParser Mdp { get; }
+        private View currentView;
 
         public NotesPane()
         {
@@ -58,13 +51,12 @@ namespace Proficient.Forms
                 AssetPathRoot = @"Z:\Revit\Proficient\Images"
 
             };
-            State = EQIConnection.GetDesignNoteEntry();
         }
 
         public void SetupDockablePane(DockablePaneProviderData data)
         {
             data.FrameworkElement = this;
-            data.InitialState = new DockablePaneState
+            data.InitialState = new DockablePaneState()
             {
                 DockPosition = DockPosition.Right,
             };
@@ -72,16 +64,100 @@ namespace Proficient.Forms
             data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
         }
 
-        
-
-        public void Reset()
+        public void SetMarkup(NotesTab nt, string markup)
         {
-            State = EQIConnection.GetDesignNoteEntry();
+            switch (nt)
+            {
+                case NotesTab.View:
+                    viewFdsv.Document = Mdp.Transform(markup);
+                    break;
+                case NotesTab.EQI:
+
+                    break;
+                case NotesTab.Project:
+
+                    break;
+            }
         }
+        
+        public void Save(NotesTab nt, string markup)
+        {
+            switch (nt)
+            {
+                case NotesTab.View:
+                    SaveViewNotes(markup);
+                    break;
+                case NotesTab.EQI:
+
+                    break;
+                case NotesTab.Project:
+
+                    break;
+            }
+        }
+        public void Reset(NotesTab nt)
+        {
+            switch (nt)
+            {
+                case NotesTab.View:
+                    viewFdsv.Document = Mdp.Transform(GetViewNotes());
+                    break;
+                case NotesTab.EQI:
+
+                    break;
+                case NotesTab.Project:
+
+                    break;
+            }
+            //EQIConnection.GetDesignNoteEntry();
+        }
+        public enum NotesTab
+        {
+            View,
+            EQI,
+            Project
+        }
+
+        public void ViewChange(View view)
+        {
+            currentView = view;
+            viewFdsv.Document = Mdp.Transform(GetViewNotes());
+        }
+        private string GetViewNotes()
+        {
+            Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
+            Entity ent = currentView.GetEntity(viewSchema);
+            Field field = viewSchema.GetField("MarkdownText");
+
+            if (ent.Schema != null)
+            {
+                return ent.Get<string>(field);
+            }
+
+            ent = new Entity(viewSchema);
+            ent.Set(field, string.Empty);
+            return string.Empty;
+
+
+        }
+        private void SaveViewNotes(string notes)
+        {
+            Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
+            Entity ent = currentView.GetEntity(viewSchema);
+            Field field = viewSchema.GetField("MarkdownText");
+
+            if (ent.Schema == null)
+            {
+                ent = new Entity(viewSchema);
+            }
+
+            ent.Set(field, notes);
+        }
+
 
         private void EQIEditButton_OnClick(object sender, RoutedEventArgs e)
         {
-            new MarkdownEditor(this).Show();
+            new MarkdownEditor(this, NotesTab.EQI, "").Show();
         }
 
         private void AddLinkButton_OnClick(object sender, RoutedEventArgs e)

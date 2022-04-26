@@ -77,21 +77,6 @@ namespace Proficient
                 if (tx.Start() == TransactionStatus.Started)
                 {
                     Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
-
-                    if (viewSchema == null)
-                    {
-                        SchemaBuilder sb = new SchemaBuilder(Names.Guids.ViewSchema);
-                        sb.SetReadAccessLevel(AccessLevel.Public);
-                        sb.SetWriteAccessLevel(AccessLevel.Public);
-
-                        sb.SetSchemaName("ViewSchema");
-
-                        FieldBuilder fb = sb.AddSimpleField("DesignNoteVisibility", typeof(bool));
-                        fb.SetDocumentation("Denotes current visibility of design notes");
-
-                        viewSchema = sb.Finish();
-                    }
-
                     Entity ent = view.GetEntity(viewSchema);
                     Field field = viewSchema.GetField("DesignNoteVisibility");
 
@@ -104,7 +89,6 @@ namespace Proficient
                     {
                         curState = ent.Get<bool>(field);
                     }
-
 
                     ent.Set(field, !curState);
                     view.SetEntity(ent);

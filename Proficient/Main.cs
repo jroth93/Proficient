@@ -4,6 +4,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace Proficient
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
         public static UIControlledApplication App { get; set; }
+        public static NotesPane NotePane { get; set; }
 
         public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
 
@@ -48,6 +50,7 @@ namespace Proficient
             RegisterBreakerDMU();
             RegisterDuctFittingDMU();
             //RegisterPanes();
+            BuildSchemas();
 
             return Result.Succeeded;
         }
@@ -169,11 +172,16 @@ namespace Proficient
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
             View view = doc.ActiveView;
+            NotePane.ViewChange(view);
+            
 
             WorksetTable wst = doc.GetWorksetTable();
             FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
             string viewname = view.Name;
-            String viewsub = view.GetParameters(Names.Parameter.ViewSubdiscipline).Count() > 0 ? view.GetParameters(Names.Parameter.ViewSubdiscipline)[0].AsString() : string.Empty;
+            string viewsub = 
+                view.GetParameters(Names.Parameter.ViewSubdiscipline).Count() > 0 ? 
+                view.GetParameters(Names.Parameter.ViewSubdiscipline)[0].AsString() : 
+                string.Empty;
 
             if (viewname.ToLower().Contains("enlarged") || viewsub.ToLower().Contains("enlarged"))
             {
@@ -357,13 +365,10 @@ namespace Proficient
         {
             breakerDMU = new BreakerDMU();
             UpdaterRegistry.RegisterUpdater(breakerDMU);
-            ElementCategoryFilter fec = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
             ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
 
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
-
-            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fec, Element.GetChangeTypeElementAddition());
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeElementAddition());
 
         }
@@ -379,8 +384,23 @@ namespace Proficient
         }
         private void RegisterPanes()
         {
-            
-            App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", new NotesPane());
+            NotePane = new NotesPane();
+            App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", NotePane);
+        }
+        private void BuildSchemas()
+        {
+            SchemaBuilder sb = new SchemaBuilder(Names.Guids.ViewSchema)
+                .SetReadAccessLevel(AccessLevel.Public)
+                .SetWriteAccessLevel(AccessLevel.Public)
+                .SetSchemaName("ViewSchema");
+
+            sb.AddSimpleField("DesignNoteVisibility", typeof(bool))
+                .SetDocumentation("Denotes current visibility of design notes");
+            sb.AddSimpleField("MarkdownText", typeof(string))
+                .SetDocumentation("View notes to be parsed by markdown interpreter");
+            sb.AddSimpleField("DbNotesId", typeof(int));
+
+            sb.Finish();
         }
         private void RemoveEventListeners()
         {

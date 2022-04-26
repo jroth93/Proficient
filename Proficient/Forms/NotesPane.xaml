@@ -19,7 +19,7 @@
         </ResourceDictionary>
 
     </Page.Resources>
-    <TabControl>
+    <TabControl x:Name="tc" x:FieldModifier="public">
         <TabControl.Resources>
             <Style TargetType="{x:Type TabPanel}">
                 <Setter Property="Background" Value="Gray"></Setter>
@@ -27,14 +27,13 @@
         </TabControl.Resources>
 
         <TabItem Header="View" Background="White">
-
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="20"/>
                 </Grid.RowDefinitions>
                 <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.Column="0" x:FieldModifier="public" x:Name="viewFdsv" Grid.Row="0"/>
-                <Button Grid.Row="1" Grid.Column="0" Content="Edit" FontSize="14" Click="ViewEditButton_OnClick" />
+                <Button Grid.Row="1" Grid.Column="0" Content="Edit" FontSize="12" Click="ViewEditButton_OnClick" />
             </Grid>
         </TabItem>
         <TabItem Header="EQI" Background="White">
@@ -51,10 +50,10 @@
                 </Grid.ColumnDefinitions>
 
                 <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.ColumnSpan="3" Grid.Column="0" x:FieldModifier="public" x:Name="fdsv" Grid.Row="0"/>
-                <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Content="Edit" FontSize="14"  Click="EQIEditButton_OnClick" />
-                <Button Grid.Row="2" Grid.Column="0" Content="Create Global Link" FontSize="12" Click="AddLinkButton_OnClick"/>
-                <Button Grid.Row="2" Grid.Column="1" Content="Edit Global Link" FontSize="12" Click="EditLinkButton_OnClick"/>
-                <Button Grid.Row="2" Grid.Column="2" Content="Remove Global Link" FontSize="12" Click="RemoveLinkButton_OnClick" />
+                <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Content="Edit" FontSize="12"  Click="EQIEditButton_OnClick" />
+                <Button Grid.Row="2" Grid.Column="0" Content="Create Link" FontSize="11" Click="AddLinkButton_OnClick"/>
+                <Button Grid.Row="2" Grid.Column="1" Content="Edit Link" FontSize="11" Click="EditLinkButton_OnClick"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="Remove Link" FontSize="11" Click="RemoveLinkButton_OnClick" />
             </Grid>
         </TabItem>
         <TabItem Header="Project" Background="White">

@@ -22,31 +22,37 @@ namespace Proficient.Forms
     public partial class MarkdownEditor : Window
     {
         private NotesPane np;
+        private NotesPane.NotesTab tab;
         private bool isSaved = false;
-        public MarkdownEditor(NotesPane sender)
+        public MarkdownEditor(NotesPane sender, NotesPane.NotesTab nt, string initial)
         {
             InitializeComponent();
             np = sender;
-            tb.Text = np.State;
+            tab = nt;
+            tb.Text = initial;
         }
 
         private void tb_TextChanged(object sender, TextChangedEventArgs e)
         {
-            np.State = tb.Text;
+            np.SetMarkup(tab, tb.Text);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            EQIConnection.SetDesignNoteEntry(tb.Text);
             isSaved = true;
             Close();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!isSaved)
+
+            if (isSaved)
             {
-                np.Reset();
+                np.Save(tab, tb.Text);
+            }
+            else 
+            { 
+                np.Reset(tab);
             }
         }
     }
