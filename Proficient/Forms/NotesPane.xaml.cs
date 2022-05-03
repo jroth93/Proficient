@@ -25,16 +25,49 @@ namespace Proficient.Forms
     /// <summary>
     /// Interaction logic for NotesPane.xaml
     /// </summary>
+
+
     public partial class NotesPane : Page, IDockablePaneProvider
     {
         public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
+        public static NotesPane Pane { get; set; }
         private MarkdownParser Mdp { get; }
-        private View currentView;
+        public View currentView;
+        private NotesHandler m_Handler;
+        private ExternalEvent m_ExEvent;
+        public string MarkdownCache { get; set; } = string.Empty;
 
-        public NotesPane()
+        public NotesPane(ExternalEvent exEvent, NotesHandler handler)
         {
             InitializeComponent();
-            CommandBindings.Add(new CommandBinding(NavigationCommands.GoToPage, (sender, e) => Process.Start((string)e.Parameter)));
+            Pane = this;
+            m_Handler = handler;
+            m_ExEvent = exEvent;
+
+            CommandBindings.Add(new CommandBinding(NavigationCommands.GoToPage, (sender, e) => 
+            {
+                try
+                {
+                    Process.Start((string)e.Parameter);
+                }
+                catch
+                {
+                    try
+                    {
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            Arguments = (string)((Hyperlink)e.OriginalSource).ToolTip,
+                            FileName = "explorer.exe"
+                        };
+
+                        Process.Start(startInfo);
+                    }
+                    catch (Exception exc)
+                    {
+                        MessageBox.Show(exc.ToString());
+                    }
+                }
+            }));
 
             Mdp = new MarkdownParser()
             {
@@ -53,6 +86,13 @@ namespace Proficient.Forms
             };
         }
 
+        public enum NotesTab
+        {
+            View = 1,
+            Project = 2,
+            Global = 3
+        }
+
         public void SetupDockablePane(DockablePaneProviderData data)
         {
             data.FrameworkElement = this;
@@ -60,7 +100,7 @@ namespace Proficient.Forms
             {
                 DockPosition = DockPosition.Right,
             };
-            data.VisibleByDefault = true;
+            data.VisibleByDefault = false;
             data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
         }
 
@@ -71,10 +111,10 @@ namespace Proficient.Forms
                 case NotesTab.View:
                     viewFdsv.Document = Mdp.Transform(markup);
                     break;
-                case NotesTab.EQI:
+                case NotesTab.Project:
 
                     break;
-                case NotesTab.Project:
+                case NotesTab.Global:
 
                     break;
             }
@@ -87,10 +127,10 @@ namespace Proficient.Forms
                 case NotesTab.View:
                     SaveViewNotes(markup);
                     break;
-                case NotesTab.EQI:
+                case NotesTab.Project:
 
                     break;
-                case NotesTab.Project:
+                case NotesTab.Global:
 
                     break;
             }
@@ -102,62 +142,51 @@ namespace Proficient.Forms
                 case NotesTab.View:
                     viewFdsv.Document = Mdp.Transform(GetViewNotes());
                     break;
-                case NotesTab.EQI:
+                case NotesTab.Project:
 
                     break;
-                case NotesTab.Project:
+                case NotesTab.Global:
 
                     break;
             }
             //EQIConnection.GetDesignNoteEntry();
         }
-        public enum NotesTab
-        {
-            View,
-            EQI,
-            Project
-        }
+
 
         public void ViewChange(View view)
         {
             currentView = view;
             viewFdsv.Document = Mdp.Transform(GetViewNotes());
         }
+
         private string GetViewNotes()
         {
-            Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
-            Entity ent = currentView.GetEntity(viewSchema);
-            Field field = viewSchema.GetField("MarkdownText");
+            Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+            Entity ent = currentView.GetEntity(pSchema);
 
             if (ent.Schema != null)
             {
-                return ent.Get<string>(field);
+                IDictionary<string, string> stringDict = ent.Get<IDictionary<string, string>>(ESKeys.StringDict);
+                stringDict.TryGetValue(ESKeys.MarkdownText, out string md);
+                return md;
             }
-
-            ent = new Entity(viewSchema);
-            ent.Set(field, string.Empty);
-            return string.Empty;
-
+            else
+            {
+                return string.Empty;
+            }
 
         }
         private void SaveViewNotes(string notes)
         {
-            Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
-            Entity ent = currentView.GetEntity(viewSchema);
-            Field field = viewSchema.GetField("MarkdownText");
+            MarkdownCache = notes;
+            m_Handler.Request.Make(NotesTab.View);
+            m_ExEvent.Raise();
 
-            if (ent.Schema == null)
-            {
-                ent = new Entity(viewSchema);
-            }
-
-            ent.Set(field, notes);
         }
 
-
-        private void EQIEditButton_OnClick(object sender, RoutedEventArgs e)
+        private void GlobalEditButton_OnClick(object sender, RoutedEventArgs e)
         {
-            new MarkdownEditor(this, NotesTab.EQI, "").Show();
+            new MarkdownEditor(this, NotesTab.Global, "").Show();
         }
 
         private void AddLinkButton_OnClick(object sender, RoutedEventArgs e)
@@ -173,6 +202,7 @@ namespace Proficient.Forms
 
         private void ViewEditButton_OnClick(object sender, RoutedEventArgs e)
         {
+            new MarkdownEditor(this, NotesTab.View, GetViewNotes()).Show();
         }
     }
 }

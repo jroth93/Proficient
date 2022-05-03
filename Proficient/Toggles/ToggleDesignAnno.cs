@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
 using System.Linq;
+using Proficient.Utilities;
 
 namespace Proficient
 {
@@ -76,21 +77,26 @@ namespace Proficient
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    Schema viewSchema = Schema.Lookup(Names.Guids.ViewSchema);
-                    Entity ent = view.GetEntity(viewSchema);
-                    Field field = viewSchema.GetField("DesignNoteVisibility");
+                    Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+                    Entity ent = view.GetEntity(pSchema);
+                    Field field = pSchema.GetField(ESKeys.BoolDict);
+                    IDictionary<string, bool> boolDict = new Dictionary<string, bool>();
+
 
                     if (ent.Schema == null)
                     {
-                        ent = new Entity(viewSchema);
+                        ent = new Entity(pSchema);
                         curState = true;
                     }
                     else
                     {
-                        curState = ent.Get<bool>(field);
+                        ent.Get<IDictionary<string, bool>>(field)
+                            .TryGetValue(ESKeys.DesignNoteVisibility, out curState);
                     }
 
-                    ent.Set(field, !curState);
+                    boolDict[ESKeys.DesignNoteVisibility] = !curState;
+
+                    ent.Set(field, boolDict);
                     view.SetEntity(ent);
                 }
 

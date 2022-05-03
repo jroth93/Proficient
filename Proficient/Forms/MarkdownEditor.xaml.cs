@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using Proficient.Utilities;
 
+
 namespace Proficient.Forms
 {
     /// <summary>
@@ -27,6 +28,7 @@ namespace Proficient.Forms
         public MarkdownEditor(NotesPane sender, NotesPane.NotesTab nt, string initial)
         {
             InitializeComponent();
+
             np = sender;
             tab = nt;
             tb.Text = initial;

@@ -223,8 +223,11 @@
     <Compile Include="Forms\ProficientPane.xaml.cs" />
     <Compile Include="Mech\DuctFittingDMU.cs" />
     <Compile Include="Elec\BreakerDMU.cs" />
+    <Compile Include="Utilities\ESKeys.cs" />
+    <Compile Include="Utilities\NotesHandler.cs" />
     <Compile Include="Utilities\EQI.cs" />
     <Compile Include="Utilities\MarkdownParser.cs" />
+    <Compile Include="Utilities\NotesRequest.cs" />
     <Compile Include="Utilities\Ribbon.cs" />
     <Compile Include="Forms\Blank.xaml.cs" />
     <Compile Include="Forms\UpDn.xaml.cs" />
@@ -495,9 +498,8 @@
     </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup Label="Post Build Events">
-    <PostBuildEvent>
-		call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath)
-	</PostBuildEvent>
-  </PropertyGroup>
+  <PropertyGroup Label="Post Build Events" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath) " />
+  </Target>
 </Project>

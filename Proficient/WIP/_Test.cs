@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using System.Windows.Controls;
+//using System.Windows.Controls;
 //using System.Windows.Input;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
@@ -9,15 +9,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System;
-using System.Windows;
+//using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Forms;
+//using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Proficient.Forms;
 using Microsoft.Test.Input;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace Proficient
 {
@@ -29,22 +30,13 @@ namespace Proficient
             UIApplication app = revit.Application;
             UIDocument uidoc = revit.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
-            //View view = doc.GetElement(uidoc.ActiveView.Id) as View;
+            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
             //app.GetDockablePane(Main.PaneId).Hide();
-            ElementId eid = uidoc.Selection.GetElementIds().First();
-            Element el = doc.GetElement(eid);
+            //ElementId eid = uidoc.Selection.GetElementIds().First();
+            //Element el = doc.GetElement(eid);
 
-            string newVal = el.LookupParameter(Names.Parameter.BreakerOptions).AsString();
-            Element ec = doc.GetElement((el as Wire).GetMEPSystems().First());
-
-            var ws = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Wire)
-                .Where(w => w is Wire)
-                .Cast<Wire>()
-                .Where(w => w.GetMEPSystems().Any())
-                .Where(w => w.GetMEPSystems().First() == ec.Id)
-                .Where(w => w.Id != el.Id);
             
+
 
 
             #region follower entry box
@@ -81,7 +73,11 @@ namespace Proficient
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    
+                    Schema viewSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+                    Entity ent = view.GetEntity(viewSchema);
+                    Field field = viewSchema.GetField("MarkdownText");
+
+                    TaskDialog.Show("field", ent.Get<string>("MarkdownText"));
                 }
 
                 tx.Commit();

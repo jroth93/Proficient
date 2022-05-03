@@ -51,7 +51,7 @@ namespace Proficient
 
         public class Guids
         {
-            public static Guid ViewSchema = new Guid("B65973F8-FED4-44BF-9351-215D24F3DCF1");
+            public static Guid ProficientSchema = new Guid("7487EBF8-6F17-41BA-B531-C93DB46F2DD9");
         }
 
     }

@@ -12,11 +12,35 @@
     <SolidColorBrush x:Key="TabItem_Background_Color_Selected">White</SolidColorBrush>
     <SolidColorBrush x:Key="TabItem_Border_Color_Selected">Black</SolidColorBrush>
     <SolidColorBrush x:Key="RibbonTopBackground">Gray</SolidColorBrush>
-    <DropShadowEffect x:Key="TabShadowSelected" BlurRadius="3" Direction="90" ShadowDepth="1.5"/>
-    <DropShadowEffect x:Key="TabShadowUnselected" BlurRadius="3" Direction="90" ShadowDepth="0.5"/>
+    <DropShadowEffect x:Key="TabShadowSelected" BlurRadius="3" Direction="90" ShadowDepth="1"/>
 
 
-<!--style for the top tab items-->
+    <Style TargetType="FlowDocumentScrollViewer">
+        <Setter Property="Margin" Value="0,10,0,10"/>
+    </Style>
+    <Style TargetType="Button">
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="#FF999999"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="11"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FF777777"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <!--style for the top tab items-->
     <Style TargetType="{x:Type TabItem}">
         <Setter Property="Template">
             <Setter.Value>
@@ -30,7 +54,7 @@
                                 Margin="{StaticResource TabItem_Spacer_Between_Tabs}"
                                 CornerRadius="{StaticResource TabItem_Corner_Radius}"
                                 Background="{StaticResource Tab_Background_Color}"
-                                Effect="{StaticResource TabShadowUnselected}">
+                                >
                         <ContentPresenter x:Name="tabContent"
                                           ContentSource="Header"
                                           RecognizesAccessKey="True"

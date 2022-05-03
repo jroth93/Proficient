@@ -26,7 +26,6 @@ namespace Proficient
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
         public static UIControlledApplication App { get; set; }
-        public static NotesPane NotePane { get; set; }
 
         public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
 
@@ -49,7 +48,7 @@ namespace Proficient
             RegisterElecLoadDMU();
             RegisterBreakerDMU();
             RegisterDuctFittingDMU();
-            //RegisterPanes();
+            RegisterPanes();
             BuildSchemas();
 
             return Result.Succeeded;
@@ -62,74 +61,78 @@ namespace Proficient
 
         private void App_DocumentOpened(object sender, DocumentOpenedEventArgs args)
         {
-            //change workset to user setting
-            if (args.Document.IsWorkshared)
+            if(args.Document != null)
             {
-                Document doc = args.Document;
-                doc.DocumentClosing += App_DocumentClosing;
-                WorksetTable wst = doc.GetWorksetTable();
-
-                FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
-                Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
-
-                Transaction transaction = new Transaction(doc, "Change Workset");
-                if (transaction.Start() == TransactionStatus.Started)
+                //change workset to user setting
+                if (args.Document.IsWorkshared)
                 {
-                    wst.SetActiveWorksetId(workset.Id);
-                    transaction.Commit();
+                    Document doc = args.Document;
+                    doc.DocumentClosing += App_DocumentClosing;
+                    WorksetTable wst = doc.GetWorksetTable();
+
+                    FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
+                    Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
+
+                    Transaction transaction = new Transaction(doc, "Change Workset");
+                    if (transaction.Start() == TransactionStatus.Started)
+                    {
+                        wst.SetActiveWorksetId(workset.Id);
+                        transaction.Commit();
+                    }
+                }
+
+
+
+                //add display separation parameter listeners for Elec Load DMU
+                IEnumerable<Element> mec = new FilteredElementCollector(args.Document)
+                    .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
+                    .Where(e => e is FamilyInstance);
+
+                ElementCategoryFilter f = new ElementCategoryFilter(BuiltInCategory.OST_MechanicalEquipment);
+
+                foreach (Element el in mec)
+                {
+                    Parameter par = el.LookupParameter(Names.Parameter.DisplaySeparation);
+
+                    if (par != null)
+                    {
+                        UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), f, Element.GetChangeTypeParameter(par));
+                    }
+                }
+
+                //add listeners for Breaker DMU
+                var wec = new FilteredElementCollector(args.Document)
+                    .OfCategory(BuiltInCategory.OST_Wire)
+                    .Where(el => el is Wire);
+
+                ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
+
+                foreach (Element el in wec)
+                {
+                    Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
+
+                    if (par != null)
+                    {
+                        UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(par));
+                    }
+                }
+
+                var cec = new FilteredElementCollector(args.Document)
+                    .OfCategory(BuiltInCategory.OST_ElectricalCircuit);
+
+                ElementCategoryFilter fc = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
+
+                foreach (Element el in wec)
+                {
+                    Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
+
+                    if (par != null)
+                    {
+                        UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fc, Element.GetChangeTypeParameter(par));
+                    }
                 }
             }
-
-
-
-            //add display separation parameter listeners for Elec Load DMU
-            IEnumerable<Element> mec = new FilteredElementCollector(args.Document)
-                .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
-                .Where(e => e is FamilyInstance);
-
-            ElementCategoryFilter f = new ElementCategoryFilter(BuiltInCategory.OST_MechanicalEquipment);
-
-            foreach (Element el in mec)
-            {
-                Parameter par = el.LookupParameter(Names.Parameter.DisplaySeparation);
-
-                if (par != null)
-                {
-                    UpdaterRegistry.AddTrigger(elecLoadDMU.GetUpdaterId(), f, Element.GetChangeTypeParameter(par));
-                }
-            }
-
-            //add listeners for Breaker DMU
-            var wec = new FilteredElementCollector(args.Document)
-                .OfCategory(BuiltInCategory.OST_Wire)
-                .Where(el => el is Wire);
             
-            ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
-
-            foreach (Element el in wec)
-            {
-                Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
-
-                if (par != null)
-                {
-                    UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(par));
-                }
-            }
-
-            var cec = new FilteredElementCollector(args.Document)
-                .OfCategory(BuiltInCategory.OST_ElectricalCircuit);
-
-            ElementCategoryFilter fc = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
-
-            foreach (Element el in wec)
-            {
-                Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
-
-                if (par != null)
-                {
-                    UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fc, Element.GetChangeTypeParameter(par));
-                }
-            }
         }
         private void App_Idling(object sender, IdlingEventArgs args)
         {
@@ -172,7 +175,7 @@ namespace Proficient
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
             View view = doc.ActiveView;
-            NotePane.ViewChange(view);
+            NotesPane.Pane.ViewChange(view);
             
 
             WorksetTable wst = doc.GetWorksetTable();
@@ -246,6 +249,11 @@ namespace Proficient
             {
                 e.OverrideResult(1001);
             }
+
+            /*if (e.Message.StartsWith("The file being loaded is causing a conflict with existing data in the model"))
+            {
+                e.OverrideResult((int)TaskDialogCommonButtons.Ok);
+            }*/
         }
         public void App_DocumentPrinting(object sender, DocumentPrintingEventArgs args)
         {
@@ -384,21 +392,28 @@ namespace Proficient
         }
         private void RegisterPanes()
         {
-            NotePane = new NotesPane();
-            App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", NotePane);
+            NotesHandler handler = new NotesHandler();
+            ExternalEvent exEvent = ExternalEvent.Create(handler);
+
+            NotesPane np = new NotesPane(exEvent, handler);
+            App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", np);
         }
         private void BuildSchemas()
         {
-            SchemaBuilder sb = new SchemaBuilder(Names.Guids.ViewSchema)
+            SchemaBuilder sb = new SchemaBuilder(Names.Guids.ProficientSchema)
                 .SetReadAccessLevel(AccessLevel.Public)
                 .SetWriteAccessLevel(AccessLevel.Public)
-                .SetSchemaName("ViewSchema");
+                .SetSchemaName("ProficientSchema");
 
-            sb.AddSimpleField("DesignNoteVisibility", typeof(bool))
-                .SetDocumentation("Denotes current visibility of design notes");
-            sb.AddSimpleField("MarkdownText", typeof(string))
-                .SetDocumentation("View notes to be parsed by markdown interpreter");
-            sb.AddSimpleField("DbNotesId", typeof(int));
+            sb.AddMapField(ESKeys.BoolDict, typeof(string), typeof(bool));
+            sb.AddMapField(ESKeys.IntDict, typeof(string), typeof(int));
+            sb.AddMapField(ESKeys.DoubleDict, typeof(string), typeof(double))
+#if FORGE
+                .SetSpec(SpecTypeId.Custom);
+#else
+                .SetUnitType(UnitType.UT_Custom);
+#endif
+            sb.AddMapField(ESKeys.StringDict, typeof(string), typeof(string));
 
             sb.Finish();
         }
