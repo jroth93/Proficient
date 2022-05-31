@@ -4,7 +4,7 @@
 
     <Style TargetType="FlowDocument" x:Key="DocumentStyle">
         <Setter Property="FontFamily"
-                Value="Roboto" />
+                Value="Arial" />
         <Setter Property="TextAlignment"
                 Value="Left" />
         <Setter Property="FontSize"

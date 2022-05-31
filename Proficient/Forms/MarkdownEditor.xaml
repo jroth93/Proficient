@@ -18,7 +18,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
-            <MenuItem Header="_Insert >" Margin="8,0,0,0">
+            <MenuItem Header="_Format Options >" Margin="8,0,0,0">
                 <MenuItem Header="Header 1" Tag="#Header 1#" Click="Menu_Click"/>
                 <MenuItem Header="Header 2" Tag="##Header 2##" Click="Menu_Click"/>
                 <MenuItem Header="Header 3" Tag="###Header 3###" Click="Menu_Click"/>
