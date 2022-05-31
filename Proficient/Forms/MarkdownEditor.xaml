@@ -4,19 +4,53 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Proficient.Forms"
+        d:DataContext="{d:DesignInstance Type=local:NotesPaneViewModel}"
         mc:Ignorable="d"
-        Title="Edit" Height="400" Width="400"
-        Closing="Window_Closing"
+        Title="Edit" Height="600" Width="400"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary Source="NotesPaneStyles.xaml"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
             <RowDefinition/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <TextBox x:FieldModifier="public" x:Name="tb" AcceptsReturn="True" TextWrapping="Wrap" TextChanged="tb_TextChanged" VerticalScrollBarVisibility="Auto" Grid.Row="0"/>
-        <Button Grid.Row="1" Margin="5" Content="Save" Click="SaveButton_Click"/>
+        <Menu Grid.Row="0">
+            <MenuItem Header="_Insert >" Margin="8,0,0,0">
+                <MenuItem Header="Header 1" Tag="#Header 1#" Click="Menu_Click"/>
+                <MenuItem Header="Header 2" Tag="##Header 2##" Click="Menu_Click"/>
+                <MenuItem Header="Header 3" Tag="###Header 3###" Click="Menu_Click"/>
+                <MenuItem Header="Header 4" Tag="####Header 4####" Click="Menu_Click"/>
+                <Separator/>
+                <MenuItem Header="List" Tag="* Item 1 &#10;* Item 2 &#10;* Item 3" Click="Menu_Click"/>
+                <MenuItem Header="Bold Text" Tag="**bold text**" Click="Menu_Click"/>
+                <MenuItem Header="Italic Text" Tag="*italic text*" Click="Menu_Click"/>
+                <MenuItem Header="Separator" Tag="---" Click="Menu_Click"/>
+                <Separator/>
+                <MenuItem Header="URL Link" Tag="[MEI Website](https://www.morrisseyengineering.com)" Click="Menu_Click"/>
+                <MenuItem Header="Server Link" Tag="[Images Folder](Z:\Revit\Proficient\Images)" Click="Menu_Click"/>
+                <MenuItem Header="URL Image" Tag="![MEI Logo](https://www.morrisseyengineering.com/images/main/logo_mobile.png)" Click="Menu_Click"/>
+                <MenuItem Header="Server Image" 
+                          Tag="The root path for images is Z:\Revit\Proficient\Images. The path in parenthesis is relative to that. &#10;![MEI Logo](MEI Logo.jpg)" 
+                          Click="Menu_Click"/>
+                <Separator/>
+                <MenuItem Header="Table" 
+                          Tag="Format: Header Row, Format Row, Content Rows &#10;|a|b|c| &#10; |:-:|:-|-:| &#10; |1|2|3|" 
+                          Click="Menu_Click"/>
+            </MenuItem>
+        </Menu>
+        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Markdown, UpdateSourceTrigger=PropertyChanged}" 
+             VerticalScrollBarVisibility="Auto" Grid.Row="1"
+                 x:FieldModifier="public" Name="tb"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Margin="5" Content="Save" Command="{Binding SaveNotesCommand}" Click="Button_Click" IsDefault="True"/>
+            <Button Grid.Column="1" Margin="5" Content="Cancel" Command="{Binding ResetNotesCommand}" Click="Button_Click" IsCancel="True"/>
+        </Grid>
     </Grid>
 </Window>

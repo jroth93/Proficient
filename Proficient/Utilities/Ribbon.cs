@@ -92,6 +92,13 @@ namespace Proficient.Utilities
             addLdrBtn.ToolTip = "Add leader to selected element";
             addLdrBtn.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, $"{ugUrl}#add-leader"));
 
+            var notesPaneBtn = genRib.AddItem(
+                new PushButtonData("ShowNotesPane", "Show Notes\nPane", al, "Proficient.Utilities.ShowNotesPane")
+                ) as RibbonButton;
+            notesPaneBtn.LargeImage = Icons.ScaledIcon("notespane", 32);
+            notesPaneBtn.ToolTip = "Show notes pane";
+            notesPaneBtn.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, $"{ugUrl}#show-notes-pane"));
+
             IList<RibbonItem> scheds = genRib.AddStackedItems(
                new PushButtonData("schwidth", "Schedule Width", al, "Proficient.MatchSchWidth"),
                new PushButtonData("schalignleft", "Align Sched L", al, "Proficient.AlignScheduleL"),
@@ -246,7 +253,6 @@ namespace Proficient.Utilities
             elecLoadBtn.ToolTip = "Sync mechanical equipment tags to circuit load names";
             elecLoadBtn.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, $"{ugUrl}#sync-circuit-names"));
 
-            //elecRib.AddItem(new PushButtonData("ShowPane", "Show Pane", al, "Proficient.ShowPane"));
         }
     }
 

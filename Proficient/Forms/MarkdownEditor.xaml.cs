@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Reflection;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using Proficient.Utilities;
 
@@ -22,40 +23,29 @@ namespace Proficient.Forms
     /// </summary>
     public partial class MarkdownEditor : Window
     {
-        private NotesPane np;
-        private NotesPane.NotesTab tab;
-        private bool isSaved = false;
-        public MarkdownEditor(NotesPane sender, NotesPane.NotesTab nt, string initial)
+        public MarkdownEditor()
         {
             InitializeComponent();
 
-            np = sender;
-            tab = nt;
-            tb.Text = initial;
+
+            var menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+            Action setAlignmentValue = () => {
+                if (SystemParameters.MenuDropAlignment && menuDropAlignmentField != null) menuDropAlignmentField.SetValue(null, false);
+            };
+            setAlignmentValue();
+            SystemParameters.StaticPropertyChanged += (sender, e) => { setAlignmentValue(); };
         }
 
-        private void tb_TextChanged(object sender, TextChangedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void Menu_Click(object sender, RoutedEventArgs e)
         {
-            np.SetMarkup(tab, tb.Text);
+            string snippet = (sender as MenuItem).Tag as string;
+            int pos = tb.CaretIndex;
+            string newMd = tb.Text.Insert(pos, snippet);
+            tb.Text = newMd;
+            tb.CaretIndex = pos + snippet.Length;
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            isSaved = true;
-            Close();
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-
-            if (isSaved)
-            {
-                np.Save(tab, tb.Text);
-            }
-            else 
-            { 
-                np.Reset(tab);
-            }
-        }
     }
 }

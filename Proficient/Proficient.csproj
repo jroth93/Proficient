@@ -30,14 +30,16 @@
 		<TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
 	    <StartAction>Program</StartAction>
 	    <StartProgram>C:\Program Files\Autodesk\Revit 2019\Revit.exe</StartProgram>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Release2019'">
 	    <OutputPath>bin\Release\2019</OutputPath>
 	    <DefineConstants>TRACE;DEBUG;R19</DefineConstants>
 		<DebugType>full</DebugType>
 		<TargetFramework>net47</TargetFramework>
 		<TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish2019'">
 		<OutputPath>bin\Publish\2019</OutputPath>
 		<DefineConstants>TRACE;R19</DefineConstants>
@@ -55,14 +57,16 @@
 		<TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
 	    <StartAction>Program</StartAction>
 	    <StartProgram>C:\Program Files\Autodesk\Revit 2020\Revit.exe</StartProgram>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Release2020'">
 	    <OutputPath>bin\Release\2020</OutputPath>
 	    <DefineConstants>TRACE;DEBUG;R20</DefineConstants>
 	    <DebugType>full</DebugType>
 		<TargetFramework>net471</TargetFramework>
 		<TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish2020'">
 		<OutputPath>bin\Publish\2020</OutputPath>
 		<DefineConstants>TRACE;R20</DefineConstants>
@@ -80,7 +84,8 @@
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 		<StartAction>Program</StartAction>
 		<StartProgram>C:\Program Files\Autodesk\Revit 2021\Revit.exe</StartProgram>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Release2021'">
 	    <OutputPath>bin\Release\2021</OutputPath>
 	    <DefineConstants>TRACE;DEBUG;R21;FORGE</DefineConstants>
@@ -88,6 +93,7 @@
 		<TargetFramework>net48</TargetFramework>
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 		<RevitVersion>2021</RevitVersion>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish2021'">
 		<OutputPath>bin\Publish\2021</OutputPath>
@@ -106,13 +112,15 @@
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 		<StartAction>Program</StartAction>
 	    <StartProgram>C:\Program Files\Autodesk\Revit 2022\Revit.exe</StartProgram>
-    </PropertyGroup>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Release2022'">
 	    <OutputPath>bin\Release\2022</OutputPath>
 	    <DefineConstants>TRACE;DEBUG;R22;FORGE</DefineConstants>
 	    <DebugType>full</DebugType>
 		<TargetFramework>net48</TargetFramework>
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish2022'">
 		<OutputPath>bin\Publish\2022</OutputPath>
@@ -196,6 +204,7 @@
         <Reference Include="System.ComponentModel.DataAnnotations" />
         <Reference Include="System.Configuration" />
         <Reference Include="System.Core" />
+        <Reference Include="System.DirectoryServices.AccountManagement" />
         <Reference Include="System.Drawing" />
         <Reference Include="System.IdentityModel" />
         <Reference Include="System.Net.Http" />
@@ -218,15 +227,28 @@
         <Reference Include="PresentationFramework" />
     </ItemGroup>
   <ItemGroup Label="Code Files">
+    <Compile Include="Forms\RelayCommand.cs" />
+    <Compile Include="Forms\GlobalNotesSelectForm.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Forms\EntryForm.xaml.cs" />
     <Compile Include="Forms\MarkdownEditor.xaml.cs" />
     <Compile Include="Forms\NotesPane.xaml.cs" />
+    <Compile Include="Forms\NotesPaneViewModel.cs" />
     <Compile Include="Forms\ProficientPane.xaml.cs" />
+    <Compile Include="Forms\MarkdownConverter.cs" />
     <Compile Include="Mech\DuctFittingDMU.cs" />
     <Compile Include="Elec\BreakerDMU.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\NotesModel.cs" />
     <Compile Include="Utilities\ESKeys.cs" />
     <Compile Include="Utilities\NotesHandler.cs" />
-    <Compile Include="Utilities\EQI.cs" />
-    <Compile Include="Utilities\MarkdownParser.cs" />
+    <Compile Include="Utilities\MEIDB.cs" />
+    <Compile Include="Forms\Markdown.cs" />
     <Compile Include="Utilities\NotesRequest.cs" />
     <Compile Include="Utilities\Ribbon.cs" />
     <Compile Include="Forms\Blank.xaml.cs" />
@@ -239,7 +261,7 @@
     <Compile Include="General\MatchSchWidth.cs" />
     <Compile Include="WIP\ReloadFamily.cs" />
     <Compile Include="WIP\OpenViewTemplate.cs" />
-    <Compile Include="WIP\ShowPane.cs" />
+    <Compile Include="Utilities\ShowNotesPane.cs" />
     <Compile Include="General\ChangeCalloutRef.cs" />
     <Compile Include="General\AddLeader.cs" />
     <Compile Include="General\EditSettings.cs" />
@@ -285,6 +307,7 @@
     <Content Include="Graph\GraphKNReload.txt" />
     <Content Include="Graph\GraphKNLauncher.txt" />
     <Content Include="Graph\MSGraph.txt" />
+    <EmbeddedResource Include="Icons\notespane.png" />
     <Compile Include="Filters\TypeFilter.cs" />
     <Compile Include="Filters\FamilyFilter.cs" />
     <Compile Include="Filters\CategoryFilter.cs" />
@@ -404,6 +427,13 @@
     <Page Include="Forms\Blank.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Forms\GlobalNotesSelectForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\EntryForm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Forms\FormStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -476,6 +506,10 @@
   <ItemGroup Label="Nones">
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup Label="COM References">
     <COMReference Include="IWshRuntimeLibrary">

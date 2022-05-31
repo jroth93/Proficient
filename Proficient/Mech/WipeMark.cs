@@ -26,6 +26,7 @@ namespace Proficient.Mech
                 return Result.Succeeded;
             }
 
+            /*
             Blank frm = new Blank();
             frm.sp.Orientation = Orientation.Horizontal;
             Style s = frm.FindResource("smallBtn") as Style;
@@ -50,9 +51,11 @@ namespace Proficient.Mech
             };
             btnM.Content = "Mark";
             frm.sp.Children.Add(btnM);
+            */
 
-            bool tm = true;
+            bool tm = false;
 
+            /*
             frm.Loaded += (object sender, RoutedEventArgs e) =>
             {
                 Rectangle mwe = revit.Application.MainWindowExtents;
@@ -78,6 +81,7 @@ namespace Proficient.Mech
             {
                 return Result.Cancelled;
             }
+            */
 
             using (Transaction tx = new Transaction(doc, "Wipe"))
             {

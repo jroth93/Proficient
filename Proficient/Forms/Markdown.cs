@@ -14,9 +14,9 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Proficient.Utilities
+namespace Proficient.Forms
 {
-    public class MarkdownParser : DependencyObject
+    public class Markdown : DependencyObject
     {
         /// <summary>
         /// maximum nested depth of [] and () supported by the transform; implementation detail
@@ -27,7 +27,7 @@ namespace Proficient.Utilities
         /// Tabs are automatically converted to spaces as part of the transform  
         /// this constant determines how "wide" those tabs become in spaces  
         /// </summary>
-        private const int _tabWidth = 4;
+        private const int _tabWidth = 2;
 
         private const string _markerUL = @"[*+-]";
         private const string _markerOL = @"\d+[.]";
@@ -57,11 +57,11 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NormalParagraphStyleProperty =
-            DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DocumentStyleProperty =
-            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading1Style
         {
@@ -71,7 +71,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for Heading1Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading1StyleProperty =
-            DependencyProperty.Register("Heading1Style", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("Heading1Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading2Style
         {
@@ -81,7 +81,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for Heading2Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading2StyleProperty =
-            DependencyProperty.Register("Heading2Style", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("Heading2Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading3Style
         {
@@ -91,7 +91,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for Heading3Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading3StyleProperty =
-            DependencyProperty.Register("Heading3Style", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("Heading3Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading4Style
         {
@@ -101,7 +101,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for Heading4Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading4StyleProperty =
-            DependencyProperty.Register("Heading4Style", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("Heading4Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style CodeStyle
         {
@@ -111,7 +111,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for CodeStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CodeStyleProperty =
-            DependencyProperty.Register("CodeStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("CodeStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style LinkStyle
         {
@@ -121,7 +121,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for LinkStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty LinkStyleProperty =
-            DependencyProperty.Register("LinkStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("LinkStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style ImageStyle
         {
@@ -131,7 +131,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for ImageStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ImageStyleProperty =
-            DependencyProperty.Register("ImageStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("ImageStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style SeparatorStyle
         {
@@ -141,7 +141,7 @@ namespace Proficient.Utilities
 
         // Using a DependencyProperty as the backing store for SeparatorStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SeparatorStyleProperty =
-            DependencyProperty.Register("SeparatorStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("SeparatorStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public string AssetPathRoot
         {
@@ -150,7 +150,7 @@ namespace Proficient.Utilities
         }
 
         public static readonly DependencyProperty AssetPathRootProperty =
-            DependencyProperty.Register("AssetPathRootRoot", typeof(string), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("AssetPathRootRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
 
         public Style TableStyle
         {
@@ -159,7 +159,7 @@ namespace Proficient.Utilities
         }
 
         public static readonly DependencyProperty TableStyleProperty =
-            DependencyProperty.Register("TableStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("TableStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style TableHeaderStyle
         {
@@ -168,7 +168,7 @@ namespace Proficient.Utilities
         }
 
         public static readonly DependencyProperty TableHeaderStyleProperty =
-            DependencyProperty.Register("TableHeaderStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("TableHeaderStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style TableBodyStyle
         {
@@ -177,9 +177,9 @@ namespace Proficient.Utilities
         }
 
         public static readonly DependencyProperty TableBodyStyleProperty =
-            DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(MarkdownParser), new PropertyMetadata(null));
+            DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
-        public MarkdownParser()
+        public Markdown()
         {
             HyperlinkCommand = NavigationCommands.GoToPage;
         }

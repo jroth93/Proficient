@@ -5,6 +5,7 @@ using Autodesk.Revit.UI.Events;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using asApp = Autodesk.Revit.ApplicationServices.Application;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
+using System.Data.Entity;
 using Proficient.Elec;
 using Proficient.Utilities;
 using Proficient.Forms;
-
+using MySql.Data.EntityFramework;
+using System.DirectoryServices.AccountManagement;
+using System.Threading;
+using System.Security.Principal;
+using System.Globalization;
 
 namespace Proficient
 {
@@ -26,6 +32,9 @@ namespace Proficient
         public static Main Instance { get; set; }
         public static Settings Settings { get; set; }
         public static UIControlledApplication App { get; set; }
+        public static string ProficientVersion { get; set; }
+        public static string CurrentUser { get; set; }
+
 
         public static readonly Guid appId = new Guid("339af853-36e4-461f-9171-c5dceda4e721");
 
@@ -51,6 +60,8 @@ namespace Proficient
             RegisterPanes();
             BuildSchemas();
 
+            DbConfiguration.SetConfiguration(new MySqlEFConfiguration());
+
             return Result.Succeeded;
         }
         public Result OnShutdown(UIControlledApplication uicApp)
@@ -61,12 +72,13 @@ namespace Proficient
 
         private void App_DocumentOpened(object sender, DocumentOpenedEventArgs args)
         {
-            if(args.Document != null)
+            Document doc = args.Document;
+            NotesModel.NM.CurrentDoc = doc;
+            if(doc != null)
             {
                 //change workset to user setting
-                if (args.Document.IsWorkshared)
+                if (doc.IsWorkshared)
                 {
-                    Document doc = args.Document;
                     doc.DocumentClosing += App_DocumentClosing;
                     WorksetTable wst = doc.GetWorksetTable();
 
@@ -74,7 +86,7 @@ namespace Proficient
                     Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
 
                     Transaction transaction = new Transaction(doc, "Change Workset");
-                    if (transaction.Start() == TransactionStatus.Started)
+                    if (transaction.Start() == TransactionStatus.Started && workset != null)
                     {
                         wst.SetActiveWorksetId(workset.Id);
                         transaction.Commit();
@@ -175,8 +187,14 @@ namespace Proficient
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
             View view = doc.ActiveView;
-            NotesPane.Pane.ViewChange(view);
+
+
+            NotesModel.NM.ViewChange(view);
             
+            if(NotesModel.NM.CurrentDoc != doc)
+            {
+                NotesModel.NM.ProjectChange(doc);
+            }
 
             WorksetTable wst = doc.GetWorksetTable();
             FilteredWorksetCollector wscol = new FilteredWorksetCollector(doc);
@@ -194,7 +212,7 @@ namespace Proficient
                     Workset enlWorkset = wscol.FirstOrDefault(e => e.Name.Equals(enlWkst));
 
                     Transaction transaction = new Transaction(doc, "Change Workset");
-                    if (transaction.Start() == TransactionStatus.Started)
+                    if (transaction.Start() == TransactionStatus.Started && enlWkst != null)
                     {
                         wst.SetActiveWorksetId(enlWorkset.Id);
                         transaction.Commit();
@@ -208,7 +226,7 @@ namespace Proficient
                     Workset siteWorkset = wscol.FirstOrDefault(e => e.Name.Equals(Names.Workset.ElecSite));
 
                     Transaction transaction = new Transaction(doc, "Change Workset");
-                    if (transaction.Start() == TransactionStatus.Started)
+                    if (transaction.Start() == TransactionStatus.Started && siteWorkset != null)
                     {
                         wst.SetActiveWorksetId(siteWorkset.Id);
                         transaction.Commit();
@@ -220,7 +238,7 @@ namespace Proficient
                 Workset workset = wscol.FirstOrDefault(e => e.Name.Equals(Settings.defWorkset));
 
                 Transaction transaction = new Transaction(doc, "Change Workset");
-                if (transaction.Start() == TransactionStatus.Started)
+                if (transaction.Start() == TransactionStatus.Started && workset != null)
                 {
                     wst.SetActiveWorksetId(workset.Id);
                     transaction.Commit();
@@ -289,6 +307,45 @@ namespace Proficient
                 Process.Start(Names.File.SilentUpdateExe);
             }
         }
+        private void App_ApplicationInitialized(object sender, ApplicationInitializedEventArgs args)
+        {
+            asApp app = sender as asApp;
+            if (asApp.IsLoggedIn)
+            {
+                CurrentUser = app.Username;
+                User u = MEIDBConn.GetUserByAdId(CurrentUser);
+                if (u != null)
+                {
+                    if(u.ProficientVersion != ProficientVersion)
+                    {
+                        u.ProficientVersion = ProficientVersion;
+                        MEIDBConn.SetUserProficientVersion(u);
+                    }
+
+                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), app.VersionBuild);
+                }
+                else
+                {
+                    Thread.GetDomain().SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
+                    WindowsPrincipal principal = (WindowsPrincipal)Thread.CurrentPrincipal;
+                    UserPrincipal up;
+                    using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
+                    {
+                        up = UserPrincipal.FindByIdentity(pc, principal.Identity.Name);
+                    }
+
+                    if(up != null)
+                    {
+                        TextInfo ti = new CultureInfo("en-US", false).TextInfo;
+                        MEIDBConn.CreateUser(CurrentUser, ProficientVersion, ti.ToTitleCase(up.GivenName), ti.ToTitleCase(up.Surname));
+                    }
+                    else
+                    {
+                        MEIDBConn.CreateUser(CurrentUser, ProficientVersion); 
+                    }
+                }
+            }
+        }
 
         public void AddEventListeners()
         {
@@ -299,6 +356,7 @@ namespace Proficient
             App.ControlledApplication.DocumentPrinting += App_DocumentPrinting;
             App.ControlledApplication.DocumentPrinted += App_DocumentPrinted;
             App.ApplicationClosing += App_ApplicationClosing;
+            App.ControlledApplication.ApplicationInitialized += App_ApplicationInitialized;
 
 
             //AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -347,9 +405,9 @@ namespace Proficient
         }
         public void CheckToolbarVersion()
         {
-            string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            ProficientVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion.ToString();
-            if (thisVersion != currentVersion)
+            if (ProficientVersion != currentVersion)
             {
                 Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
             }
@@ -394,7 +452,7 @@ namespace Proficient
         {
             NotesHandler handler = new NotesHandler();
             ExternalEvent exEvent = ExternalEvent.Create(handler);
-
+            
             NotesPane np = new NotesPane(exEvent, handler);
             App.RegisterDockablePane(NotesPane.PaneId, "Proficient Notes", np);
         }

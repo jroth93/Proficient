@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Proficient.Forms"
+      d:DataContext="{d:DesignInstance Type=local:NotesPaneViewModel}"
       mc:Ignorable="d" 
       d:DesignHeight="800" d:DesignWidth="400"
       Title=""
@@ -16,50 +17,46 @@
                 <ResourceDictionary Source="MarkdownStyles.xaml"/>
                 <ResourceDictionary Source="NotesPaneStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <local:GlobalTabButtonConverter x:Key="GlobalTabButtonConverter"/>
+            <local:EditButtonConverter x:Key="EditButtonConverter"/>
+            <local:TabConverter x:Key="TabConverter"/>
+                     
         </ResourceDictionary>
-
     </Page.Resources>
-    <TabControl x:Name="tc" x:FieldModifier="public">
-        <TabControl.Resources>
-            <Style TargetType="{x:Type TabPanel}">
-                <Setter Property="Background" Value="Gray"></Setter>
-            </Style>
-        </TabControl.Resources>
 
-        <TabItem Header="View" Background="White">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="20"/>
-                </Grid.RowDefinitions>
-                <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.Column="0" x:FieldModifier="public" x:Name="viewFdsv" Grid.Row="0"/>
-                <Button Grid.Row="1" Grid.Column="0" Content="Edit" FontSize="12" Click="ViewEditButton_OnClick" />
-            </Grid>
-        </TabItem>
-        <TabItem Header="Project" Background="White">
-        </TabItem>
-        <TabItem Header="Global" Background="White">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition Height="20"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="{Binding ElementName=GlobalTab, Path=IsSelected, Converter={StaticResource GlobalTabButtonConverter}, FallbackValue=0, TargetNullValue=0}"/>
+            <RowDefinition Height="{Binding ElementName=GlobalTab, Path=IsSelected, Converter={StaticResource EditButtonConverter}, FallbackValue=0, TargetNullValue=0}"/>
+        </Grid.RowDefinitions>
 
-                <FlowDocumentScrollViewer Padding="0,10,0,0" Grid.ColumnSpan="3" Grid.Column="0" x:FieldModifier="public" x:Name="fdsv" Grid.Row="0"/>
-                <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Margin="0,0,0,3" Content="Edit" FontSize="12"  Click="GlobalEditButton_OnClick" />
-                <Button Grid.Row="2" Grid.Column="0" Margin="0,0,5,0" Content="Create Link" FontSize="11" Click="AddLinkButton_OnClick"/>
-                <Button Grid.Row="2" Grid.Column="1" Content="Edit Link" FontSize="11" Click="EditLinkButton_OnClick"/>
-                <Button Grid.Row="2" Grid.Column="2" Margin="3,0,0,0" Content="Remove Link" FontSize="11" Click="RemoveLinkButton_OnClick" />
-            </Grid>
-        </TabItem>
+        <TabControl x:Name="tc" Grid.Row="0" SelectedIndex="{Binding CurrentType, Converter={StaticResource TabConverter}}">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabPanel}">
+                    <Setter Property="Background" Value="Gray"></Setter>
+                </Style>
+            </TabControl.Resources>
+            <TabItem Header="View" Background="White"/>
+            <TabItem Header="Project" Background="White"/>
+            <TabItem Header="Global" Name="GlobalTab" Background="White"/>
+        </TabControl>
 
+        <FlowDocumentScrollViewer Grid.Row="1" Document="{Binding Markdown, Converter={StaticResource MarkdownConverter}}"/>
 
-    </TabControl>
+        <Grid Grid.Row="2" Height="25">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Margin="3" Content="Create Link" FontSize="11" Command="{Binding AddLinkCommand}"/>
+            <Button Grid.Column="1" Margin="3" Content="Edit Link" FontSize="11" Command="{Binding EditLinkCommand}"/>
+            <Button Grid.Column="2" Margin="3" Content="Remove Link" FontSize="11" Command="{Binding RemoveLinkCommand}" />
+        </Grid>
+        <Button Grid.Row="3" Content="Edit" FontSize="12" Margin="4" Command="{Binding EditNotesCommand}"/>
 
+    </Grid>
 </Page>

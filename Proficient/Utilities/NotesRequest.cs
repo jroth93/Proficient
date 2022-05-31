@@ -19,9 +19,9 @@ namespace Proficient.Utilities
         ///   with 'None' to indicate that the request has been "passed on".
         /// </remarks>
         /// 
-        public NotesPane.NotesTab Take()
+        public NotesType Take()
         {
-            return (NotesPane.NotesTab)Interlocked.Exchange(ref m_request, 0);
+            return (NotesType)Interlocked.Exchange(ref m_request, 0);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Proficient.Utilities
         ///   It replaces any older request previously made.
         /// </remarks>
         /// 
-        public void Make(NotesPane.NotesTab request)
+        public void Make(NotesType request)
         {
             Interlocked.Exchange(ref m_request, (int)request);
         }

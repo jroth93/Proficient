@@ -86,9 +86,30 @@ namespace Proficient.Elec
             
             foreach (FamilyInstance fi in fis)
             {
-                string planTag = fi.Symbol.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString()
-                        + fi.LookupParameter("MEI Display Separation").AsString()
-                        + fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
+                Parameter ds = fi.LookupParameter(Names.Parameter.DisplaySeparation);
+                string typeMark = fi.Symbol.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString();
+                string mark = fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
+                string planTag;
+
+                if (ds != null)
+                {
+                    planTag = typeMark + ds.AsString() + mark;
+                }
+                else
+                {
+                    if(typeMark == string.Empty && mark != string.Empty)
+                    {
+                        planTag = mark;
+                    }
+                    else if(mark == string.Empty && typeMark != string.Empty)
+                    {
+                        planTag = typeMark;
+                    }
+                    else
+                    {
+                        planTag = typeMark + "-" + mark;
+                    }
+                }
 
 #if (R21 || R22)
                 foreach (ElectricalSystem es in fi.MEPModel.GetElectricalSystems())

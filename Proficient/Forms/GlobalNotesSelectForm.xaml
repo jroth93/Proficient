@@ -1,0 +1,50 @@
+﻿<Window x:Class="Proficient.Forms.GlobalNotesSelectForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Proficient.Forms" 
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase" 
+        d:DataContext="{d:DesignInstance Type=local:NotesSelectViewModel}"
+        mc:Ignorable="d"
+        Title="EntryForm" Height="700" Width="500" Background="#FF777777" WindowStyle="None" ResizeMode="NoResize" AllowsTransparency="True" MouseDown="Window_MouseDown">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MarkdownStyles.xaml"/>
+                <ResourceDictionary Source="FormStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border>
+        <Grid>
+            <Grid.Resources>
+                <local:MarkdownConverter x:Key="mdConv"/>
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <Label FontSize="14" Content="Select Note Entry:" Grid.Row="0" VerticalAlignment="Center" Margin="15,10,0,0"/>
+            <ComboBox Template="{DynamicResource ComboBoxTemplate}" Grid.Row="1" Margin="10,5,10,5" ItemsSource="{Binding NoteEntries, Mode=OneWay}"
+                  DisplayMemberPath="Description"
+                  SelectedItem="{Binding NoteEntry}"/>
+            <Label FontSize="14" Content="Preview:" Grid.Row="2" VerticalAlignment="Center" Margin="15,10,0,0"/>
+            <Grid Background="white" Grid.Row="3" Margin="10,0,10,10">
+                <FlowDocumentScrollViewer Grid.Row="3" Document="{Binding NoteEntry.Markdown, Converter={StaticResource MarkdownConverter}}"/>
+            </Grid>
+            <Grid Grid.Row="4" Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="1" Margin="5" Content="OK" IsDefault="True" Click="OkButton_Click"/>
+                <Button Grid.Column="2" Margin="5" Content="Cancel" IsCancel="True"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
