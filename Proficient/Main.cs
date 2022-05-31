@@ -337,12 +337,15 @@ namespace Proficient
                     if(up != null)
                     {
                         TextInfo ti = new CultureInfo("en-US", false).TextInfo;
-                        MEIDBConn.CreateUser(CurrentUser, ProficientVersion, ti.ToTitleCase(up.GivenName), ti.ToTitleCase(up.Surname));
+                        u = MEIDBConn.CreateUser(CurrentUser, ProficientVersion, ti.ToTitleCase(up.GivenName), ti.ToTitleCase(up.Surname));
                     }
                     else
                     {
-                        MEIDBConn.CreateUser(CurrentUser, ProficientVersion); 
+                        u = MEIDBConn.CreateUser(CurrentUser, ProficientVersion); 
                     }
+                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), app.VersionBuild);
+
+
                 }
             }
         }
