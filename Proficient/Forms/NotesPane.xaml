@@ -9,7 +9,7 @@
       d:DesignHeight="800" d:DesignWidth="400"
       Title=""
       Background="White"
-      FontFamily="Roboto">
+      FontFamily="Arial">
 
     <Page.Resources>
         <ResourceDictionary>
