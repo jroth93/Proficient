@@ -27,7 +27,7 @@ namespace Proficient.Forms
         /// Tabs are automatically converted to spaces as part of the transform  
         /// this constant determines how "wide" those tabs become in spaces  
         /// </summary>
-        private const int _tabWidth = 2;
+        private const int _tabWidth = 1;
 
         private const string _markerUL = @"[*+-]";
         private const string _markerOL = @"\d+[.]";

@@ -23,7 +23,6 @@
         <Setter Property="Background" Value="#FF999999"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="FontSize" Value="11"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -84,6 +83,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="FontSize" Value="13"/>
     </Style>
 
     <!--style for the whole tab control-->
@@ -102,7 +102,8 @@
                         <Grid Background="{StaticResource RibbonTopBackground}"></Grid>
                         <TabPanel IsItemsHost="True"
                                       Grid.Row="1"
-                                      Panel.ZIndex="1" />
+                                      Panel.ZIndex="1"
+                                  Background="Gray"/>
                         <Border Grid.Row="1"
                                     Grid.RowSpan="2"
                                     CornerRadius="{StaticResource TabControl_Corner_Radius}"

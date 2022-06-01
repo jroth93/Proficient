@@ -5,7 +5,7 @@ using Autodesk.Revit.UI.Events;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.ExtensibleStorage;
-using asApp = Autodesk.Revit.ApplicationServices.Application;
+using ASApp = Autodesk.Revit.ApplicationServices.Application;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -150,11 +150,15 @@ namespace Proficient
         {
             _listener?.UnHookKeyboard();
             UIApplication uiapp = sender as UIApplication;
-            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+            ASApp app = uiapp.Application;
             uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Electrical").First().Visible = app.IsElectricalEnabled;
             uiapp.GetRibbonPanels("Proficient").Where(pnl => pnl.Name == "Mechanical").First().Visible = app.IsMechanicalEnabled;
 
-
+            if(ASApp.IsLoggedIn && CurrentUser == null)
+            {
+                CurrentUser = app.Username;
+            }
+            
             try
             {
                 ElecLoadDMU eldmu = new ElecLoadDMU();
@@ -309,8 +313,8 @@ namespace Proficient
         }
         private void App_ApplicationInitialized(object sender, ApplicationInitializedEventArgs args)
         {
-            asApp app = sender as asApp;
-            if (asApp.IsLoggedIn)
+            ASApp app = sender as ASApp;
+            if (ASApp.IsLoggedIn)
             {
                 CurrentUser = app.Username;
                 User u = MEIDBConn.GetUserByAdId(CurrentUser);

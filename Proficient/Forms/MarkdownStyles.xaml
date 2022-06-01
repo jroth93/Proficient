@@ -4,11 +4,23 @@
 
     <Style TargetType="FlowDocument" x:Key="DocumentStyle">
         <Setter Property="FontFamily"
-                Value="Arial" />
+                Value="Calibri" />
         <Setter Property="TextAlignment"
                 Value="Left" />
         <Setter Property="FontSize"
-                Value="12" />
+                Value="14" />
+        <Setter Property="LineHeight" 
+                Value="20"/>
+    </Style>
+
+    <Style TargetType="Paragraph">
+        <Setter Property="Margin" Value="0,6,0,6"/>
+    </Style>
+
+    <Style TargetType="List">
+        <Setter Property="Margin" Value="0,6,0,6"/>
+        <Setter Property="Padding" Value="20,0,0,0"/>
+        <Setter Property="MarkerOffset" Value="5"/>
     </Style>
 
     <Style x:Key="H1Style"
@@ -19,6 +31,8 @@
                 Value="#ff000000" />
         <Setter Property="FontWeight"
                 Value="Light" />
+        <Setter Property="Margin"
+                Value="0,10,0,10"/>
     </Style>
 
     <Style x:Key="H2Style"
@@ -29,6 +43,8 @@
                 Value="#ff000000" />
         <Setter Property="FontWeight"
                 Value="Light" />
+        <Setter Property="Margin"
+                Value="0,8,0,8"/>
     </Style>
 
     <Style x:Key="H3Style"
@@ -44,7 +60,7 @@
     <Style x:Key="H4Style"
             TargetType="Paragraph">
         <Setter Property="FontSize"
-                Value="14" />
+                Value="16" />
         <Setter Property="Foreground"
                 Value="#99000000" />
         <Setter Property="FontWeight"

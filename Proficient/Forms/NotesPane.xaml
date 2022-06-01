@@ -9,7 +9,7 @@
       d:DesignHeight="800" d:DesignWidth="400"
       Title=""
       Background="White"
-      FontFamily="Arial">
+      FontFamily="Calibri">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -34,14 +34,9 @@
         </Grid.RowDefinitions>
 
         <TabControl x:Name="tc" Grid.Row="0" SelectedIndex="{Binding CurrentType, Converter={StaticResource TabConverter}}">
-            <TabControl.Resources>
-                <Style TargetType="{x:Type TabPanel}">
-                    <Setter Property="Background" Value="Gray"></Setter>
-                </Style>
-            </TabControl.Resources>
-            <TabItem Header="View" Background="White"/>
-            <TabItem Header="Project" Background="White"/>
-            <TabItem Header="Global" Name="GlobalTab" Background="White"/>
+            <TabItem Header="View"/>
+            <TabItem Header="Project"/>
+            <TabItem Header="Global" Name="GlobalTab"/>
         </TabControl>
 
         <FlowDocumentScrollViewer Grid.Row="1" Document="{Binding Markdown, Converter={StaticResource MarkdownConverter}}"/>
@@ -52,11 +47,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Margin="3" Content="Create Link" FontSize="11" Command="{Binding AddLinkCommand}"/>
-            <Button Grid.Column="1" Margin="3" Content="Edit Link" FontSize="11" Command="{Binding EditLinkCommand}"/>
-            <Button Grid.Column="2" Margin="3" Content="Remove Link" FontSize="11" Command="{Binding RemoveLinkCommand}" />
+            <Button Grid.Column="0" Margin="3" Content="Create Link" FontSize="12" Command="{Binding AddLinkCommand}"/>
+            <Button Grid.Column="1" Margin="3" Content="Edit Link" FontSize="12" Command="{Binding EditLinkCommand}"/>
+            <Button Grid.Column="2" Margin="3" Content="Remove Link" FontSize="12" Command="{Binding RemoveLinkCommand}" />
         </Grid>
-        <Button Grid.Row="3" Content="Edit" FontSize="12" Margin="4" Command="{Binding EditNotesCommand}"/>
+        <Button Grid.Row="3" Content="Edit" FontSize="14" Margin="4" Command="{Binding EditNotesCommand}"/>
 
     </Grid>
 </Page>
