@@ -329,7 +329,9 @@ namespace Proficient
                     }
 
                     HwndSource hwndSource = HwndSource.FromHwnd(App.MainWindowHandle);
-                    string version = (hwndSource.RootVisual as Window).Title.Split(' ')[2];
+                    string version = Convert.ToInt32(app.VersionNumber) > 2021 ?
+                        app.SubVersionNumber :                        
+                        (hwndSource.RootVisual as Window).Title.Split(' ')[2];
 
                     MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), version);
                 }
