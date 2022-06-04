@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System;
-//using System.Windows;
+using System.Windows;
 using System.Windows.Automation;
 //using System.Windows.Forms;
 using System.Runtime.InteropServices;
@@ -19,6 +19,7 @@ using Microsoft.Test.Input;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using System.Windows.Interop;
 
 namespace Proficient
 {
@@ -35,9 +36,9 @@ namespace Proficient
             //ElementId eid = uidoc.Selection.GetElementIds().First();
             //Element el = doc.GetElement(eid);
 
-            
-
-
+            HwndSource hwndSource = HwndSource.FromHwnd(app.MainWindowHandle);
+            string version = (hwndSource.RootVisual as Window).Title.Split(' ')[2];
+            TaskDialog.Show(version, version);
 
             #region follower entry box
             /*
@@ -73,11 +74,7 @@ namespace Proficient
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    Schema viewSchema = Schema.Lookup(Names.Guids.ProficientSchema);
-                    Entity ent = view.GetEntity(viewSchema);
-                    Field field = viewSchema.GetField("MarkdownText");
 
-                    TaskDialog.Show("field", ent.Get<string>("MarkdownText"));
                 }
 
                 tx.Commit();

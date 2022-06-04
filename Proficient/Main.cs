@@ -23,6 +23,8 @@ using System.DirectoryServices.AccountManagement;
 using System.Threading;
 using System.Security.Principal;
 using System.Globalization;
+using System.Windows;
+using System.Windows.Interop;
 
 namespace Proficient
 {
@@ -326,7 +328,10 @@ namespace Proficient
                         MEIDBConn.SetUserProficientVersion(u);
                     }
 
-                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), app.VersionBuild);
+                    HwndSource hwndSource = HwndSource.FromHwnd(App.MainWindowHandle);
+                    string version = (hwndSource.RootVisual as Window).Title.Split(' ')[2];
+
+                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), version);
                 }
                 else
                 {
@@ -347,7 +352,11 @@ namespace Proficient
                     {
                         u = MEIDBConn.CreateUser(CurrentUser, ProficientVersion); 
                     }
-                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), app.VersionBuild);
+
+                    HwndSource hwndSource = HwndSource.FromHwnd((sender as UIApplication).MainWindowHandle);
+                    string version = (hwndSource.RootVisual as Window).Title.Split(' ')[2];
+
+                    MEIDBConn.SetUserRevitVersion(u.Id, Convert.ToInt32(app.VersionNumber), version);
 
 
                 }
