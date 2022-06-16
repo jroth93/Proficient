@@ -73,7 +73,7 @@ namespace Proficient.Mech
                     else
                     {
                         XYZ dirVec = new XYZ(-lineDir.Y, lineDir.X, 0.0);
-                        Line intLine1 = Line.CreateUnbound(new XYZ(loc2.Curve.Evaluate(0.5, true).X, loc2.Curve.Evaluate(0.5, true).Y, 0), lineDir);
+                        Line intLine1 = Line.CreateUnbound(new XYZ(loc2.Curve.Evaluate(0.5, true).X, loc2.Curve.Evaluate(0.5, true).Y, 0), new XYZ(lineDir.X, lineDir.Y, 0.0));
                         Line intLine2 = Line.CreateUnbound(new XYZ(loc1.Curve.Evaluate(0.5, true).X, loc1.Curve.Evaluate(0.5, true).Y, 0), dirVec);
                         intLine2.Intersect(intLine1, out IntersectionResultArray resarray);
                         XYZ intPnt = resarray.get_Item(0).XYZPoint;
