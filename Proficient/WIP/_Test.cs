@@ -15,7 +15,7 @@ using System.Windows.Automation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Proficient.Forms;
-using Microsoft.Test.Input;
+using Proficient.Utilities;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB.ExtensibleStorage;
@@ -35,10 +35,14 @@ namespace Proficient
             //app.GetDockablePane(Main.PaneId).Hide();
             //ElementId eid = uidoc.Selection.GetElementIds().First();
             //Element el = doc.GetElement(eid);
+            var tags = new FilteredElementCollector(doc, view.Id).OfClass(typeof(IndependentTag)).ToElementIds();
+            uidoc.Selection.SetElementIds(tags);
 
+
+            /*
             HwndSource hwndSource = HwndSource.FromHwnd(app.MainWindowHandle);
             string version = (hwndSource.RootVisual as Window).Title.Split(' ')[2];
-            TaskDialog.Show(version, version);
+            TaskDialog.Show(version, version);*/
 
             #region follower entry box
             /*

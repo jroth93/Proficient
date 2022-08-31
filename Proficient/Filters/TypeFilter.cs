@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Proficient.Forms;
+using Proficient.Utilities;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,37 +37,25 @@ namespace Proficient
                 .OrderBy(el => (doc.GetElement(el.GetTypeId()) as ElementType).FamilyName)
                 .ThenBy(el => el.Name);
 
-            Blank frm = new Blank();
-            frm.sp.Orientation = Orientation.Vertical;
+            BlankViewModel bvm = new BlankViewModel();
 
-            frm.Loaded += (object sender, RoutedEventArgs e) =>
-            {
-                Rectangle mwe = revit.Application.MainWindowExtents;
-                frm.Left = (mwe.Left + mwe.Right) / 2 - frm.Width / 2;
-                frm.Top = (mwe.Top + mwe.Bottom) / 2 - frm.Height / 2;
-            };
-
-            List<Button> btnList = new List<Button>();
+            System.Windows.Point mousePos = Mouse.GetCursorPosition();
+            bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
             string selectedFamily = string.Empty;
             string selectedType = string.Empty;
-            Style s = frm.FindResource("smallBtn") as Style;
+
             foreach (Element type in types)
             {
                 string fam = (doc.GetElement(type.GetTypeId()) as ElementType).FamilyName;
                 string display = fam + " - " + type.Name;
-                btnList.Add(new Button { Content = display, Style = s });
-                frm.sp.Children.Add(btnList.Last());
-
-                btnList.Last().Click += (object sender, RoutedEventArgs e) =>
-                {
-                    frm.DialogResult = true;
-                    selectedFamily = fam;
-                    selectedType = type.Name;
-                    frm.Close();
-                };
+                bvm.AddButton("smallBtn", display, () => { selectedFamily = fam; selectedType = type.Name; }, true, true);
             }
 
-            frm.ShowDialog();
+            if (!bvm.ShowWindow(true) ?? false)
+            {
+                return Result.Cancelled;
+            }
+
 
             ICollection<ElementId> filteredIds = selectedIds
                 .Select(id => doc.GetElement(id))

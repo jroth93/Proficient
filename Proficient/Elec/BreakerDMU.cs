@@ -32,19 +32,12 @@ namespace Proficient.Elec
 
                     foreach (ElementId id in addedIds)
                     {
-                        Wire w = doc.GetElement(id) as Wire;
-                        BuiltInCategory bic = w is Wire ? (BuiltInCategory)w.Category.Id.IntegerValue : BuiltInCategory.INVALID;
-                        if (bic == BuiltInCategory.OST_Wire && w.GetMEPSystems().Any())
+                        if (doc.GetElement(id) is Wire w && w.GetMEPSystems().Any())
                         {
                             string newVal = doc.GetElement(w.GetMEPSystems().First())
                                 .LookupParameter(Names.Parameter.BreakerOptions).AsString();
 
-                            Parameter wPar = w.LookupParameter(Names.Parameter.BreakerOptions);
-
-                            if (wPar != null)
-                            {
-                                wPar.Set(newVal);
-                            }
+                            w.LookupParameter(Names.Parameter.BreakerOptions)?.Set(newVal);
                         }
                     }
 
@@ -53,11 +46,14 @@ namespace Proficient.Elec
 
                 foreach (ElementId id in data.GetModifiedElementIds())
                 {
+                    Element el = doc.GetElement(id);
+                    BuiltInCategory bic = (BuiltInCategory)el.Category.Id.IntegerValue;
                     bool panelChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
                     bool circuitChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
+
                     if (panelChange || circuitChange)
                     {
-                        Wire w = doc.GetElement(id) as Wire;
+                        Wire w = el as Wire;
                         Parameter par = w.LookupParameter(Names.Parameter.BreakerOptions);
                         if (par != null)
                         {
@@ -71,13 +67,8 @@ namespace Proficient.Elec
                                 par.Set(string.Empty);
                             }
                         }
-                        continue;
                     }
-
-                    Element el = doc.GetElement(id);
-                    BuiltInCategory bic = (BuiltInCategory)el.Category.Id.IntegerValue;
-
-                    if (bic == BuiltInCategory.OST_Wire && (el as Wire).GetMEPSystems().Any())
+                    else if (bic == BuiltInCategory.OST_Wire && (el as Wire).GetMEPSystems().Any())
                     {
                         string newVal = el.LookupParameter(Names.Parameter.BreakerOptions).AsString();
                         Element ec = doc.GetElement((el as Wire).GetMEPSystems().First());
@@ -141,7 +132,7 @@ namespace Proficient.Elec
                 Parameter par = el.LookupParameter(Names.Parameter.BreakerOptions);
                 ElementCategoryFilter f = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
 
-                if ((BuiltInCategory) el.Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
+                if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
                 {
                     f = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
                 }

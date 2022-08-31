@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Proficient.Mech
 {
@@ -13,28 +14,47 @@ namespace Proficient.Mech
             UIApplication app = revit.Application;
             UIDocument uidoc = revit.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
-            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
-            var dfec = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_DuctFitting);
-            var pfec = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_PipeFitting);
-            List<Element> fList = dfec.ToElements() as List<Element>;
-            fList.AddRange(pfec.ToElements());
-            fList = fList.FindAll(x => (x as FamilyInstance) != null);
+            View view = uidoc.ActiveView;
 
+            var selEls = 
+                uidoc.Selection
+                .GetElementIds()?
+                .Select(id => doc.GetElement(id));
+
+            IEnumerable<Element> fts = new List<Element>();
+            if(selEls != null)
+            {
+                fts = selEls
+                    .Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctFitting ||
+                    el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_PipeFitting);
+            }
+            else
+            {
+                var df =
+                new FilteredElementCollector(doc, view.Id)
+                .OfCategory(BuiltInCategory.OST_DuctFitting)
+                .ToElements();
+                var pf =
+                    new FilteredElementCollector(doc, view.Id)
+                    .OfCategory(BuiltInCategory.OST_PipeFitting)
+                    .ToElements();
+                fts = df.Concat(pf).Where(x => (x as FamilyInstance) != null);
+            }
 
             using (Transaction tx = new Transaction(doc, "Set up/dn parameter"))
             {
                 if (tx.Start() == TransactionStatus.Started)
                 {
-                    foreach (FamilyInstance f in fList)
+                    foreach (FamilyInstance fi in fts)
                     {
                         List<PartType> noSet = new List<PartType>() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
 
-                        MechanicalFitting mf = f.MEPModel as MechanicalFitting;
+                        MechanicalFitting mf = fi.MEPModel as MechanicalFitting;
                         if (mf.ConnectorManager != null && !noSet.Contains(mf.PartType))
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {
-                                Parameter fudPar = f.LookupParameter(Names.Parameter.FittingUpDn);
+                                Parameter fudPar = fi.LookupParameter(Names.Parameter.FittingUpDn);
                                 if (c.CoordinateSystem.BasisZ.Z == 1 && fudPar != null)
                                 {
                                     fudPar.Set(1);

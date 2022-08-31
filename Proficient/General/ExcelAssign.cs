@@ -80,7 +80,7 @@ namespace Proficient
 
             return wslist.ToArray();
         }
-#if (R21 || R22)
+#if (FORGE)
         private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
         {
             switch (parType)
@@ -305,7 +305,7 @@ namespace Proficient
 
                         try
                         {
-#if (R21 || R22)
+#if (FORGE)
                             var dut = fs.LookupParameter(parName).GetUnitTypeId();
 #else
                             DisplayUnitType dut = fs.LookupParameter(parName).DisplayUnitType;
@@ -322,7 +322,7 @@ namespace Proficient
                         {
                             if (tx.Start() == TransactionStatus.Started)
                             {
-#if (R21 || R22)
+#if (FORGE)
                                 var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
 #else
                                 var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
@@ -378,7 +378,7 @@ namespace Proficient
                     bool hasUnits;
                     try
                     {
-#if (R21 || R22)
+#if (FORGE)
                         var dut = fi.LookupParameter(parName).GetUnitTypeId();
 #else
                         DisplayUnitType dut = fi.LookupParameter(parName).DisplayUnitType;
@@ -390,7 +390,7 @@ namespace Proficient
                         hasUnits = false;
                     }
 
-#if (R21 || R22)
+#if (FORGE)
                     var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.GetUnitTypeId()) : GetCellVal(markRowIndex[mark], parCol, parType);
 #else
                     var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.DisplayUnitType) : GetCellVal(markRowIndex[mark], parCol, parType);

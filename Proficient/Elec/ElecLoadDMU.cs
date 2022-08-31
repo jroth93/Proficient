@@ -62,7 +62,7 @@ namespace Proficient.Elec
                         .Where(el => el is FamilyInstance)
                         .Cast<FamilyInstance>()
                         .Where(fi => fi.Symbol.Id == (els.First() as FamilySymbol).Id)
-#if (R21 || R22)
+#if (R21 || R22 || R23)
                         .Where(fi => fi.MEPModel.GetElectricalSystems() != null)
 #else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null)
@@ -73,7 +73,7 @@ namespace Proficient.Elec
                 {
                     fis = els
                         .Cast<FamilyInstance>()
-#if (R21 || R22)
+#if (R21 || R22 || R23)
                         .Where(fi => fi.MEPModel.GetElectricalSystems() != null)
 #else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null)
@@ -111,7 +111,7 @@ namespace Proficient.Elec
                     }
                 }
 
-#if (R21 || R22)
+#if (R21 || R22 || R23)
                 foreach (ElectricalSystem es in fi.MEPModel.GetElectricalSystems())
                 {
                     es.LoadName = planTag;

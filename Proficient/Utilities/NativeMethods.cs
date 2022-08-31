@@ -6,7 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Test.Input
+namespace Proficient.Utilities
 {
     internal static class NativeMethods
     {

@@ -3,8 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:Proficient"
+    xmlns:local="clr-namespace:Proficient.Forms"
     x:Class="Proficient.Forms.Blank"
+    d:DataContext="{d:DesignInstance Type=local:BlankViewModel}"
     mc:Ignorable="d"
     
     SizeToContent="WidthAndHeight"  
@@ -20,9 +21,8 @@
     </Window.Resources>
     
     <Border>
-        <StackPanel Name="sp" Margin="10,10,10,10">
-
-            
+        <StackPanel Orientation="{Binding StackPanelOrientation}" Margin="10">
+            <ItemsControl ItemsSource="{Binding StackPanelItems, Mode=TwoWay}"/>
         </StackPanel>
     </Border>
 </Window>

@@ -37,11 +37,18 @@ namespace Proficient
                 .Where(el => el.OwnerViewId == view.Id || el.OwnerViewId == view.GetPrimaryViewId())
                 .Select(el => el.Id);
 
+            var tagEl = new FilteredElementCollector(doc)
+                .OfClass(typeof(IndependentTag))
+                .Where(x => x.Name.ToLower().Contains("design"))
+                .Where(el => el.OwnerViewId == view.Id || el.OwnerViewId == view.GetPrimaryViewId())
+                .Select(el => el.Id);
+
             List<ElementId> designElIds = new List<ElementId>();
 
             designElIds.AddRange(textEl);
             designElIds.AddRange(lineEl);
             designElIds.AddRange(dimEl);
+            designElIds.AddRange(tagEl);
 
             if (designElIds.Count == 0)
             {
@@ -60,7 +67,6 @@ namespace Proficient
                     {
                         view.UnhideElements(designElIds);
                     }
-
                 }
 
                 tx.Commit();

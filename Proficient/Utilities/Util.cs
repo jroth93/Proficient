@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Test.Input;
+using Proficient.Utilities;
 using System.Windows.Forms;
 
 namespace Proficient
@@ -17,10 +17,14 @@ namespace Proficient
     {
         public static bool IsTagged(Document doc, ElementId viewId, Element el)
         {
-            var fec = new FilteredElementCollector(doc).OfClass(typeof(IndependentTag)).Where(tg => tg.OwnerViewId == viewId);
+            var fec = 
+                new FilteredElementCollector(doc)
+                .OfClass(typeof(IndependentTag))
+                .Where(el => el.Category.Id.IntegerValue != (int)BuiltInCategory.OST_KeynoteTags)
+                .Where(tg => tg.OwnerViewId == viewId);
             foreach (IndependentTag it in fec)
             {
-#if R22
+#if (R22 || R23)
                 if (it.GetTaggedLocalElementIds().Contains(el.Id))
                 {
                     return true;
@@ -129,8 +133,6 @@ namespace Proficient
             System.Drawing.Point origin = Cursor.Position;
             Mouse.MoveTo(new System.Drawing.Point(origin.X, origin.Y + 1));
             Mouse.MoveTo(origin);
-            Mouse.Click(MouseButton.Middle);
-
         }
 
         public enum ViewPlane

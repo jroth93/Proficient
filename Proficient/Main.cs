@@ -306,11 +306,14 @@ namespace Proficient
         }
         private void App_ApplicationClosing(object sender, ApplicationClosingEventArgs e)
         {
-            string thisVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
-            if (thisVersion != currentVersion)
+            
+            if (File.Exists(Names.File.ServerDll))
             {
-                Process.Start(Names.File.SilentUpdateExe);
+                string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
+                if (ProficientVersion != currentVersion)
+                {
+                    Process.Start(Names.File.SilentUpdateExe);
+                }
             }
         }
         private void App_ApplicationInitialized(object sender, ApplicationInitializedEventArgs args)
@@ -423,11 +426,14 @@ namespace Proficient
         }
         public void CheckToolbarVersion()
         {
-            ProficientVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion.ToString();
-            if (ProficientVersion != currentVersion)
+            if (File.Exists(Names.File.ServerDll))
             {
-                Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
+                ProficientVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                string currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion.ToString();
+                if (ProficientVersion != currentVersion)
+                {
+                    Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
+                }
             }
         }
         private void RegisterElecLoadDMU()
@@ -450,10 +456,13 @@ namespace Proficient
             breakerDMU = new BreakerDMU();
             UpdaterRegistry.RegisterUpdater(breakerDMU);
             ElementCategoryFilter fw = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
+            ElementCategoryFilter fc = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
 
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
             UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fw, Element.GetChangeTypeElementAddition());
+            UpdaterRegistry.AddTrigger(breakerDMU.GetUpdaterId(), fc, Element.GetChangeTypeElementAddition());
+
 
         }
         private void RegisterDuctFittingDMU()

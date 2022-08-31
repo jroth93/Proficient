@@ -37,11 +37,18 @@ namespace Proficient.Keynotes
                     File.Copy(Names.File.KnTempFile, xlPath);
                 }
 
-                Application xlApp = new Application();
-                xlApp.Workbooks.Open(xlPath);
-                xlApp.Visible = true;
-                SetForegroundWindow(new IntPtr(xlApp.ActiveWindow.Hwnd));
-                
+                try
+                {
+                    Application xlApp = new Application();
+                    xlApp.Workbooks.Open(xlPath);
+                    xlApp.Visible = true;
+                    SetForegroundWindow(new IntPtr(xlApp.ActiveWindow.Hwnd));
+                }
+                catch (InvalidCastException)
+                {
+                    TaskDialog.Show("Excel Error", "Error Launching Excel. Resolve by 1) Going to Add or Remove Programs, 2) Searching for Microsoft 365, 3) Click Modify, 4) Run the Quick Repair.");
+                    return Result.Failed;
+                }
             }
 
             return Result.Succeeded;

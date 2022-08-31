@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Proficient.Forms;
+using Proficient.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,33 +34,22 @@ namespace Proficient
                 .Distinct()
                 .OrderBy(fam => fam);
 
-            Blank frm = new Blank();
-            frm.sp.Orientation = Orientation.Vertical;
+            BlankViewModel bvm = new BlankViewModel();
 
-            frm.Loaded += (object sender, RoutedEventArgs e) =>
-            {
-                Rectangle mwe = revit.Application.MainWindowExtents;
-                frm.Left = (mwe.Left + mwe.Right) / 2 - frm.Width / 2;
-                frm.Top = (mwe.Top + mwe.Bottom) / 2 - frm.Height / 2;
-            };
-
-            List<Button> btnList = new List<Button>();
+            System.Windows.Point mousePos = Mouse.GetCursorPosition();
+            bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
             string selectedFam = string.Empty;
-            Style s = frm.FindResource("smallBtn") as Style;
+
             foreach (string fam in fams)
             {
-                btnList.Add(new Button { Content = fam, Style = s });
-                frm.sp.Children.Add(btnList.Last());
-
-                btnList.Last().Click += (object sender, RoutedEventArgs e) =>
-                {
-                    frm.DialogResult = true;
-                    selectedFam = Convert.ToString((sender as Button).Content);
-                    frm.Close();
-                };
+                bvm.AddButton("smallBtn", fam, () => selectedFam = fam, true, true);
             }
 
-            frm.ShowDialog();
+            if (!bvm.ShowWindow(true) ?? false)
+            {
+                return Result.Cancelled;
+            }
+
 
             ICollection<ElementId> filteredIds = selectedIds
                 .Select(id => doc.GetElement(id))

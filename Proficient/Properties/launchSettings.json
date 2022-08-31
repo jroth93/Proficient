@@ -3,13 +3,17 @@
     "Proficient": {
       "commandName": "Project"
     },
-    "R2021": {
+    "R22": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2021\\Revit.exe"
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
     },
-    "R2019": {
+    "R19": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Autodesk\\Revit 2019\\Revit.exe"
+    },
+    "R21": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2021\\Revit.exe"
     }
   }
 }

@@ -4,12 +4,13 @@
 // All other rights reserved.
 
 using System;
+using System.Windows;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
 
-namespace Microsoft.Test.Input
+namespace Proficient.Utilities
 {
     /// <summary>
     /// Exposes a simple interface to common mouse operations, allowing the user to simulate mouse input.
@@ -135,6 +136,38 @@ namespace Microsoft.Test.Input
             SendMouseInput(0, 0, additionalData, inputFlags);
         }
 
+        /// <summary>
+        /// Struct representing a point.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public static implicit operator Point(POINT point)
+            {
+                return new Point(point.X, point.Y);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the cursor's position, in screen coordinates.
+        /// </summary>
+        /// <see>See MSDN documentation for further information.</see>
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        public static Point GetCursorPosition()
+        {
+            POINT lpPoint;
+            GetCursorPos(out lpPoint);
+            // NOTE: If you need error handling
+            // bool success = GetCursorPos(out lpPoint);
+            // if (!success)
+
+            return lpPoint;
+        }
         #endregion Public Methods
 
         #region Private Methods

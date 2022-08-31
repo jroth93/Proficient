@@ -33,7 +33,7 @@ namespace Proficient.Forms
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
                 DragMove();
             }

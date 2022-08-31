@@ -25,11 +25,16 @@ namespace Proficient.Utilities
                 .OfCategory(BuiltInCategory.OST_Dimensions)
                 .Where(x => x.Name.ToLower().Contains("design"));
 
+            var tagEl = new FilteredElementCollector(doc)
+                .OfClass(typeof(IndependentTag))
+                .Where(x => x.Name.ToLower().Contains("design"));
+
             List<Element> designEl = new List<Element>();
 
             designEl.AddRange(textEl);
             designEl.AddRange(lineEl);
             designEl.AddRange(dimEl);
+            designEl.AddRange(tagEl);
 
             List<ElementId> printViewsSub = new List<ElementId>();
             printViewsSub.AddRange(printViews);

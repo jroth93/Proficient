@@ -15,7 +15,7 @@
         <Deterministic>true</Deterministic>
         <SignAssembly>false</SignAssembly>
         <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-		<Configurations>Debug2019;Release2019;Publish2019;Debug2020;Release2020;Publish2020;Debug2021;Release2021;Publish2021;Debug2022;Release2022;Publish2022</Configurations>
+		<Configurations>Debug2019;Release2019;Publish2019;Debug2020;Release2020;Publish2020;Debug2021;Release2021;Publish2021;Debug2022;Release2022;Publish2022;Debug2023;Release2023;Publish2023</Configurations>
 		<PlatformTarget>x64</PlatformTarget>
 		<Platforms>x64</Platforms>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
@@ -130,7 +130,34 @@
 		<TargetFramework>net48</TargetFramework>
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 	</PropertyGroup>
-	<ItemGroup Label="Revit References">
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug2023'">
+		<DebugSymbols>true</DebugSymbols>
+		<OutputPath>bin\Debug\2023</OutputPath>
+		<DefineConstants>TRACE;DEBUG;R23;FORGE</DefineConstants>
+		<DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<StartAction>Program</StartAction>
+		<StartProgram>C:\Program Files\Autodesk\Revit 2023\Revit.exe</StartProgram>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release2023'">
+		<OutputPath>bin\Release\2023</OutputPath>
+		<DefineConstants>TRACE;DEBUG;R23;FORGE</DefineConstants>
+		<DebugType>full</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Publish2023'">
+		<OutputPath>bin\Publish\2023</OutputPath>
+		<DefineConstants>TRACE;R23;FORGE</DefineConstants>
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	</PropertyGroup>
+	<ItemGroup Label="References">
 		<Reference Include="DocumentFormat.OpenXml">
 		  <HintPath>..\packages\DocumentFormat.OpenXml.2.16.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
 		</Reference>
@@ -197,6 +224,18 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2022\AdWindows.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 	</ItemGroup>
 	
 	<ItemGroup Label="System References">
@@ -227,6 +266,7 @@
         <Reference Include="PresentationFramework" />
     </ItemGroup>
   <ItemGroup Label="Code Files">
+    <Compile Include="Forms\BlankViewModel.cs" />
     <Compile Include="Forms\RelayCommand.cs" />
     <Compile Include="Forms\GlobalNotesSelectForm.xaml.cs">
       <SubType>Code</SubType>
@@ -506,6 +546,7 @@
   <ItemGroup Label="Nones">
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="PostBuild.cmd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

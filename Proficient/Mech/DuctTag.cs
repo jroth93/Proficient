@@ -19,18 +19,29 @@ namespace Proficient.Mech
             ElementId viewId = uidoc.ActiveView.Id;
             View view = doc.GetElement(viewId) as View;
 
-            var ducts = new FilteredElementCollector(doc, viewId)
-                .OfCategory(BuiltInCategory.OST_DuctCurves)
-                .ToElements();
-            var fittings =
-                new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_DuctFitting)
-                .OfClass(typeof(FamilyInstance))
-                .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
+            var selEls =
+                uidoc.Selection
+                .GetElementIds()?
+                .Select(id => doc.GetElement(id))
+                .ToList();
 
-            if (ducts.Count == 0 && fittings.Count() == 0)
+            IEnumerable<Element> ducts, fittings;
+
+            if(selEls != null && selEls.Count != 0)
             {
-                return Result.Succeeded;
+                ducts = selEls.Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctCurves);
+                fittings = selEls.Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctFitting);
+            }
+            else
+            {
+                ducts = new FilteredElementCollector(doc, viewId)
+                    .OfCategory(BuiltInCategory.OST_DuctCurves)
+                    .Where(d => (d.Location as LocationCurve).Curve.Length > 3);
+                fittings =
+                    new FilteredElementCollector(doc)
+                    .OfCategory(BuiltInCategory.OST_DuctFitting)
+                    .OfClass(typeof(FamilyInstance))
+                    .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
             }
 
             #region tag ducts
@@ -41,9 +52,7 @@ namespace Proficient.Mech
                     foreach (Element duct in ducts)
                     {
                         Reference dRef = new Reference(duct);
-                        Location loc = duct.Location;
-                        LocationCurve locCrv = loc as LocationCurve;
-                        bool longEnough = locCrv.Curve.Length > 3;
+                        LocationCurve locCrv = duct.Location as LocationCurve;
                         double dWidth =
                             (duct as Duct).DuctType.Shape == ConnectorProfileType.Round ?
                             duct.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble() :
@@ -57,7 +66,7 @@ namespace Proficient.Mech
                         bool isHor = Math.Round(ep1.Y, 4) == Math.Round(ep2.Y, 4);
                         bool isInPlane = Math.Round(ep1.Z, 4) == Math.Round(ep2.Z, 4);
 
-                        if (longEnough && isInPlane && !Util.IsTagged(doc, viewId, duct))
+                        if (isInPlane && !Util.IsTagged(doc, viewId, duct))
                         {
                             XYZ point = locCrv.Curve.Evaluate(0.5, true) as XYZ;
                             bool ldr = false;

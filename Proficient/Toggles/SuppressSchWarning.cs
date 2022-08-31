@@ -12,7 +12,7 @@ namespace Proficient
 
             string warningState = Main.Settings.suppressSchWarning ? "off" : "on";
 
-            Util.BalloonTip("Schedule Warning", $"Type mark schedule warning is {warningState}", "");
+            Util.BalloonTip("Schedule Warning", $"Type schedule warning is {warningState}", "");
 
             return Result.Succeeded;
         }

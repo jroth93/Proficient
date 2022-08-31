@@ -4,9 +4,9 @@ using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using Proficient.Forms;
+using Proficient.Utilities;
 
 namespace Proficient.Mech
 {
@@ -21,72 +21,46 @@ namespace Proficient.Mech
             ElementId viewId = uidoc.ActiveView.Id;
             View view = doc.GetElement(uidoc.ActiveView.Id) as View;
 
-            IList<Element> pipes = new FilteredElementCollector(doc, viewId)
-                .OfCategory(BuiltInCategory.OST_PipeCurves)
-                .ToElements();
-            IEnumerable<Element> fittings =
-                new FilteredElementCollector(doc, viewId)
-                .OfCategory(BuiltInCategory.OST_PipeFitting)
-                .OfClass(typeof(FamilyInstance))
-                .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
+            var selEls =
+                uidoc.Selection
+                .GetElementIds()?
+                .Select(id => doc.GetElement(id))
+                .ToList();
 
-            if (pipes.Count == 0 && fittings.Count() == 0)
+            IEnumerable<Element> pipes, fittings;
+
+            if (selEls != null && selEls.Count != 0)
             {
-                return Result.Succeeded;
+                pipes = selEls.Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_PipeCurves);
+                fittings = selEls.Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_PipeFitting);
             }
-            
+            else
+            {
+                pipes = new FilteredElementCollector(doc, viewId)
+                    .OfCategory(BuiltInCategory.OST_PipeCurves);
+                    
+                fittings =
+                    new FilteredElementCollector(doc, viewId)
+                    .OfCategory(BuiltInCategory.OST_PipeFitting)
+                    .OfClass(typeof(FamilyInstance))
+                    .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) != null);
+            }
+
+
             #region get leader preference
-            Blank frm = new Blank();
-            frm.sp.Orientation = Orientation.Horizontal;
-
-            Style s = frm.FindResource("smallBtn") as Style;
-
-            Button btnLdr = new Button
-            {
-                Content = "Leader",
-                Style = s
-            }; 
-            frm.sp.Children.Add(btnLdr);
-
-            Label spacer = new Label();
-            spacer.Content = " ";
-            frm.sp.Children.Add(spacer);
-
-            Button btnNoLdr = new Button
-            {
-                Content = "No Leader",
-                Style = s                
-            };
-            frm.sp.Children.Add(btnNoLdr);
-            
             bool ldr = true;
-            
-            frm.Loaded += (object sender, RoutedEventArgs e) =>
-            {
-                Rectangle mwe = revit.Application.MainWindowExtents;
-                frm.Left = (mwe.Left + mwe.Right) / 2 - frm.Width / 2;
-                frm.Top = (mwe.Top + mwe.Bottom) / 2 - frm.Height / 2;
-            };
 
-            btnLdr.Click += (object sender, RoutedEventArgs e) =>
-            {
-                frm.DialogResult = true;
-                ldr = true;
-                frm.Close();
-            };
+            BlankViewModel bvm = new BlankViewModel();
+            System.Windows.Point mousePos = Mouse.GetCursorPosition();
+            bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
+            bvm.AddButton("smallBtn", "Leader", () => ldr = true, true, true);
+            bvm.AddButton("smallBtn", "No Leader", () => ldr = false, true, true);
 
-            btnNoLdr.Click += (object sender, RoutedEventArgs e) =>
-            {
-                frm.DialogResult = true;
-                ldr = false;
-                frm.Close();
-            };
-
-            if (!frm.ShowDialog() ?? false)
+            if (!bvm.ShowWindow(true) ?? false)
             {
                 return Result.Cancelled;
             }
-
+            
             #endregion
             
             #region tag pipes
@@ -151,7 +125,7 @@ namespace Proficient.Mech
                     {
                         MechanicalFitting mf = f.MEPModel as MechanicalFitting;
 
-                        if (!Util.IsTagged(doc, view.Id, f) && mf.ConnectorManager != null && !noTag.Contains(mf.PartType))
+                        if (!Util.IsTagged(doc, viewId, f) && mf.ConnectorManager != null && !noTag.Contains(mf.PartType))
                         {
                             foreach (Connector c in mf.ConnectorManager.Connectors)
                             {

@@ -18,7 +18,7 @@ namespace Proficient.Elec
             var conMech = new FilteredElementCollector(doc)
                 .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
                 .OfType<FamilyInstance>()
-#if (R21 || R22)
+#if (R21 || R22 || R23)
                 .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #else
                 .Where(fi => fi.MEPModel.ElectricalSystems != null);
@@ -34,7 +34,7 @@ namespace Proficient.Elec
                             + fi.LookupParameter("MEI Display Separation").AsString()
                             + fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
 
-#if (R21 || R22)
+#if (R21 || R22 || R23)
                         foreach (ElectricalSystem es in fi.MEPModel.GetElectricalSystems())
                         {
                             es.LoadName = planTag;
