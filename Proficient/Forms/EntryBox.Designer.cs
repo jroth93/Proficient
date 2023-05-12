@@ -1,4 +1,4 @@
-﻿namespace Proficient
+﻿namespace Proficient.Forms
 {
     partial class EntryBox
     {
@@ -59,7 +59,7 @@
             this.okbutton.TabIndex = 2;
             this.okbutton.Text = "OK";
             this.okbutton.UseVisualStyleBackColor = true;
-            this.okbutton.Click += new System.EventHandler(this.okbutton_Click);
+            this.okbutton.Click += new System.EventHandler(this.OkButton_Click);
             // 
             // cancelbutton
             // 
@@ -70,7 +70,7 @@
             this.cancelbutton.TabIndex = 3;
             this.cancelbutton.Text = "Cancel";
             this.cancelbutton.UseVisualStyleBackColor = true;
-            this.cancelbutton.Click += new System.EventHandler(this.cancelbutton_Click);
+            this.cancelbutton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // EntryBox
             // 

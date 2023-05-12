@@ -1,105 +1,110 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Proficient.Forms;
 
-namespace Proficient.Keynotes
+namespace Proficient.Keynotes;
+
+[Transaction(TransactionMode.Manual)]
+internal class KeynoteUtil : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class KeynoteUtil : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
+        var doc = revit.Application.ActiveUIDocument.Document;
+        var kuf = new KeynoteUtilFrm();
+        //get association between views and sheets
+        var viewSheetDict = GetViewsOnSheets(doc);
+        var fecPlacedKeynotes = new FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_KeynoteTags)
+            .OfClass(typeof(IndependentTag))
+            .Cast<IndependentTag>();
+        var kte = KeynoteTable
+            .GetKeynoteTable(doc)
+            .GetKeyBasedTreeEntries()
+            .Cast<KeynoteEntry>();
+
+        //get association between placed keynotes and their owner views
+        var knViewDict = new Dictionary<string, List<ElementId>>();
+        foreach (var it in fecPlacedKeynotes)
         {
-            UIApplication app = revit.Application;
-            Document doc = revit.Application.ActiveUIDocument.Document;
-            KeynoteUtilFrm kuf = new KeynoteUtilFrm();
-            //get association between views and sheets
-            Dictionary<ElementId, string> viewSheetDict = GetViewsOnSheets(doc);
-            var fecPlacedKeynotes = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_KeynoteTags).OfClass(typeof(IndependentTag));
-            KeyBasedTreeEntries kte = (KeynoteTable.GetKeynoteTable(doc)).GetKeyBasedTreeEntries();
+            var knNum = it.get_Parameter(BuiltInParameter.KEYNOTE_NUMBER).AsString();
 
-            //get association between placed keynotes and their owner views
-            Dictionary<string, List<ElementId>> knViewDict = new Dictionary<string, List<ElementId>>();
-            foreach (IndependentTag it in fecPlacedKeynotes)
+            if (!knViewDict.ContainsKey(knNum))
+                knViewDict.Add(knNum, new List<ElementId>());
+
+            var ownerId = it.OwnerViewId;
+            if (doc.GetElement(ownerId) is not View v)
+                continue;
+            var dvIds = v.GetDependentViewIds();
+            if (dvIds.Any())
             {
-                string knNum = it.get_Parameter(BuiltInParameter.KEYNOTE_NUMBER).AsString();
-
-                if (!knViewDict.ContainsKey(knNum))
+                foreach (var viewId in dvIds)
                 {
-                    knViewDict.Add(knNum, new List<ElementId>());
+                    if(doc.GetElement(viewId) is View curView && IsInView(curView, it.TagHeadPosition))
+                        knViewDict[knNum].Add(viewId);
                 }
+            }
+            else
+            {
+                knViewDict[knNum].Add(ownerId);
+            }
+        }
 
-                ElementId ownerId = it.OwnerViewId;
-                var dvIds = (doc.GetElement(it.OwnerViewId) as View).GetDependentViewIds();
-                if (dvIds.Count > 0)
+        foreach (var ke in kte)
+        {
+            if (ke.KeynoteText == string.Empty) 
+                continue;
+
+            if (knViewDict.ContainsKey(ke.Key))
+            {
+                var sheets = knViewDict[ke.Key]
+                    .Where(id => viewSheetDict.ContainsKey(id))
+                    .Select(id => viewSheetDict[id])
+                    .ToList();
+
+                if (sheets.Any())
                 {
-                    foreach (ElementId viewId in dvIds)
-                    {
-                        View curView = doc.GetElement(viewId) as View;
-                        if (IsInView(curView.CropBox, it.TagHeadPosition)) knViewDict[knNum].Add(viewId);
-                    }
+                    var sheetsOutput = sheets.Count > 1 ? 
+                        string.Join(", ", sheets.Distinct().OrderBy(x => x).ToArray()) : 
+                        sheets[0];
+                    object[] row = { ke.Key, ke.KeynoteText, sheetsOutput };
+                    kuf.dgv.Rows.Add(row);
                 }
                 else
                 {
-                    knViewDict[knNum].Add(ownerId);
+                    object[] row = { ke.Key, ke.KeynoteText, "None" };
+                    kuf.dgv.Rows.Add(row);
                 }
             }
-
-            foreach (KeynoteEntry ke in kte)
+            else
             {
-                if (ke.KeynoteText != string.Empty)
-                {
-                    if (knViewDict.ContainsKey(ke.Key))
-                    {
-                        List<string> sheets = new List<string>();
-                        foreach (ElementId viewid in knViewDict[ke.Key])
-                        {
-                            if (viewSheetDict.ContainsKey(viewid)) sheets.Add(viewSheetDict[viewid]);
-                        }
-
-                        if (sheets.Count > 0)
-                        {
-                            string sheetsOutput = sheets.Count > 1 ? string.Join(", ", sheets.Distinct().OrderBy(x => x).ToArray()) : sheets[0];
-                            string[] row = { ke.Key, ke.KeynoteText, sheetsOutput };
-                            kuf.dgv.Rows.Add(row);
-                        }
-                        else
-                        {
-                            string[] row = { ke.Key, ke.KeynoteText, "None" };
-                            kuf.dgv.Rows.Add(row);
-                        }
-                    }
-                    else
-                    {
-                        string[] row = { ke.Key, ke.KeynoteText, "None" };
-                        kuf.dgv.Rows.Add(row);
-                    }
-                }
+                object[] row = { ke.Key, ke.KeynoteText, "None" };
+                kuf.dgv.Rows.Add(row);
             }
-            kuf.Show();
-            return Result.Succeeded;
         }
+        kuf.Show();
+        return Result.Succeeded;
+    }
 
-        private Dictionary<ElementId, string> GetViewsOnSheets(Document doc)
-        {
-            Dictionary<ElementId, string> viewSheetPairs = new Dictionary<ElementId, string>();
-            FilteredElementCollector fecViewSheet = new FilteredElementCollector(doc).OfClass(typeof(ViewSheet));
-            foreach (ViewSheet vs in fecViewSheet)
-            {
-                foreach (ElementId vID in vs.GetAllPlacedViews())
-                {
-                    if (!viewSheetPairs.ContainsKey(vID)) viewSheetPairs.Add(vID, vs.SheetNumber);
-                }
-            }
-            return viewSheetPairs;
-        }
+    private static Dictionary<ElementId, string> GetViewsOnSheets(Document doc)
+    {
+        var viewSheetPairs = new Dictionary<ElementId, string>();
+        var fecViewSheet = new FilteredElementCollector(doc)
+            .OfClass(typeof(ViewSheet))
+            .Cast<ViewSheet>();
 
-        private bool IsInView(BoundingBoxXYZ bb, XYZ elementPosition)
-        {
-            return elementPosition.X <= bb.Max.X
-                && elementPosition.X >= bb.Min.X
-                && elementPosition.Y <= bb.Max.Y
-                && elementPosition.Y >= bb.Min.Y;
-        }
+
+        foreach (var vs in fecViewSheet)
+        foreach (var vId in vs.GetAllPlacedViews())
+            if (!viewSheetPairs.ContainsKey(vId)) 
+                viewSheetPairs.Add(vId, vs.SheetNumber);
+            
+        return viewSheetPairs;
+    }
+
+    private static bool IsInView(View view, XYZ elementPosition)
+    {
+        var bb = view.CropBox;
+        return elementPosition.X <= bb.Max.X
+               && elementPosition.X >= bb.Min.X
+               && elementPosition.Y <= bb.Max.Y
+               && elementPosition.Y >= bb.Min.Y;
     }
 }

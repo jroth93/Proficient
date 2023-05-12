@@ -1,109 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.Revit.DB;
+﻿namespace Proficient.Utilities;
 
-namespace Proficient.Utilities
+internal class DesignNotes
 {
-    internal class DesignNotes
+    private static readonly Dictionary<View, ICollection<ElementId>> _designNoteViews = new();
+
+    public static void Hide(Document doc, List<ElementId> printViews)
     {
-        private static Dictionary<View, ICollection<ElementId>> DesignNoteViews = new Dictionary<View, ICollection<ElementId>>();
+        ElementMulticategoryFilter mcf = new(new List<BuiltInCategory> { BuiltInCategory.OST_TextNotes, BuiltInCategory.OST_Lines, BuiltInCategory.OST_Dimensions, BuiltInCategory.OST_GenericAnnotation });
 
-        public static void Hide(Document doc, List<ElementId> printViews)
+        foreach (var id in printViews)
+            if (doc.GetElement(id) is ViewSheet vs)
+                printViews.AddRange(vs.GetAllPlacedViews());
+
+        _designNoteViews.Clear();
+
+        using Transaction tx = new (doc, "Hide Design Notes");
+        if (tx.Start() != TransactionStatus.Started) return;
+
+        foreach (var viewId in printViews)
         {
-            var textEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_TextNotes)
-                .Where(x => x.Name.ToLower().Contains("design"));
+            if(doc.GetElement(viewId) is not View view) continue;
 
-            var lineEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Lines)
-                .Where(x => (x as CurveElement).LineStyle.Name.ToLower().Contains("design"));
-
-            var dimEl = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Dimensions)
-                .Where(x => x.Name.ToLower().Contains("design"));
-
-            var tagEl = new FilteredElementCollector(doc)
-                .OfClass(typeof(IndependentTag))
-                .Where(x => x.Name.ToLower().Contains("design"));
-
-            List<Element> designEl = new List<Element>();
-
-            designEl.AddRange(textEl);
-            designEl.AddRange(lineEl);
-            designEl.AddRange(dimEl);
-            designEl.AddRange(tagEl);
-
-            List<ElementId> printViewsSub = new List<ElementId>();
-            printViewsSub.AddRange(printViews);
-
-            foreach (ElementId id in printViews)
-            {
-                if (doc.GetElement(id) is ViewSheet vs)
-                {
-                    foreach (ElementId vid in vs.GetAllPlacedViews())
-                    {
-                        printViewsSub.Add(vid);
-                        ElementId pvid = (doc.GetElement(vid) as View).GetPrimaryViewId();
-                        if (pvid == ElementId.InvalidElementId) printViewsSub.Add(pvid);
-                    }
-                }
-                else
-                {
-                    ElementId pvid = (doc.GetElement(id) as View).GetPrimaryViewId();
-                    if (pvid != ElementId.InvalidElementId) printViewsSub.Add(pvid);
-                }
-            }
-
-            var noteViews = designEl
-                .Select(x => x.OwnerViewId)
-                .Distinct()
+            var designEl = new FilteredElementCollector(doc, viewId)
+                .WherePasses(mcf)
+                .Concat(new FilteredElementCollector(doc).OfClass(typeof(IndependentTag)))
+                .Where(el =>
+                    el.Name.ToLower().Contains("design") ||
+                    el is CurveElement ce && ce.LineStyle.Name.ToLower().Contains("design"))
+                .Select(el => el.Id)
                 .ToList();
-            var noteDependentViews = new FilteredElementCollector(doc)
-                .OfClass(typeof(View))
-                .Where(x => noteViews.Contains((x as View).GetPrimaryViewId()))
-                .Select(x => x.Id);
-            noteViews.AddRange(noteDependentViews);
-            var views = printViewsSub.Intersect(noteViews);
 
-            DesignNoteViews.Clear();
-
-            using (Transaction tx = new Transaction(doc, "Hide Design Notes"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    foreach (ElementId viewId in views)
-                    {
-                        View curView = doc.GetElement(viewId) as View;
-                        ICollection<ElementId> viewDesignEl = designEl
-                            .Where(x => x.OwnerViewId == viewId || x.OwnerViewId == curView.GetPrimaryViewId())
-                            .Select(x => x.Id)
-                            .ToList();
-                        DesignNoteViews.Add(curView, viewDesignEl);
-                        curView.HideElements(viewDesignEl);
-                    }
-                }
-                tx.Commit();
-            }
+            _designNoteViews.Add(view, designEl);
+            view.HideElements(designEl);
         }
-        public static void Unhide(Document doc)
-        {
-            using (Transaction tx = new Transaction(doc, "Unhide Design Notes"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    foreach (View curView in DesignNoteViews.Keys)
-                    {
-                        curView.UnhideElements(DesignNoteViews[curView]);
-                    }
-                }
-                tx.Commit();
-            }
-        }
-
-
+        tx.Commit();
     }
+    public static void Unhide(Document doc)
+    {
+        using Transaction tx = new (doc, "Unhide Design Notes");
+        if (tx.Start() != TransactionStatus.Started) return;
 
+        foreach (var view in _designNoteViews.Keys)
+            view.UnhideElements(_designNoteViews[view]);
+        
+        tx.Commit();
+    }
 }

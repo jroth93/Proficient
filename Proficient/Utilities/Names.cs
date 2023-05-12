@@ -1,58 +1,55 @@
-﻿using System;
+﻿namespace Proficient.Utilities;
 
-namespace Proficient
+internal class Names
 {
-    class Names
+    public class Family
     {
-        public class Family
-        {
-            //Tags
-            public const string PipeFittingTag = "MEI Mech Tag Pipe Fitting";
-            public const string PipeTag = "MEI Mech Tag Pipe";
-            public const string PipeTagRotating = "MEI Mech Tag Pipe - Rotating";
-            public const string DuctFittingTag = "MEI Mech Tag Duct Fitting";
-            public const string DuctTag = "MEI Mech Tag Duct";
-            public const string DuctTagRotating = "MEI Mech Tag Duct - Rotating";
+        //Tags
+        public const string PipeFittingTag = "MEI Mech Tag Pipe Fitting";
+        public const string PipeTag = "MEI Mech Tag Pipe";
+        public const string PipeTagRotating = "MEI Mech Tag Pipe - Rotating";
+        public const string DuctFittingTag = "MEI Mech Tag Duct Fitting";
+        public const string DuctTag = "MEI Mech Tag Duct";
+        public const string DuctTagRotating = "MEI Mech Tag Duct - Rotating";
 
-            //Ducts
-            public const string RoundDuct = "Round Duct";
-            public const string MiteredElbow = "MEI Rect Elbow Mitered";
+        //Ducts
+        public const string RoundDuct = "Round Duct";
+        public const string MiteredElbow = "MEI Rect Elbow Mitered";
 
-            //Annotations
-            public const string BlankLeader = "MEI Blank Leader";
-            public const string KeynoteTag = "MEI Keynote Tag";
-        }
-        public class Parameter
-        {
-            public const string FittingUpDn = "MEI Display UP or DN";
-            public const string ProjectFolder = "MEI Project Folder";
-            public const string ProjectNumber = "MEI Project Number";
-            public const string ViewSubdiscipline = "MEI Discipline-Sub";
-            public const string DisplaySeparation = "MEI Display Separation";
-            public const string BreakerOptions = "MEI Breaker Options";
-            public const string DisplayVanes = "MEI Display Vanes";
-        }
-        public class Workset
-        {
-            public const string MechEnlarged = "M-Enlarged Plans";
-            public const string ElecEnlarged = "E-Enlarged Plans";
-            public const string ElecSite = "E-Site";
-        }
-        public class File
-        {
-            public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
-            public const string DependencyDir = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\Dependencies\";
-            public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
-            public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R22\Proficient.dll";
-            public const string CommonSettings = @"Z:\Revit\Proficient\Proficient Config Files\appsettings.json";
-            public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
-            public const string SilentUpdateExe = @"Z:\Revit\Proficient\ProficientSilentUpdate.exe";
-        }
-
-        public class Guids
-        {
-            public static Guid ProficientSchema = new Guid("7487EBF8-6F17-41BA-B531-C93DB46F2DD9");
-        }
-
+        //Annotations
+        public const string BlankLeader = "MEI Blank Leader";
+        public const string KeynoteTag = "MEI Keynote Tag";
     }
+    public class Parameter
+    {
+        public const string FittingUpDn = "MEI Display UP or DN";
+        public const string ProjectFolder = "MEI Project Folder";
+        public const string ProjectNumber = "MEI Project Number";
+        public const string ViewSubdiscipline = "MEI Discipline-Sub";
+        public const string DisplaySeparation = "MEI Display Separation";
+        public const string BreakerOptions = "MEI Breaker Options";
+        public const string DisplayVanes = "MEI Display Vanes";
+    }
+    public class Workset
+    {
+        public const string MechEnlarged = "M-Enlarged Plans";
+        public const string ElecEnlarged = "E-Enlarged Plans";
+        public const string ElecSite = "E-Site";
+    }
+    public class File
+    {
+        public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
+        public const string DependencyDir = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\Dependencies\";
+        public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
+        public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R22\Proficient.dll";
+        public const string CommonSettings = @"Z:\Revit\Proficient\Proficient Config Files\appsettings.json";
+        public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
+        public const string SilentUpdateExe = @"Z:\Revit\Proficient\ProficientSilentUpdate.exe";
+    }
+
+    public class Guids
+    {
+        public static Guid ProficientSchema = new ("7487EBF8-6F17-41BA-B531-C93DB46F2DD9");
+    }
+
 }

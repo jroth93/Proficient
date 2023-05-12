@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,35 +7,31 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.IO;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 
-namespace Proficient.Forms
+namespace Proficient.Forms;
+
+/// <summary>
+/// Interaction logic for ProficientPanel.xaml
+/// </summary>
+public partial class ProficientPane : Page, IDockablePaneProvider
 {
-    /// <summary>
-    /// Interaction logic for ProficientPanel.xaml
-    /// </summary>
-    public partial class ProficientPane : Page, IDockablePaneProvider
+    public ProficientPane()
     {
-        public ProficientPane()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        public void SetupDockablePane(DockablePaneProviderData data)
+    public void SetupDockablePane(DockablePaneProviderData data)
+    {
+        data.FrameworkElement = this;
+        data.InitialState = new DockablePaneState
         {
-            data.FrameworkElement = this;
-            data.InitialState = new DockablePaneState
-            {
-                DockPosition = DockPosition.Right,
+            DockPosition = DockPosition.Right,
 #if R19
 #else
-                MinimumWidth = 200
+            MinimumWidth = 200
 #endif
-            };
-            data.VisibleByDefault = true;
-            data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
-        }
+        };
+        data.VisibleByDefault = true;
+        data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
     }
 }

@@ -10,7 +10,7 @@
         <RootNamespace>Proficient</RootNamespace>
         <AssemblyName>Proficient</AssemblyName>
 		<TargetFrameworks>net48;net471;net47</TargetFrameworks>
-	    <LangVersion>8.0</LangVersion>
+	    <LangVersion>11.0</LangVersion>
         <FileAlignment>512</FileAlignment>
         <Deterministic>true</Deterministic>
         <SignAssembly>false</SignAssembly>
@@ -186,6 +186,18 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2019\Xceed.Wpf.AvalonDock.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
 			<Private>False</Private>
@@ -196,6 +208,18 @@
 		</Reference>
 		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2020\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2020\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
@@ -212,6 +236,18 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2021\Xceed.Wpf.AvalonDock.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPI.dll</HintPath>
 			<Private>False</Private>
@@ -222,6 +258,18 @@
 		</Reference>
 		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2022\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2022\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
@@ -236,6 +284,19 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2023\AdWindows.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2023\Xceed.Wpf.AvalonDock.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+
 	</ItemGroup>
 	
 	<ItemGroup Label="System References">
@@ -264,8 +325,9 @@
         <Reference Include="WindowsBase" />
         <Reference Include="PresentationCore" />
         <Reference Include="PresentationFramework" />
-    </ItemGroup>
+	</ItemGroup>
   <ItemGroup Label="Code Files">
+    <None Include="Archive\ClearUpDn.cs" />
     <Compile Include="Forms\BlankViewModel.cs" />
     <Compile Include="Forms\RelayCommand.cs" />
     <Compile Include="Forms\GlobalNotesSelectForm.xaml.cs">
@@ -277,29 +339,30 @@
     <Compile Include="Forms\NotesPaneViewModel.cs" />
     <Compile Include="Forms\ProficientPane.xaml.cs" />
     <Compile Include="Forms\MarkdownConverter.cs" />
-    <Compile Include="Mech\DuctFittingDMU.cs" />
-    <Compile Include="Elec\BreakerDMU.cs" />
+    <Compile Include="GlobalUsings.cs" />
+    <Compile Include="Mechanical\DuctFittingDmu.cs" />
+    <Compile Include="Electrical\BreakerDmu.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Utilities\VisualTreeHelpers.cs" />
+    <Compile Include="Utilities\DocumentTabEventUtils.cs" />
     <Compile Include="Utilities\NotesModel.cs" />
-    <Compile Include="Utilities\ESKeys.cs" />
+    <Compile Include="Utilities\SchemaKeys.cs" />
     <Compile Include="Utilities\NotesHandler.cs" />
-    <Compile Include="Utilities\MEIDB.cs" />
+    <Compile Include="Utilities\MeiDb.cs" />
     <Compile Include="Forms\Markdown.cs" />
     <Compile Include="Utilities\NotesRequest.cs" />
     <Compile Include="Utilities\Ribbon.cs" />
     <Compile Include="Forms\Blank.xaml.cs" />
     <Compile Include="Forms\UpDn.xaml.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="General\AlignScheduleR.cs" />
-    <Compile Include="General\AlignScheduleL.cs" />
     <Compile Include="General\AlignSchedule.cs" />
     <Compile Include="Utilities\KeyListener.cs" />
     <Compile Include="General\MatchSchWidth.cs" />
-    <Compile Include="WIP\ReloadFamily.cs" />
+    <Compile Include="General\ReloadFamily.cs" />
     <Compile Include="WIP\OpenViewTemplate.cs" />
     <Compile Include="Utilities\ShowNotesPane.cs" />
     <Compile Include="General\ChangeCalloutRef.cs" />
@@ -311,22 +374,21 @@
     <Compile Include="Keynotes\ExternalResourceUIServer.cs" />
     <Compile Include="Keynotes\ExternalResourceDBServer.cs" />
     <Compile Include="Keynotes\KeynoteUtil.cs" />
-    <Compile Include="Keynotes\KNLauncher.cs" />
-    <Compile Include="Keynotes\KNReload.cs" />
-    <Compile Include="Elec\LoadNameUpdate.cs" />
-    <Compile Include="Elec\ElecLoadDMU.cs" />
-    <Compile Include="Elec\PanelUtil.cs" />
-    <Compile Include="Mech\ToggleUpDn.cs" />
-    <Compile Include="Mech\PipeTag.cs" />
-    <Compile Include="Mech\ClearUpDn.cs" />
-    <Compile Include="Mech\DuctElbowToggle.cs" />
-    <Compile Include="Mech\DamperToggle.cs" />
-    <Compile Include="Mech\SetFittingUpDn.cs" />
-    <Compile Include="Mech\DuctLauncher.cs" />
-    <Compile Include="Mech\DuctTag.cs" />
-    <Compile Include="Mech\PipeSpacer.cs" />
-    <Compile Include="Mech\HardBreak.cs" />
-    <Compile Include="Mech\WipeMark.cs" />
+    <Compile Include="Keynotes\KnLauncher.cs" />
+    <Compile Include="Keynotes\KnReload.cs" />
+    <Compile Include="Electrical\LoadNameUpdate.cs" />
+    <Compile Include="Electrical\ElecLoadDmu.cs" />
+    <Compile Include="Electrical\PanelUtil.cs" />
+    <Compile Include="Mechanical\ToggleUpDn.cs" />
+    <Compile Include="Mechanical\PipeTag.cs" />
+    <Compile Include="Mechanical\DuctElbowToggle.cs" />
+    <Compile Include="Mechanical\DamperToggle.cs" />
+    <Compile Include="Mechanical\SetFittingUpDn.cs" />
+    <Compile Include="Mechanical\DuctLauncher.cs" />
+    <Compile Include="Mechanical\DuctTag.cs" />
+    <Compile Include="Mechanical\PipeSpacer.cs" />
+    <Compile Include="Mechanical\HardBreak.cs" />
+    <Compile Include="Mechanical\WipeMark.cs" />
     <Compile Include="Utilities\DesignNotes.cs" />
     <Compile Include="Utilities\Icons.cs" />
     <Compile Include="Utilities\NativeMethods.cs" />
@@ -335,27 +397,27 @@
     <Compile Include="Utilities\Settings.cs" />
     <Compile Include="Utilities\RevitTask.cs" />
     <Compile Include="Utilities\Util.cs" />
-    <Compile Include="Text\FlattenText.cs" />
-    <Compile Include="Text\TextLeader.cs" />
-    <Compile Include="Text\CombineText.cs" />
+    <Compile Include="General\FlattenText.cs" />
+    <Compile Include="General\TextLeader.cs" />
+    <Compile Include="General\CombineText.cs" />
     <Compile Include="WIP\_Test.cs" />
     <Compile Include="WIP\_Template.cs" />
     <Compile Include="WIP\ReceptaclePlacer.cs" />
     <Compile Include="WIP\RoomSep2SpaceSep.cs" />
     <Compile Include="WIP\TagElKn.cs" />
-    <Content Include="Graph\GraphConfig.txt" />
-    <Content Include="Graph\GraphKNReload.txt" />
-    <Content Include="Graph\GraphKNLauncher.txt" />
-    <Content Include="Graph\MSGraph.txt" />
+    <None Include="Archive\GraphConfig.cs" />
+    <None Include="Archive\GraphKNReload.cs" />
+    <None Include="Archive\GraphKNLauncher.cs" />
+    <None Include="Archive\MSGraph.cs" />
     <EmbeddedResource Include="Icons\notespane.png" />
     <Compile Include="Filters\TypeFilter.cs" />
     <Compile Include="Filters\FamilyFilter.cs" />
     <Compile Include="Filters\CategoryFilter.cs" />
-    <Compile Include="Toggles\ToggleEnlWkst.cs" />
+    <Compile Include="Toggles\ToggleEnlargedWorkset.cs" />
     <Compile Include="Toggles\FlipWorkPlane.cs" />
     <Compile Include="Toggles\FlipElements.cs" />
-    <Compile Include="Toggles\SuppressSchWarning.cs" />
-    <Compile Include="Toggles\ToggleDesignAnno.cs" />
+    <Compile Include="Toggles\ScheduleWarningToggle.cs" />
+    <Compile Include="Toggles\ToggleDesignAnnotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Label="Ductulator Files">
@@ -572,9 +634,12 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\reloadfam.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Label="Post Build Events" />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath) " />
+    <Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath)" />
   </Target>
 </Project>

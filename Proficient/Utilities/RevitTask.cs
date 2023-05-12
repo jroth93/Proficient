@@ -1,7 +1,6 @@
-﻿using Autodesk.Revit.UI;
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
+namespace Proficient.Utilities;
 /// <summary>
 /// <see cref="System.Threading.Tasks.Task"/> wrapper
 /// for <see cref="Autodesk.Revit.UI.IExternalEventHandler"/>

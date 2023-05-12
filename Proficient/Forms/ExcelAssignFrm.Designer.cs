@@ -1,4 +1,4 @@
-﻿namespace Proficient
+﻿namespace Proficient.Forms
 {
     partial class ExcelAssignFrm
     {
@@ -34,7 +34,7 @@
             this.xlgroup = new System.Windows.Forms.GroupBox();
             this.hdrLbl = new System.Windows.Forms.Label();
             this.hdrRowCtrl = new System.Windows.Forms.NumericUpDown();
-            this.keyColDrop = new System.Windows.Forms.ComboBox();
+            this.KeyColDrop = new System.Windows.Forms.ComboBox();
             this.keycolumnlbl = new System.Windows.Forms.Label();
             this.wkshtDrop = new System.Windows.Forms.ComboBox();
             this.Wkshtlbl = new System.Windows.Forms.Label();
@@ -87,13 +87,13 @@
             this.xlfilebtn.TabIndex = 2;
             this.xlfilebtn.Text = "...";
             this.xlfilebtn.UseVisualStyleBackColor = true;
-            this.xlfilebtn.Click += new System.EventHandler(this.xlfilebtn_Click);
+            this.xlfilebtn.Click += new System.EventHandler(this.XlFileBtn_Click);
             // 
             // xlgroup
             // 
             this.xlgroup.Controls.Add(this.hdrLbl);
             this.xlgroup.Controls.Add(this.hdrRowCtrl);
-            this.xlgroup.Controls.Add(this.keyColDrop);
+            this.xlgroup.Controls.Add(this.KeyColDrop);
             this.xlgroup.Controls.Add(this.keycolumnlbl);
             this.xlgroup.Controls.Add(this.wkshtDrop);
             this.xlgroup.Controls.Add(this.Wkshtlbl);
@@ -137,20 +137,20 @@
             0,
             0,
             0});
-            this.hdrRowCtrl.ValueChanged += new System.EventHandler(this.wkshtDrop_SelectedIndexChanged);
+            this.hdrRowCtrl.ValueChanged += new System.EventHandler(this.WsDrop_SelectedIndexChanged);
             // 
-            // keyColDrop
+            // KeyColDrop
             // 
-            this.keyColDrop.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.keyColDrop.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.keyColDrop.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.keyColDrop.FormattingEnabled = true;
-            this.keyColDrop.Location = new System.Drawing.Point(84, 122);
-            this.keyColDrop.Margin = new System.Windows.Forms.Padding(2);
-            this.keyColDrop.Name = "keyColDrop";
-            this.keyColDrop.Size = new System.Drawing.Size(195, 21);
-            this.keyColDrop.TabIndex = 5;
-            this.keyColDrop.SelectedIndexChanged += new System.EventHandler(this.keycolumndrop_SelectedIndexChanged);
+            this.KeyColDrop.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.KeyColDrop.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.KeyColDrop.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.KeyColDrop.FormattingEnabled = true;
+            this.KeyColDrop.Location = new System.Drawing.Point(84, 122);
+            this.KeyColDrop.Margin = new System.Windows.Forms.Padding(2);
+            this.KeyColDrop.Name = "KeyColDrop";
+            this.KeyColDrop.Size = new System.Drawing.Size(195, 21);
+            this.KeyColDrop.TabIndex = 5;
+            this.KeyColDrop.SelectedIndexChanged += new System.EventHandler(this.KeyColumnDrop_SelectedIndexChanged);
             // 
             // keycolumnlbl
             // 
@@ -173,7 +173,7 @@
             this.wkshtDrop.Name = "wkshtDrop";
             this.wkshtDrop.Size = new System.Drawing.Size(195, 21);
             this.wkshtDrop.TabIndex = 3;
-            this.wkshtDrop.SelectedIndexChanged += new System.EventHandler(this.wkshtDrop_SelectedIndexChanged);
+            this.wkshtDrop.SelectedIndexChanged += new System.EventHandler(this.WsDrop_SelectedIndexChanged);
             // 
             // Wkshtlbl
             // 
@@ -211,7 +211,7 @@
             this.catDrop.Name = "catDrop";
             this.catDrop.Size = new System.Drawing.Size(195, 21);
             this.catDrop.TabIndex = 6;
-            this.catDrop.SelectedIndexChanged += new System.EventHandler(this.catDrop_SelectedIndexChanged);
+            this.catDrop.SelectedIndexChanged += new System.EventHandler(this.CatDrop_SelectedIndexChanged);
             // 
             // catlbl
             // 
@@ -235,7 +235,7 @@
             this.familyDrop.Size = new System.Drawing.Size(195, 21);
             this.familyDrop.Sorted = true;
             this.familyDrop.TabIndex = 7;
-            this.familyDrop.SelectedIndexChanged += new System.EventHandler(this.familydrop_SelectedIndexChanged);
+            this.familyDrop.SelectedIndexChanged += new System.EventHandler(this.FamilyDrop_SelectedIndexChanged);
             // 
             // familylbl
             // 
@@ -277,7 +277,7 @@
             this.addbtn.TabIndex = 10;
             this.addbtn.Text = "+";
             this.addbtn.UseVisualStyleBackColor = true;
-            this.addbtn.Click += new System.EventHandler(this.addbtn_Click);
+            this.addbtn.Click += new System.EventHandler(this.AddBtn_Click);
             // 
             // subtractbtn
             // 
@@ -289,7 +289,7 @@
             this.subtractbtn.TabIndex = 11;
             this.subtractbtn.Text = "-";
             this.subtractbtn.UseVisualStyleBackColor = true;
-            this.subtractbtn.Click += new System.EventHandler(this.subtractbtn_Click);
+            this.subtractbtn.Click += new System.EventHandler(this.SubtractBtn_Click);
             // 
             // assnbtn
             // 
@@ -301,7 +301,7 @@
             this.assnbtn.TabIndex = 13;
             this.assnbtn.Text = "Assign";
             this.assnbtn.UseVisualStyleBackColor = true;
-            this.assnbtn.Click += new System.EventHandler(this.assnbtn_Click);
+            this.assnbtn.Click += new System.EventHandler(this.AssnBtn_Click);
             // 
             // closebtn
             // 
@@ -313,7 +313,7 @@
             this.closebtn.TabIndex = 14;
             this.closebtn.Text = "Close";
             this.closebtn.UseVisualStyleBackColor = true;
-            this.closebtn.Click += new System.EventHandler(this.closebtn_Click);
+            this.closebtn.Click += new System.EventHandler(this.CloseBtn_Click);
             // 
             // getColsBtn
             // 
@@ -372,7 +372,7 @@
             this.dp1.Size = new System.Drawing.Size(158, 21);
             this.dp1.Sorted = true;
             this.dp1.TabIndex = 9;
-            this.dp1.SelectedIndexChanged += new System.EventHandler(this.dp1_SelectedIndexChanged);
+            this.dp1.SelectedIndexChanged += new System.EventHandler(this.DP1_SelectedIndexChanged);
             // 
             // ExcelAssignFrm
             // 
@@ -413,7 +413,7 @@
         private System.Windows.Forms.TextBox filelocationtxt;
         private System.Windows.Forms.Button xlfilebtn;
         private System.Windows.Forms.GroupBox xlgroup;
-        private System.Windows.Forms.ComboBox keyColDrop;
+        private System.Windows.Forms.ComboBox KeyColDrop;
         private System.Windows.Forms.Label keycolumnlbl;
         private System.Windows.Forms.ComboBox wkshtDrop;
         private System.Windows.Forms.Label Wkshtlbl;

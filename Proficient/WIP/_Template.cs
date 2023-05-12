@@ -1,28 +1,23 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿namespace Proficient.WIP;
 
-namespace Proficient
+[Transaction(TransactionMode.Manual)]
+internal class _Template : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class _Template : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
-        {
-            UIApplication app = revit.Application;
-            UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = uidoc.Document;
-            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
+        var app = revit.Application;
+        var uiDoc = revit.Application.ActiveUIDocument;
+        var doc = uiDoc.Document;
+        var view = uiDoc.ActiveView;
 
-            using (Transaction tx = new Transaction(doc, "commandname"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                }
+        using Transaction tx = new (doc, "commandname");
+        if (tx.Start() != TransactionStatus.Started)
+            return Result.Failed;
 
-                tx.Commit();
-            }
+        //do stuff
 
-            return Result.Succeeded;
-        }
+        tx.Commit();
+
+        return Result.Succeeded;
     }
 }

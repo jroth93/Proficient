@@ -1,128 +1,146 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI.Selection;
-using System;
-using System.Collections.Generic;
 
-namespace Proficient
+namespace Proficient.Toggles;
+
+[Transaction(TransactionMode.Manual)]
+internal class FlipElements : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class FlipElements : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
+        var uiDoc = revit.Application.ActiveUIDocument;
+        var doc = uiDoc.Document;
+
+        var selIds = uiDoc.Selection.GetElementIds();
+
+        if (selIds is not null && selIds.Count > 0)
         {
-            UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = uidoc.Document;
-
-            IList<ElementId> selectedIds = uidoc.Selection.GetElementIds() as IList<ElementId>;
-
-            if (selectedIds.Count > 0)
+            foreach (var eid in selIds)
             {
-
-                foreach (ElementId elemid in selectedIds)
+                if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is ViewSection)
                 {
-                    using (Transaction tx = new Transaction(doc, "Flip"))
-                    {
-                        try
-                        {
-                            if (tx.Start() == TransactionStatus.Started)
-                            {
-                                FamilyInstance faminst = doc.GetElement(elemid) as FamilyInstance;
-                                if (faminst.CanFlipFacing) { faminst.flipFacing(); }
-                                else if ((faminst.MEPModel as MechanicalFitting).PartType.ToString() == "Tee") { FlipTee(uidoc, doc, faminst); }
-                            }
-                        }
-                        catch (NullReferenceException)
-                        {
-                            continue;
-                        }
-                        tx.Commit();
-                    }
-                }
-                return Autodesk.Revit.UI.Result.Succeeded;
-            }
-            while (true)
-            {
-                Reference reference = null;
-                FamilyInstance faminst = null;
-                try
-                {
-                    reference = uidoc.Selection.PickObject(ObjectType.Element);
-                    faminst = doc.GetElement(reference) as FamilyInstance;
-                    using (Transaction tx = new Transaction(doc, "Flip"))
-                    {
-                        if (tx.Start() == TransactionStatus.Started)
-                        {
-                            if (faminst.CanFlipFacing) { faminst.flipFacing(); }
-                            if ((faminst.MEPModel as MechanicalFitting).PartType.ToString() == "Tee") { FlipTee(uidoc, doc, faminst); }
-                        }
-                        tx.Commit();
-                    }
-                }
-                catch (NullReferenceException)
-                {
+                    FlipSection(doc, eid);
                     continue;
                 }
-                catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+                try
                 {
-                    return Result.Succeeded;
+                    using var tx = new Transaction(doc, "Flip Element");
+                    if (tx.Start() != TransactionStatus.Started)
+                        return Result.Failed;
+
+                    if (doc.GetElement(eid) is not FamilyInstance famInst)
+                        continue;
+
+                    if (famInst.CanFlipFacing)
+                        famInst.flipFacing();
+                    else if ((famInst.MEPModel as MechanicalFitting)?.PartType == PartType.Tee)
+                        FlipTee(uiDoc, doc, famInst);
+
+                    tx.Commit();
+
                 }
+                catch (NullReferenceException) {  }
             }
+            return Result.Succeeded;
         }
 
-        static void FlipTee(UIDocument uidoc, Document doc, FamilyInstance faminst)
+        while (true)
         {
-            ConnectorSet teeconset = faminst.MEPModel.ConnectorManager.Connectors;
-            IList<Connector> conset = new List<Connector>();
-            IList<LocationCurve> locset = new List<LocationCurve>();
-            foreach (Connector con in teeconset)
+            try
             {
-                foreach (Connector refcon in con.AllRefs)
+                var eid = uiDoc.Selection.PickObject(ObjectType.Element).ElementId;
+
+                if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is ViewSection)
                 {
-                    conset.Add(refcon);
-                    locset.Add(refcon.Owner.Location as LocationCurve);
+                    FlipSection(doc, new ElementId(eid.IntegerValue + 1));
+                    continue;
                 }
+
+                using var tx = new Transaction(doc, "Flip Element");
+                if (tx.Start() != TransactionStatus.Started)
+                    return Result.Failed;
+
+                if (doc.GetElement(eid) is FamilyInstance famInst)
+                {
+                    if (famInst.CanFlipFacing)
+                        famInst.flipFacing();
+                    else if ((famInst.MEPModel as MechanicalFitting)?.PartType == PartType.Tee)
+                        FlipTee(uiDoc, doc, famInst);
+                }
+                tx.Commit();
+                
             }
-
-            IList<XYZ> dirset = new List<XYZ>();
-
-            foreach (LocationCurve loccurve in locset)
+            catch (NullReferenceException) { }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
-                dirset.Add((loccurve.Curve as Line).Direction);
+                return Result.Succeeded;
             }
-
-            Connector con1 = null, con2 = null, con3 = null;
-            if (Math.Round(dirset[0].X, 3) == Math.Round(dirset[1].X, 3) && Math.Round(dirset[0].Y, 3) == Math.Round(dirset[1].Y, 3))
-            {
-                con1 = conset[0];
-                con2 = conset[1];
-                con3 = conset[2];
-            }
-
-            else if (Math.Round(dirset[1].X, 3) == Math.Round(dirset[2].X, 3) && Math.Round(dirset[1].Y, 3) == Math.Round(dirset[2].Y, 3))
-            {
-                con1 = conset[1];
-                con2 = conset[2];
-                con3 = conset[0];
-            }
-
-            else if (Math.Round(dirset[0].X, 3) == Math.Round(dirset[2].X, 3) && Math.Round(dirset[0].Y, 3) == Math.Round(dirset[2].Y, 3))
-            {
-                con1 = conset[0];
-                con2 = conset[2];
-                con3 = conset[1];
-            }
-
-            XYZ originalhand = faminst.HandOrientation;
-            doc.Delete(faminst.Id);
-            FamilyInstance newtee = uidoc.Document.Create.NewTeeFitting(con1, con2, con3);
-            if (Math.Round(newtee.HandOrientation.X, 3) == Math.Round(originalhand.X, 3) && Math.Round(newtee.HandOrientation.Y, 3) == Math.Round(originalhand.Y, 3))
-            {
-                doc.Delete(newtee.Id);
-                uidoc.Document.Create.NewTeeFitting(con2, con1, con3);
-            }
-            return;
         }
+    }
+
+    private static void FlipSection(Document doc, ElementId eid)
+    {
+        if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is not View sec) return;
+            
+        var p = Plane.CreateByNormalAndOrigin(sec.ViewDirection, sec.Origin);
+            
+        using var tx = new Transaction(doc, "Flip Section");
+        if (tx.Start() != TransactionStatus.Started)
+            ElementTransformUtils.MirrorElements(doc, new List<ElementId>{eid}, p, false);
+        tx.Commit();
+    }
+
+    private static void FlipTee(UIDocument uiDoc, Document doc, FamilyInstance fi)
+    {
+        var teeCons = fi.MEPModel.ConnectorManager.Connectors;
+        var cons = new List<Connector>();
+        var locs = new List<LocationCurve>();
+        foreach (Connector con in teeCons)
+        {
+            foreach (Connector refCon in con.AllRefs)
+            {
+                cons.Add(refCon);
+                locs.Add(refCon.Owner.Location as LocationCurve);
+            }
+        }
+
+        var dirSet = new List<XYZ>();
+
+        foreach (var lc in locs)
+        {
+            dirSet.Add((lc.Curve as Line).Direction);
+        }
+
+        Connector con1 = null, con2 = null, con3 = null;
+        if (Math.Round(dirSet[0].X, 3) == Math.Round(dirSet[1].X, 3) && Math.Round(dirSet[0].Y, 3) == Math.Round(dirSet[1].Y, 3))
+        {
+            con1 = cons[0];
+            con2 = cons[1];
+            con3 = cons[2];
+        }
+
+        else if (Math.Round(dirSet[1].X, 3) == Math.Round(dirSet[2].X, 3) && Math.Round(dirSet[1].Y, 3) == Math.Round(dirSet[2].Y, 3))
+        {
+            con1 = cons[1];
+            con2 = cons[2];
+            con3 = cons[0];
+        }
+
+        else if (Math.Round(dirSet[0].X, 3) == Math.Round(dirSet[2].X, 3) && Math.Round(dirSet[0].Y, 3) == Math.Round(dirSet[2].Y, 3))
+        {
+            con1 = cons[0];
+            con2 = cons[2];
+            con3 = cons[1];
+        }
+
+        XYZ originalhand = fi.HandOrientation;
+        doc.Delete(fi.Id);
+        FamilyInstance newtee = uiDoc.Document.Create.NewTeeFitting(con1, con2, con3);
+        if (Math.Round(newtee.HandOrientation.X, 3) == Math.Round(originalhand.X, 3) && Math.Round(newtee.HandOrientation.Y, 3) == Math.Round(originalhand.Y, 3))
+        {
+            doc.Delete(newtee.Id);
+            uiDoc.Document.Create.NewTeeFitting(con2, con1, con3);
+        }
+        return;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Proficient
+﻿namespace Proficient.Forms
 {
     partial class MsgBox
     {

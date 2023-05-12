@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -15,64 +11,63 @@ using System.ComponentModel;
 using Proficient.Utilities;
 using System.Globalization;
 
-namespace Proficient.Forms
+namespace Proficient.Forms;
+
+/// <summary>
+/// Interaction logic for EntryForm.xaml
+/// </summary>
+public partial class GlobalNotesSelectForm : Window
 {
-    /// <summary>
-    /// Interaction logic for EntryForm.xaml
-    /// </summary>
-    public partial class GlobalNotesSelectForm : Window
+    public GlobalNotesSelectForm(int curId)
     {
-        public GlobalNotesSelectForm(int curId)
+        InitializeComponent();
+        DataContext = new NotesSelectViewModel(curId);
+    }
+
+
+    private void OkButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;
+
+    private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
         {
-            InitializeComponent();
-            DataContext = new NotesSelectViewModel(curId);
+            DragMove();
         }
+    }
+}
 
+public class NotesSelectViewModel : INotifyPropertyChanged
+{
+    public NotesSelectViewModel(int curId)
+    {
+        NoteEntries = MeiDbConn.GetEqiNotes();
+        NoteEntries.Sort((x,y) => x.Description.CompareTo(y.Description));
 
-        private void OkButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;
-
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        if(curId != 0)
         {
-            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
-            {
-                DragMove();
-            }
+            NoteEntry = NoteEntries.Where(x => x.Id == curId).FirstOrDefault();
         }
     }
 
-    public class NotesSelectViewModel : INotifyPropertyChanged
+    public List<EqiNote> NoteEntries { get; set; }
+
+    private EqiNote _noteEntry;
+
+    public EqiNote NoteEntry
     {
-        public NotesSelectViewModel(int curId)
+        get { return _noteEntry; }
+        set
         {
-            NoteEntries = MEIDBConn.GetEQINotes();
-            NoteEntries.Sort((x,y) => x.Description.CompareTo(y.Description));
-
-            if(curId != 0)
-            {
-                NoteEntry = NoteEntries.Where(x => x.Id == curId).FirstOrDefault();
-            }
-        }
-
-        public List<EQINote> NoteEntries { get; set; }
-
-        private EQINote _noteEntry;
-
-        public EQINote NoteEntry
-        {
-            get { return _noteEntry; }
-            set
-            {
-                if (_noteEntry == value) return;
-                _noteEntry = value;
+            if (_noteEntry == value) return;
+            _noteEntry = value;
                 
-                NotifyPropertyChanged("NoteEntry");
-            }
+            NotifyPropertyChanged("NoteEntry");
         }
-        public event PropertyChangedEventHandler PropertyChanged;
+    }
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        private void NotifyPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    private void NotifyPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

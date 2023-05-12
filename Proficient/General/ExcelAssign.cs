@@ -1,438 +1,365 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using Proficient.Forms;
+using System.Globalization;
 using XL = Microsoft.Office.Interop.Excel;
 
-namespace Proficient
+namespace Proficient.General;
+
+[Transaction(TransactionMode.Manual)]
+internal class ExcelAssign : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class ExcelAssign : IExternalCommand
+    private static Document _doc;
+    private static XL.Application _xl;
+    private static XL.Workbook _wb;
+    private static XL.Worksheet _ws;
+    private static bool _xlReadOnly;
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        private static Document doc;
-        private static XL.Application xl;
-        private static XL.Workbook wb;
-        private static XL.Worksheet ws;
-        private static bool xlReadOnly = false;
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
-        {
-            doc = revit.Application.ActiveUIDocument.Document;
-            ExcelAssignFrm eafrm = new ExcelAssignFrm();
-            eafrm.ShowDialog();
+        _doc = revit.Application.ActiveUIDocument.Document;
+        var eaFrm = new ExcelAssignFrm();
+        eaFrm.ShowDialog();
 
-            if (xlReadOnly) File.Delete(wb.FullName);
-            else wb.Close(false);
+        if (_wb is null) return Result.Cancelled;
 
-            return Result.Succeeded;
-        }
+        if (_xlReadOnly) File.Delete(_wb.FullName);
+        else _wb.Close(false);
 
-        public static String[] GetExcelColumns(int wsIndex, int hdrRow)
-        {
-            List<string> cols = new List<string>();
-            ws = wb.Worksheets.Item[wsIndex];
+        return Result.Succeeded;
+    }
 
-            int totCols = ws.UsedRange.Columns.Count;
-            string cellVal;
+    public static string[] GetExcelColumns(int wsIndex, int hdrRow)
+    {
+        var cols = new List<string>();
+        _ws = _wb.Worksheets.Item[wsIndex];
 
-            if (totCols > 0)
-            {
-                for (int i = 1; i <= totCols; i++)
-                {
-                    cellVal = ws.Cells[hdrRow, i].Value == null ? "" : Convert.ToString(ws.Cells[hdrRow, i].Value);
-                    cols.Add(cellVal);
-                }
-            }
+        int totCols = _ws.UsedRange.Columns.Count;
 
+        if (totCols == 0) 
             return cols.ToArray();
+
+        for (var i = 1; i <= totCols; i++)
+        {
+            string cellVal = _ws.Cells[hdrRow, i].Value == null ? "" : Convert.ToString(_ws.Cells[hdrRow, i].Value);
+            cols.Add(cellVal);
         }
 
-        public static String[] OpenExcel(string xlPath)
-        {
-            xl = new XL.Application();
+        return cols.ToArray();
+    }
 
-            try
+    public static string[] OpenExcel(string xlPath)
+    {
+        _xl = new XL.Application();
+
+        try
+        {
+            var stream = File.Open(xlPath, FileMode.Open, FileAccess.Read);
+            stream.Close();
+        }
+        catch (IOException ex)
+        {
+            if (ex.Message.Contains("being used by another process"))
             {
-                FileStream stream = File.Open(xlPath, FileMode.Open, FileAccess.Read);
-                stream.Close();
-            }
-            catch (IOException ex)
-            {
-                if (ex.Message.Contains("being used by another process"))
-                {
-                    string newPath =
-                        Path.GetExtension(xlPath) == ".xlsx" ?
+                var newPath =
+                    Path.GetExtension(xlPath) == ".xlsx" ?
                         Path.GetDirectoryName(xlPath) + @"\" + Path.GetFileNameWithoutExtension(xlPath) + "-temp.xlsx" :
                         Path.GetDirectoryName(xlPath) + @"\" + Path.GetFileNameWithoutExtension(xlPath) + "-temp.xlsm";
-                    File.Copy(xlPath, newPath);
-                    xlPath = newPath;
-                    xlReadOnly = true;
-                }
+                File.Copy(xlPath, newPath);
+                xlPath = newPath;
+                _xlReadOnly = true;
             }
-
-            wb = xl.Workbooks.Open(Filename: xlPath, ReadOnly: true);
-            var ws = wb.Worksheets;
-            List<string> wslist = new List<string>();
-
-            for (int i = 1; i <= ws.Count; i++)
-                wslist.Add((ws.Item[i] as XL.Worksheet).Name);
-
-            return wslist.ToArray();
         }
+
+        _wb = _xl.Workbooks.Open(Filename: xlPath, ReadOnly: true);
+        string[] ws = _wb.Worksheets.Cast<XL.Worksheet>().Select(ws => ws.Name).ToArray();
+
+        return ws;
+    }
 #if (FORGE)
-        private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
+    private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
+    {
+
+        try
         {
             switch (parType)
             {
                 case "String":
-                    return Convert.ToString(ws.Cells[row, col].Value);
+                    return Convert.ToString(_ws.Cells[row, col].Value);
                 case "Integer":
-                    try
-                    {
-                        int val = Convert.ToInt32(ws.Cells[row, col].Value);
-                        val = (int)UnitUtils.ConvertToInternalUnits(val, dispUnit);
-                        return val;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    int iVal = Convert.ToInt32(_ws.Cells[row, col].Value);
+                    iVal = (int)UnitUtils.ConvertToInternalUnits(iVal, dispUnit);
+                    return iVal;
                 case "Double":
-                    try
-                    {
-                        double val = Convert.ToDouble(ws.Cells[row, col].Value);
-                        val = UnitUtils.ConvertToInternalUnits(val, dispUnit);
-                        return val;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-
+                    double dVal = Convert.ToDouble(_ws.Cells[row, col].Value);
+                    dVal = UnitUtils.ConvertToInternalUnits(dVal, dispUnit);
+                    return dVal;
                 case "ElementId":
-                    try
-                    {
-                        return new ElementId(Convert.ToInt32(ws.Cells[row, col].Value));
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    return new ElementId(Convert.ToInt32(_ws.Cells[row, col].Value));
+                default:
+                    return null;
             }
+        }
+        catch
+        {
             return null;
         }
+
+    }
 #else
         private static dynamic GetCellVal(int row, int col, string parType, DisplayUnitType dispUnit)
         {
-            switch (parType)
+            try
             {
-                case "String":
-                    return Convert.ToString(ws.Cells[row, col].Value);
-                case "Integer":
-                    try
-                    {
-                        int val = Convert.ToInt32(ws.Cells[row, col].Value);
-                        val = (int)UnitUtils.ConvertToInternalUnits(val, dispUnit);
-                        return val;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                case "Double":
-                    try
-                    {
-                        double val = Convert.ToDouble(ws.Cells[row, col].Value);
-                        val = UnitUtils.ConvertToInternalUnits(val, dispUnit);
-                        return val;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-
-                case "ElementId":
-                    try
-                    {
-                        return new ElementId(Convert.ToInt32(ws.Cells[row, col].Value));
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-            }
-            return null;
-        }
-#endif
-        private static dynamic GetCellVal(int row, int col, string parType)
-        {
-            switch (parType)
-            {
-                case "String":
-                    return Convert.ToString(ws.Cells[row, col].Value);
-                case "Integer":
-                    try
-                    {
-                        return Convert.ToInt32(ws.Cells[row, col].Value);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                case "Double":
-                    try
-                    {
-                        return Convert.ToDouble(ws.Cells[row, col].Value);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-
-                case "ElementId":
-                    try
-                    {
-                        return new ElementId(Convert.ToInt32(ws.Cells[row, col].Value));
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-            }
-            return null;
-        }
-
-        public static void WriteErrorFile(string errorLog)
-        {
-            string logFilePath = wb.Path + "\\ExcelToRevitErrorLog.txt";
-
-            using (StreamWriter sw = File.CreateText(logFilePath))
-            {
-                sw.Write(errorLog);
-            }
-        }
-
-        public static string[] GetCategories()
-        {
-            List<string> cList = new List<string>();
-
-            foreach (Category c in doc.Settings.Categories)
-            {
-                int catCount = new FilteredElementCollector(doc).OfCategoryId(c.Id).Count();
-
-                if (c.AllowsBoundParameters && catCount > 0)
+                switch (parType)
                 {
-                    cList.Add(c.Name);
+                    case "String":
+                        return Convert.ToString(_ws.Cells[row, col].Value);
+                    case "Integer":
+                        int iVal = Convert.ToInt32(_ws.Cells[row, col].Value);
+                        iVal = (int)UnitUtils.ConvertToInternalUnits(iVal, dispUnit);
+                        return iVal;
+                    case "Double":
+                        double dVal = Convert.ToDouble(_ws.Cells[row, col].Value);
+                        dVal = UnitUtils.ConvertToInternalUnits(dVal, dispUnit);
+                        return dVal;
+                    case "ElementId":
+                        return new ElementId(Convert.ToInt32(_ws.Cells[row, col].Value));
+                    default:
+                        return null;
                 }
             }
-            cList.Sort();
-
-            return cList.ToArray();
+            catch
+            {
+                return null;
+            }
         }
-
-        public static String[] GetFamiliesOfCategory(string catName)
+#endif
+    private static dynamic GetCellVal(int row, int col, string parType)
+    {
+        try
         {
-            string[] fn = new FilteredElementCollector(doc)
+            return parType switch
+            {
+                "String" => Convert.ToString(_ws.Cells[row, col].Value),
+                "Integer" => Convert.ToInt32(_ws.Cells[row, col].Value),
+                "Double" => Convert.ToDouble(_ws.Cells[row, col].Value),
+                "ElementId" => new ElementId(Convert.ToInt32(_ws.Cells[row, col].Value)),
+                _ => null
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static void WriteErrorFile(string errorLog)
+    {
+        string logFilePath = _wb.Path + "\\ExcelToRevitErrorLog.txt";
+        File.CreateText(logFilePath).Write(errorLog);
+    }
+
+    public static string[] GetCategories()
+    {
+        var cList = _doc.Settings.Categories
+            .Cast<Category>()
+            .Where(c => c.AllowsBoundParameters)
+            .Where(c => new FilteredElementCollector(_doc).OfCategoryId(c.Id).Any())
+            .Select(c => c.Name)
+            .ToList();
+
+        cList.Sort();
+
+
+        return cList.ToArray();
+    }
+
+    public static string[] GetFamiliesOfCategory(string catName)
+    {
+        string[] fn = new FilteredElementCollector(_doc)
             .OfClass(typeof(Family))
-            .Where(q => (q as Family).FamilyCategory.Name == catName)
+            .Cast<Family>()
+            .Where(q => q.FamilyCategory.Name == catName)
             .Select(q => q.Name)
             .ToArray();
 
-            return fn;
-        }
+        return fn;
+    }
 
-        public static string[] GetFamilyParameters(string familyName)
-        {
-            List<string> pars = new List<string>();
+    public static string[] GetFamilyParameters(string familyName)
+    {
+        var pars = new List<string>();
 
-            FamilySymbol fs = new FilteredElementCollector(doc)
+        var fsPars = new FilteredElementCollector(_doc)
             .OfClass(typeof(FamilySymbol))
-            .Where(q => (q as FamilySymbol).Family.Name == familyName)
-            .FirstOrDefault() as FamilySymbol;
-            foreach (Parameter par in fs.Parameters)
-            {
-                if (!par.IsReadOnly)
-                {
-                    pars.Add(par.Definition.Name + " (type)");
-                }
-            }
+            .Cast<FamilySymbol>()
+            .FirstOrDefault(q => q.Family.Name == familyName)
+            ?.Parameters
+            .Cast<Parameter>()
+            .Where(p => !p.IsReadOnly)
+            .Select(p => p.Definition.Name + " (type)")
+            .ToList();
 
-            FamilyInstance fi = new FilteredElementCollector(doc)
-                .OfClass(typeof(FamilyInstance))
-                .Where(q => (q as FamilyInstance).Symbol.Family.Name == Convert.ToString(familyName))
-                .FirstOrDefault() as FamilyInstance;
-            if (fi != null)
-            {
-                foreach (Parameter par in fi.Parameters)
-                {
-                    if (!par.IsReadOnly)
-                    {
-                        pars.Add(par.Definition.Name + " (inst)");
-                    }
-                }
-            }
+        if(fsPars != null)
+            pars.AddRange(fsPars);
+                
+        var fiPars = new FilteredElementCollector(_doc)
+            .OfClass(typeof(FamilyInstance))
+            .Cast<FamilyInstance>()
+            .FirstOrDefault(q => q.Symbol.Family.Name == familyName)
+            ?.Parameters
+            .Cast<Parameter>()
+            .Where(p => !p.IsReadOnly)
+            .Select(p => p.Definition.Name + " (inst)")
+            .ToList();
 
-            return pars.ToArray();
-        }
+        if(fiPars != null)
+            pars.AddRange(fiPars);
 
-        public static string AssignParameterValuesType(string familyName, string parName, int keyCol, int startRow, int parCol)
+        return pars.ToArray();
+    }
+
+    public static string AssignTypeParameters(string familyName, string parName, int keyCol, int startRow, int parCol)
+    {
+        var errorLog = string.Empty;
+        int totRows = _ws.UsedRange.Rows.Count;
+
+        var fsList = new FilteredElementCollector(_doc)
+            .OfClass(typeof(FamilySymbol))
+            .Cast<FamilySymbol>()
+            .Where(fs => fs.Family.Name == familyName)
+            .ToList();
+
+        var parType = Convert.ToString(fsList.First().LookupParameter(parName).StorageType);
+
+        foreach (var fs in fsList)
         {
-            string errorLog = String.Empty;
-
-            int totRows = ws.UsedRange.Rows.Count;
-            string keyCellVal = null;
-
-            var fslist = new FilteredElementCollector(doc)
-                .OfClass(typeof(FamilySymbol))
-                .Where(q => (q as FamilySymbol).Family.Name == familyName)
-                .OrderBy(q => Convert.ToString(q.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK)));
-
-            string typeMark = null;
-            string parType = Convert.ToString(fslist.First().LookupParameter(parName).StorageType);
-
-            foreach (FamilySymbol fs in fslist)
-            {
-                typeMark = fs.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString();
-                for (int r = startRow; r <= totRows; r++)
-                {
-                    keyCellVal = Convert.ToString(ws.Cells[r, keyCol].Value);
-                    if (typeMark == keyCellVal)
-                    {
-                        bool hasUnits;
-
-                        
-
-                        try
-                        {
-#if (FORGE)
-                            var dut = fs.LookupParameter(parName).GetUnitTypeId();
-#else
-                            DisplayUnitType dut = fs.LookupParameter(parName).DisplayUnitType;
-#endif
-                            hasUnits = true;
-                        }
-                        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
-                        {
-                            hasUnits = false;
-                        }
-
-
-                                using (Transaction tx = new Transaction(doc, "Assign Type Parameter"))
-                        {
-                            if (tx.Start() == TransactionStatus.Started)
-                            {
-#if (FORGE)
-                                var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
-#else
-                                var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
-#endif
-                                if (newVal != null)
-                                {
-                                    fs.LookupParameter(parName).Set(newVal);
-                                    tx.Commit();
-                                }
-                                else
-                                {
-                                    errorLog += $"Incorrect data type in Excel File for element '{typeMark}' parameter '{parName}.' Parameter will not be assigned.\n";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            return errorLog;
-        }
-
-        public static string AssignParameterValuesInst(string familyName, string parName, int keyCol, int startRow, int parCol)
-        {
-            string errorLog = String.Empty;
-
-            int totRows = ws.UsedRange.Rows.Count;
-
-            List<Element> filist = new FilteredElementCollector(doc)
-                .OfClass(typeof(FamilyInstance))
-                .Where(q => (q as FamilyInstance).Symbol.Family.Name == familyName).ToList();
-
-            string parType = Convert.ToString(filist.First().LookupParameter(parName).StorageType);
-
-            string[] rvtMarkList = filist.Select(x => x.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString()).ToArray();
-            Dictionary<string, int> markRowIndex = new Dictionary<string, int>();
-
+            string typeMark = fs.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString();
             for (int r = startRow; r <= totRows; r++)
             {
-                string curXLMark = Convert.ToString(ws.Cells[r, keyCol].Value);
-                if (Array.IndexOf(rvtMarkList, curXLMark) > -1)
-                    markRowIndex.Add(curXLMark, r);
-            }
+                string keyCellVal = Convert.ToString(_ws.Cells[r, keyCol].Value);
+                if (typeMark != keyCellVal) 
+                    continue;
+                    
+                bool hasUnits;
 
-
-            foreach (FamilyInstance fi in filist)
-            {
-                string mark = fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
-                if (markRowIndex.ContainsKey(mark))
+                try
                 {
-                    Parameter par = fi.LookupParameter(parName);
-                    bool hasUnits;
-                    try
-                    {
 #if (FORGE)
-                        var dut = fi.LookupParameter(parName).GetUnitTypeId();
+                    var _ = fs.LookupParameter(parName).GetUnitTypeId();
 #else
-                        DisplayUnitType dut = fi.LookupParameter(parName).DisplayUnitType;
+                        var _ = fs.LookupParameter(parName).DisplayUnitType;
 #endif
-                        hasUnits = true;
-                    }
-                    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
-                    {
-                        hasUnits = false;
-                    }
-
-#if (FORGE)
-                    var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.GetUnitTypeId()) : GetCellVal(markRowIndex[mark], parCol, parType);
-#else
-                    var newVal = hasUnits ? GetCellVal(markRowIndex[mark], parCol, parType, par.DisplayUnitType) : GetCellVal(markRowIndex[mark], parCol, parType);
-#endif
-                    if (newVal == null)
-                    {
-                        errorLog += $"Incorrect data type in Excel File for element '{mark}' parameter '{parName}.' Expecting type of {par.StorageType}. Parameter will not be assigned.\n";
-                    }
-                    else if (ParToString(par, parType) != Convert.ToString(newVal))
-                    {
-                        using (Transaction tx = new Transaction(doc, "Assign Instance Parameter"))
-                        {
-                            if (tx.Start() == TransactionStatus.Started)
-                            {
-                                par.Set(newVal);
-                                tx.Commit();
-                            }
-                        }
-                    }
+                    hasUnits = true;
+                }
+                catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+                {
+                    hasUnits = false;
                 }
 
+#if (FORGE)
+                dynamic newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
+#else
+                    var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
+#endif
+
+                if (newVal == null)
+                {
+                    errorLog += $"Incorrect data type in Excel File for element '{typeMark}' parameter '{parName}.' Parameter will not be assigned.\n";
+                    continue;
+                }
+
+                using var tx = new Transaction(_doc, "Assign Type Parameter");
+                if (tx.Start() != TransactionStatus.Started)
+                    continue;
+                fs.LookupParameter(parName).Set(newVal);
+                tx.Commit();
 
             }
-
-
-            return errorLog;
         }
 
-        private static string ParToString(Parameter par, string parType)
+        return errorLog;
+    }
+
+    public static string AssignInstParameters(string familyName, string parName, int keyCol, int startRow, int parCol)
+    {
+        var errorLog = string.Empty;
+
+        int totRows = _ws.UsedRange.Rows.Count;
+
+        var fis = new FilteredElementCollector(_doc)
+            .OfClass(typeof(FamilyInstance))
+            .Cast<FamilyInstance>()
+            .Where(q => q.Symbol.Family.Name == familyName)
+            .ToList();
+
+        var parType = Convert.ToString(fis.First().LookupParameter(parName).StorageType);
+
+        var rvtMarks = fis
+            .Select(x => x.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString())
+            .ToList();
+        var markRowIndex = new Dictionary<string, int>();
+
+        for (int r = startRow; r <= totRows; r++)
         {
-            switch (parType)
-            {
-                case "String":
-                    return par.AsString();
-                case "Integer":
-                    return Convert.ToString(par.AsInteger());
-                case "Double":
-                    return Convert.ToString(par.AsDouble());
-                case "ElementId":
-                    return Convert.ToString(par.AsElementId());
-            }
-            return null;
+            string curXlMark = Convert.ToString(_ws.Cells[r, keyCol].Value);
+            if (rvtMarks.Contains(curXlMark))
+                markRowIndex.Add(curXlMark, r);
         }
+
+        var fisMatch = fis.Where(f =>
+            markRowIndex.ContainsKey(f.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString()));
+
+
+        foreach (var fi in fisMatch)
+        {
+            string mark = fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
+            int row = markRowIndex[mark];
+            var par = fi.LookupParameter(parName);
+            var hasUnits = true;
+            try
+            {
+#if (FORGE)
+                var _ = fi.LookupParameter(parName).GetUnitTypeId();
+#else
+                    var _ = fi.LookupParameter(parName).DisplayUnitType;
+#endif
+            }
+            catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+            {
+                hasUnits = false;
+            }
+
+#if (FORGE)
+            dynamic newVal = hasUnits ? GetCellVal(row, parCol, parType, par.GetUnitTypeId()) : GetCellVal(row, parCol, parType);
+#else
+                var newVal = hasUnits ? GetCellVal(row, parCol, parType, par.DisplayUnitType) : GetCellVal(row, parCol, parType);
+#endif
+            if (newVal == null)
+            {
+                errorLog += $"Incorrect data type in Excel file for element '{mark}' parameter '{parName}.' Expecting type of {par.StorageType}. Parameter will not be assigned.\n";
+                continue;
+            }
+            if (ParameterToString(par, parType) == Convert.ToString(newVal)) 
+                continue;
+
+            using var tx = new Transaction(_doc, "Assign Instance Parameter");
+            if (tx.Start() != TransactionStatus.Started) 
+                continue;
+            par.Set(newVal);
+            tx.Commit();
+        }
+
+        return errorLog;
+    }
+
+    private static string ParameterToString(Parameter par, string parType)
+    {
+        return parType switch
+        {
+            "String" => par.AsString(),
+            "Integer" => Convert.ToString(par.AsInteger()),
+            "Double" => Convert.ToString(par.AsDouble(), CultureInfo.CurrentCulture),
+            "ElementId" => Convert.ToString(par.AsElementId()),
+            _ => null
+        };
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Proficient
+﻿namespace Proficient.Forms
 {
     partial class PlaceElFrm
     {
@@ -49,7 +49,7 @@
             this.radionumber.TabStop = true;
             this.radionumber.Text = "Place by Number";
             this.radionumber.UseVisualStyleBackColor = true;
-            this.radionumber.CheckedChanged += new System.EventHandler(this.radionumber_CheckedChanged);
+            this.radionumber.CheckedChanged += new System.EventHandler(this.RadioNumber_CheckedChanged);
             // 
             // radiooffset
             // 
@@ -61,7 +61,7 @@
             this.radiooffset.TabIndex = 1;
             this.radiooffset.Text = "Place by Offset";
             this.radiooffset.UseVisualStyleBackColor = true;
-            this.radiooffset.CheckedChanged += new System.EventHandler(this.radiooffset_CheckedChanged);
+            this.radiooffset.CheckedChanged += new System.EventHandler(this.RadioOffset_CheckedChanged);
             // 
             // textBox1
             // 
@@ -111,7 +111,7 @@
             this.okbutton.TabIndex = 6;
             this.okbutton.Text = "OK";
             this.okbutton.UseVisualStyleBackColor = true;
-            this.okbutton.Click += new System.EventHandler(this.okbutton_Click);
+            this.okbutton.Click += new System.EventHandler(this.OkButton_Click);
             // 
             // PlaceElFrm
             // 

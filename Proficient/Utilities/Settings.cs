@@ -1,40 +1,39 @@
-﻿namespace Proficient
+﻿namespace Proficient.Utilities;
+
+public class Settings
 {
-    public class Settings
+    public Settings()
     {
-        public Settings()
-        {
-            //proficient settings
-            switchEnlarged = true;
-            defWorkset = "M-Mechanical";
-            pipeDist = 9;
-            defFont = "3/32\" Arial";
-            hideDesignNotes = true;
-            suppressSchWarning = false;
+        //proficient settings
+        SwitchEnlarged = true;
+        DefWorkset = "M-Mechanical";
+        PipeDist = 9;
+        DefFont = "3/32\" Arial";
+        HideDesignNotes = true;
+        SuppressSchWarning = false;
 
-            //ductulator settings
-            defFriction = 0.08;
-            defVelocity = 500;
-            defDepthMin = 6;
-            defDepthMax = 20;
-            fricPrec = 3;
-            appOnTop = false;
-            appVert = false;
-        }
-        public bool switchEnlarged { get; set; }
-        public string defWorkset { get; set; }
-        public int pipeDist { get; set; }
-        public string defFont { get; set; }
-        public bool hideDesignNotes { get; set; }
-        public bool suppressSchWarning { get; set; }
-
-        public double defFriction { get; set; }
-        public int defVelocity { get; set; }
-        public int defDepthMin { get; set; }
-        public int defDepthMax { get; set; }
-        public int fricPrec { get; set; }
-        public bool appOnTop { get; set; }
-        public bool appVert { get; set; }
-
+        //ductulator settings
+        DefFriction = 0.08;
+        DefVelocity = 500;
+        DefDepthMin = 6;
+        DefDepthMax = 20;
+        FricPrec = 3;
+        AppOnTop = false;
+        AppVert = false;
     }
+    public bool SwitchEnlarged { get; set; }
+    public string DefWorkset { get; set; }
+    public int PipeDist { get; set; }
+    public string DefFont { get; set; }
+    public bool HideDesignNotes { get; set; }
+    public bool SuppressSchWarning { get; set; }
+
+    public double DefFriction { get; set; }
+    public int DefVelocity { get; set; }
+    public int DefDepthMin { get; set; }
+    public int DefDepthMax { get; set; }
+    public int FricPrec { get; set; }
+    public bool AppOnTop { get; set; }
+    public bool AppVert { get; set; }
+
 }

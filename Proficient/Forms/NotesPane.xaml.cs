@@ -1,64 +1,58 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Autodesk.Revit.UI;
-using System.Diagnostics;
 using Proficient.Utilities;
 
 
-namespace Proficient.Forms
+namespace Proficient.Forms;
+
+/// <summary>
+/// Interaction logic for NotesPane.xaml
+/// </summary>
+public partial class NotesPane : Page, IDockablePaneProvider
 {
-    /// <summary>
-    /// Interaction logic for NotesPane.xaml
-    /// </summary>
-    
+    public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
 
-    public partial class NotesPane : Page, IDockablePaneProvider
+    public NotesPane(ExternalEvent exEvent, NotesHandler handler)
     {
-        public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
+        InitializeComponent();
+        DataContext = new NotesPaneViewModel(exEvent, handler);
+        CommandBindings.Add(new CommandBinding(NavigationCommands.GoToPage, NavigationHandler));
+    }
 
-        public NotesPane(ExternalEvent exEvent, NotesHandler handler)
+    public void SetupDockablePane(DockablePaneProviderData data)
+    {
+        data.FrameworkElement = this;
+        data.InitialState = new DockablePaneState()
         {
-            InitializeComponent();
-            DataContext = new NotesPaneViewModel(exEvent, handler);
-            CommandBindings.Add(new CommandBinding(NavigationCommands.GoToPage, NavigationHandler));
-        }
+            DockPosition = DockPosition.Right,
+        };
+        data.VisibleByDefault = false;
+        data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
+    }
 
-        public void SetupDockablePane(DockablePaneProviderData data)
+    private void NavigationHandler(object sender, ExecutedRoutedEventArgs e)
+    {
+        try
         {
-            data.FrameworkElement = this;
-            data.InitialState = new DockablePaneState()
-            {
-                DockPosition = DockPosition.Right,
-            };
-            data.VisibleByDefault = false;
-            data.EditorInteraction = new EditorInteraction(EditorInteractionType.KeepAlive);
+            Process.Start((string)e.Parameter);
         }
-
-        private void NavigationHandler(object sender, ExecutedRoutedEventArgs e)
+        catch
         {
             try
             {
-                Process.Start((string)e.Parameter);
-            }
-            catch
-            {
-                try
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
-                    {
-                        Arguments = (string)((Hyperlink)e.OriginalSource).ToolTip,
-                        FileName = "explorer.exe"
-                    };
+                    Arguments = (string)((Hyperlink)e.OriginalSource).ToolTip,
+                    FileName = "explorer.exe"
+                };
 
-                    Process.Start(startInfo);
-                }
-                catch (Exception exc)
-                {
-                    MessageBox.Show(exc.ToString());
-                }
+                Process.Start(startInfo);
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.ToString());
             }
         }
     }

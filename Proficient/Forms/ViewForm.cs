@@ -1,33 +1,32 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+using Form = System.Windows.Forms.Form;
 
-namespace Proficient
+namespace Proficient.Forms;
+
+public partial class ViewForm : Form
 {
-    public partial class ViewForm : Form
+    public int SelectedViewIndex { get; private set; }
+    public ViewForm(string[] calloutViews)
     {
-        public int selectedViewIndex { get; private set; }
-        public ViewForm(string[] calloutViews)
-        {
-            InitializeComponent();
-            this.viewdropdown.Items.AddRange(calloutViews);
-            this.StartPosition = FormStartPosition.CenterScreen;
-            selectedViewIndex = 0;
-        }
+        InitializeComponent();
+        viewdropdown.Items.AddRange(calloutViews.ToArray<object>());
+        StartPosition = FormStartPosition.CenterScreen;
+        SelectedViewIndex = 0;
+    }
 
-        private void Okbutton_Click(object sender, EventArgs e)
-        {
-            this.DialogResult = DialogResult.OK;
-            this.Close();
-        }
-        private void Cancelbutton_Click(object sender, EventArgs e)
-        {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
-        }
+    private void OkButton_Click(object sender, EventArgs e)
+    {
+        DialogResult = DialogResult.OK;
+        Close();
+    }
+    private void CancelButton_Click(object sender, EventArgs e)
+    {
+        DialogResult = DialogResult.Cancel;
+        Close();
+    }
 
-        private void viewdropdown_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            selectedViewIndex = viewdropdown.SelectedIndex;
-        }
+    private void ViewDropdown_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        SelectedViewIndex = viewdropdown.SelectedIndex;
     }
 }

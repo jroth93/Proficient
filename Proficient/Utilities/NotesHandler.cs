@@ -1,158 +1,118 @@
-﻿using Autodesk.Revit.UI;
-using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.Revit.DB.ExtensibleStorage;
-using Proficient.Forms;
+﻿using Autodesk.Revit.DB.ExtensibleStorage;
 
+namespace Proficient.Utilities;
 
-namespace Proficient.Utilities
+public class NotesHandler : IExternalEventHandler
 {
-    public class NotesHandler : IExternalEventHandler
+    public NotesRequest Request { get; } = new ();
+
+    public string GetName() => "Notes Request Handler";
+
+    public void Execute(UIApplication uiapp)
     {
-        private NotesRequest m_request = new NotesRequest();
-        public NotesRequest Request
+        var tab = Request.Take();
+
+        switch (tab)
         {
-            get { return m_request; }
+            case NotesType.View:
+                SaveViewNotes(uiapp);
+                break;
+            case NotesType.Project:
+                SaveProjectNotes(uiapp);
+                break;
+            case NotesType.Global:
+                SaveDbId(uiapp);
+                break;
         }
-        public string GetName()
+    }
+
+    public void SaveViewNotes(UIApplication uiApp)
+    {
+        using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set View Notes");
+        if (tx.Start() != TransactionStatus.Started) return;
+        
+        var view = NotesModel.NM.CurrentView;
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var ent = view.GetEntity(pSchema);
+        IDictionary<string, string> stringDict = new Dictionary<string, string>();
+
+        if (ent.Schema is null)
+            ent = new Entity(pSchema);
+        else
+            stringDict = ent.Get<IDictionary<string, string>>(SchemaKeys.StringDict);
+
+        stringDict[SchemaKeys.MarkdownText] = NotesModel.NM.MarkdownCache;
+        NotesModel.NM.MarkdownCache = string.Empty;
+
+        ent.Set(SchemaKeys.StringDict, stringDict);
+
+        view.SetEntity(ent);
+
+        tx.Commit();
+    }
+
+    public void SaveProjectNotes(UIApplication uiApp)
+    {
+        using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set Project Notes");
+        if (tx.Start() != TransactionStatus.Started) return;
+        
+        var doc = uiApp.ActiveUIDocument.Document;
+        var projectStorage =
+            new FilteredElementCollector(doc)
+                .OfClass(typeof(DataStorage))
+                .FirstElement();
+
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var entity = new Entity(pSchema);
+
+        if (projectStorage is null)
         {
-            return "Notes Request Handler";
+            projectStorage = DataStorage.Create(doc);
         }
-
-        public void Execute(UIApplication uiapp)
+        else
         {
-            NotesType tab = m_request.Take();
-
-            switch (tab)
-            {
-                case NotesType.View:
-                    SaveViewNotes(uiapp);
-                    break;
-                case NotesType.Project:
-                    SaveProjectNotes(uiapp);
-                    break;
-                case NotesType.Global:
-                    SaveDbId(uiapp);
-                    break;
-            }
-
-            
-        }
-
-        public void SaveViewNotes(UIApplication uiapp)
-        {
-            using (Transaction tx = new Transaction(uiapp.ActiveUIDocument.Document, "Set View Notes"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    View view = NotesModel.NM.CurrentView;
-                    Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
-                    Entity ent = view.GetEntity(pSchema);
-                    IDictionary<string, string> stringDict = new Dictionary<string, string>();
-
-                    if (ent.Schema == null)
-                    {
-                        ent = new Entity(pSchema);
-                    }
-                    else
-                    {
-                        stringDict = ent.Get<IDictionary<string, string>>(ESKeys.StringDict);
-                    }
-
-
-                    stringDict[ESKeys.MarkdownText] = NotesModel.NM.MarkdownCache;
-                    NotesModel.NM.MarkdownCache = string.Empty;
-
-                    ent.Set(ESKeys.StringDict, stringDict);
-
-                    view.SetEntity(ent);
-                }
-
-                tx.Commit();
-            }
-        }
-
-        public void SaveProjectNotes(UIApplication uiapp)
-        {
-            using (Transaction tx = new Transaction(uiapp.ActiveUIDocument.Document, "Set Project Notes"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    Document doc = uiapp.ActiveUIDocument.Document;
-
-                    var projectStorage =
-                        new FilteredElementCollector(doc)
-                        .OfClass(typeof(DataStorage))
-                        .FirstElement();
-
-                    Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
-                    Entity entity = new Entity(pSchema);
-
-                    if (projectStorage == null)
-                    {
-                        projectStorage = DataStorage.Create(doc);
-                    }
-                    else
-                    {
-                        Entity e = projectStorage.GetEntity(pSchema);
-                        if (e.IsValid())
-                        {
-                            entity = e;
-                        }
-                    }
-
-
-                    // Create entity which store created info
-
-                    IDictionary<string, string> stringDict = new Dictionary<string, string>();
-                    stringDict[ESKeys.MarkdownText] = NotesModel.NM.MarkdownCache;
-
-                    entity.Set(ESKeys.StringDict,stringDict);
-
-                    projectStorage.SetEntity(entity);
-                    
-                }
-
-                tx.Commit();
-            }
+            var e = projectStorage.GetEntity(pSchema);
+            if (e.IsValid())
+                entity = e;
         }
 
-        public void SaveDbId(UIApplication uiapp)
+        // Create entity which store created info
+        IDictionary<string, string> stringDict = new Dictionary<string, string>
         {
-            using (Transaction tx = new Transaction(uiapp.ActiveUIDocument.Document, "Set Db Id"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    View view = NotesModel.NM.CurrentView;
+            [SchemaKeys.MarkdownText] = NotesModel.NM.MarkdownCache
+        };
+        entity.Set(SchemaKeys.StringDict,stringDict);
+        projectStorage.SetEntity(entity);
+        
+        tx.Commit();
+    }
 
-                    Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
-                    Entity ent = view.GetEntity(pSchema);
-                    IDictionary<string, int> intDict = new Dictionary<string, int>();
+    public void SaveDbId(UIApplication uiApp)
+    {
+        using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set Db Id");
+        if (tx.Start() != TransactionStatus.Started) return;
+        var view = NotesModel.NM.CurrentView;
 
-                    if (ent.Schema == null)
-                    {
-                        ent = new Entity(pSchema);
-                    }
-                    else
-                    {
-                        intDict = ent.Get<IDictionary<string, int>>(ESKeys.IntDict);
-                    }
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var ent = view.GetEntity(pSchema);
+        IDictionary<string, int> intDict = new Dictionary<string, int>();
 
-
-                    intDict[ESKeys.DbNotesId] = NotesModel.NM.IdCache;
-                    NotesModel.NM.IdCache = 0;
-
-                    ent.Set(ESKeys.IntDict, intDict);
-
-                    view.SetEntity(ent);
-                }
-
-                tx.Commit();
-            }
+        if (ent.Schema == null)
+        {
+            ent = new Entity(pSchema);
         }
+        else
+        {
+            intDict = ent.Get<IDictionary<string, int>>(SchemaKeys.IntDict);
+        }
+
+        intDict[SchemaKeys.DbNotesId] = NotesModel.NM.IdCache;
+        NotesModel.NM.IdCache = 0;
+
+        ent.Set(SchemaKeys.IntDict, intDict);
+
+        view.SetEntity(ent);
+
+        tx.Commit();
     }
 }

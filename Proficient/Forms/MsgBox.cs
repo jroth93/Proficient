@@ -1,12 +1,12 @@
 ﻿using System.Windows.Forms;
+using Form = System.Windows.Forms.Form;
 
-namespace Proficient
+namespace Proficient.Forms;
+
+public partial class MsgBox : Form
 {
-    public partial class MsgBox : Form
+    public MsgBox()
     {
-        public MsgBox()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

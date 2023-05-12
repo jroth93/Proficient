@@ -1,78 +1,49 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
-using System;
-using System.Collections.Generic;
+﻿using Autodesk.Revit.UI.Selection;
 
-namespace Proficient
+namespace Proficient.Toggles;
+
+[Transaction(TransactionMode.Manual)]
+internal class FlipWorkPlane : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class FlipWorkPlane : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
+        var uiDoc = revit.Application.ActiveUIDocument;
+        var doc = uiDoc.Document;
+
+        var selIds = uiDoc.Selection.GetElementIds();
+        if (selIds is not null && selIds.Any())
         {
-            UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = uidoc.Document;
+            var fis = selIds
+                .Select(doc.GetElement)
+                .Where(el => el is FamilyInstance {CanFlipWorkPlane: true})
+                .Cast<FamilyInstance>();
 
-            IList<ElementId> selectedIds = uidoc.Selection.GetElementIds() as IList<ElementId>;
-            if (selectedIds.Count > 0)
+            foreach (var fi in fis)
             {
-
-                foreach (ElementId elemid in selectedIds)
-                {
-                    using (Transaction tx = new Transaction(doc, "Flip"))
-                    {
-                        if (tx.Start() == TransactionStatus.Started)
-                        {
-                            FamilyInstance faminst = doc.GetElement(elemid) as FamilyInstance;
-
-                            if (faminst.IsWorkPlaneFlipped == true)
-                            {
-                                faminst.IsWorkPlaneFlipped = false;
-                            }
-                            else
-                            {
-                                faminst.IsWorkPlaneFlipped = true;
-                            }
-
-                        }
-                        tx.Commit();
-                    }
-                }
-                return Autodesk.Revit.UI.Result.Succeeded;
+                using Transaction tx = new(doc, "Flip Workplane");
+                if (tx.Start() == TransactionStatus.Started)
+                    fi.IsWorkPlaneFlipped = !fi.IsWorkPlaneFlipped;
+                tx.Commit();
             }
-            while (true)
+            return Result.Succeeded;
+        }
+        while (true)
+        {
+            try
             {
-                Reference reference = null;
-                FamilyInstance faminst = null;
-                try
-                {
-                    reference = uidoc.Selection.PickObject(ObjectType.Element);
-                    faminst = doc.GetElement(reference) as FamilyInstance;
-                    using (Transaction tx = new Transaction(doc, "Flip"))
-                    {
-                        if (tx.Start() == TransactionStatus.Started)
-                        {
-                            if (faminst.IsWorkPlaneFlipped == true)
-                            {
-                                faminst.IsWorkPlaneFlipped = false;
-                            }
-                            else
-                            {
-                                faminst.IsWorkPlaneFlipped = true;
-                            }
-                        }
-                        tx.Commit();
-                    }
-                }
-                catch (NullReferenceException)
-                {
+                var id = uiDoc.Selection.PickObject(ObjectType.Element).ElementId;
+                if (doc.GetElement(id) is not FamilyInstance {CanFlipWorkPlane: true} fi) 
                     continue;
-                }
-                catch (Autodesk.Revit.Exceptions.OperationCanceledException)
-                {
-                    return Autodesk.Revit.UI.Result.Succeeded;
-                }
+
+                using Transaction tx = new(doc, "Flip Workplane");
+                if (tx.Start() == TransactionStatus.Started)
+                    fi.IsWorkPlaneFlipped = !fi.IsWorkPlaneFlipped;
+                tx.Commit();
+            }
+            catch (NullReferenceException) {}
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                return Result.Cancelled;
             }
         }
     }

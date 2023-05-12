@@ -1,82 +1,54 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Proficient.Forms;
 
-namespace Proficient
+namespace Proficient.General;
+
+[Transaction(TransactionMode.Manual)]
+internal class ChangeCalloutRef : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class ChangeCalloutRef : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
-        {
-            UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = revit.Application.ActiveUIDocument.Document;
-            ElementId viewid = uidoc.ActiveView.Id;
-            View view = doc.GetElement(viewid) as View;
+        var uiDoc = revit.Application.ActiveUIDocument;
+        var doc = uiDoc.Document;
 
-            var selectedids = uidoc.Selection.GetElementIds();
-            if (selectedids.Count() == 0) { return Result.Cancelled; }
-            var selectedelements = selectedids.Select(curid => doc.GetElement(curid));
-            IList<ElementId> viewelementsid = new List<ElementId>();
+        var selCalloutIds = uiDoc.Selection.GetElementIds()?
+            .Select(doc.GetElement)
+            .Where(el => el is ViewPlan)
+            .Where(el => el.get_Parameter(BuiltInParameter.SECTION_PARENT_VIEW_NAME) is not null)
+            .Where(el => el.OwnerViewId.IntegerValue != -1)
+            .Select(el => el.Id)
+            .ToList();
 
-            foreach (Element curelement in selectedelements)
-            {
-                foreach (ElementId curtype in (curelement.GetValidTypes()))
-                {
-                    ElementType cureltype = doc.GetElement(curtype) as ElementType;
-                    if (cureltype.FamilyName == "Floor Plan")
-                    {
-                        viewelementsid.Add(curelement.Id);
-                    }
+        if (selCalloutIds is null || !selCalloutIds.Any())
+            return Result.Cancelled;
 
-                }
-            }
+        var allCallouts = new FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_Views)
+            .Where(el => el is ViewPlan)
+            .Where(el => el.get_Parameter(BuiltInParameter.SECTION_PARENT_VIEW_NAME) is not null)
+            .Cast<View>()
+            .ToList();
 
-            var calloutids = viewelementsid
-                .Where(curview => doc.GetElement(curview).get_Parameter(BuiltInParameter.SECTION_PARENT_VIEW_NAME) != null)
-                .Where(curview => doc.GetElement(curview).OwnerViewId.IntegerValue != -1);
+        string[] calloutNames = allCallouts
+            .Select(c => c.Name)
+            .ToArray();
 
-            if (calloutids.Count() == 0) { return Result.Cancelled; }
+        var vf =  new ViewForm(calloutNames);
 
-            var calloutelements = calloutids.Select(curid => doc.GetElement(curid));
+        if (vf.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+            return Result.Cancelled;
 
-            FilteredElementCollector coll = new FilteredElementCollector(doc);
-            coll.WherePasses(new ElementClassFilter(typeof(View)));
-            List<View> calloutViews = new List<View>();
+        var newView = allCallouts[vf.SelectedViewIndex];
 
-            foreach (View v in coll)
-            {
-                if (Convert.ToString(v.ViewType) == "FloorPlan" && v.get_Parameter(BuiltInParameter.SECTION_PARENT_VIEW_NAME) != null)
-                {
-                    calloutViews.Add(v);
-                }
-            }
+        using var tx = new Transaction(doc, "Change Callout Reference");
+        if (tx.Start() != TransactionStatus.Started)
+            return Result.Cancelled;
+            
+        foreach (var id in selCalloutIds)
+            ReferenceableViewUtils.ChangeReferencedView(doc, id, newView.Id);
 
-            ViewForm form1 = new ViewForm(calloutViews.Select(v => v.Name.ToString()).ToArray());
+        tx.Commit();
+        vf.Close();
 
-            form1.ShowDialog();
-
-            if (form1.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                return Result.Cancelled;
-
-            View newview = calloutViews[form1.selectedViewIndex];
-
-            using (Transaction tx = new Transaction(doc, "Change Callout Reference"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
-                {
-                    foreach (ElementId currentid in calloutids)
-                    {
-                        ReferenceableViewUtils.ChangeReferencedView(doc, currentid, newview.Id);
-                    }
-                }
-
-                tx.Commit();
-            }
-            form1.Close();
-            return Result.Succeeded;
-        }
+        return Result.Succeeded;
     }
 }

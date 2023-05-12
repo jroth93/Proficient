@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,36 +12,35 @@ using DocumentFormat.OpenXml.ExtendedProperties;
 using Proficient.Utilities;
 
 
-namespace Proficient.Forms
+namespace Proficient.Forms;
+
+/// <summary>
+/// Interaction logic for MarkdownEditor.xaml
+/// </summary>
+public partial class MarkdownEditor : Window
 {
-    /// <summary>
-    /// Interaction logic for MarkdownEditor.xaml
-    /// </summary>
-    public partial class MarkdownEditor : Window
+    public MarkdownEditor()
     {
-        public MarkdownEditor()
-        {
-            InitializeComponent();
+        InitializeComponent();
 
 
-            var menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
-            Action setAlignmentValue = () => {
-                if (SystemParameters.MenuDropAlignment && menuDropAlignmentField != null) menuDropAlignmentField.SetValue(null, false);
-            };
-            setAlignmentValue();
-            SystemParameters.StaticPropertyChanged += (sender, e) => { setAlignmentValue(); };
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e) => Close();
-
-        private void Menu_Click(object sender, RoutedEventArgs e)
-        {
-            string snippet = (sender as MenuItem).Tag as string;
-            int pos = tb.CaretIndex;
-            string newMd = tb.Text.Insert(pos, snippet);
-            tb.Text = newMd;
-            tb.CaretIndex = pos + snippet.Length;
-        }
-
+        var menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+        Action setAlignmentValue = () => {
+            if (SystemParameters.MenuDropAlignment && menuDropAlignmentField != null) menuDropAlignmentField.SetValue(null, false);
+        };
+        setAlignmentValue();
+        SystemParameters.StaticPropertyChanged += (sender, e) => { setAlignmentValue(); };
     }
+
+    private void Button_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void Menu_Click(object sender, RoutedEventArgs e)
+    {
+        string snippet = (sender as MenuItem).Tag as string;
+        int pos = tb.CaretIndex;
+        string newMd = tb.Text.Insert(pos, snippet);
+        tb.Text = newMd;
+        tb.CaretIndex = pos + snippet.Length;
+    }
+
 }

@@ -1,12 +1,12 @@
 ﻿using System.Windows.Forms;
+using Form = System.Windows.Forms.Form;
 
-namespace Proficient
+namespace Proficient.Forms;
+
+public partial class ElecPanelDataFrm : Form
 {
-    public partial class ElecPanelDataFrm : Form
+    public ElecPanelDataFrm()
     {
-        public ElecPanelDataFrm()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

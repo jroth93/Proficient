@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Proficient
+﻿namespace Proficient.Ductulator
 {
     partial class DuctMain
     {

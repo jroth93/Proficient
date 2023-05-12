@@ -1,16 +1,12 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿namespace Proficient.Utilities;
 
-namespace Proficient.Utilities
+[Transaction(TransactionMode.Manual)]
+internal class ShowNotesPane : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class ShowNotesPane : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
-        {
-            revit.Application.GetDockablePane(Forms.NotesPane.PaneId).Show();
+        revit.Application.GetDockablePane(Forms.NotesPane.PaneId).Show();
 
-            return Result.Succeeded;
-        }
+        return Result.Succeeded;
     }
 }

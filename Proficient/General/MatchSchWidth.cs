@@ -1,59 +1,52 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Autodesk.Revit.UI.Selection;
 using Proficient.Forms;
 
-namespace Proficient
+namespace Proficient.General;
+
+[Transaction(TransactionMode.Manual)]
+internal class MatchSchWidth : IExternalCommand
 {
-    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class MatchSchWidth : IExternalCommand
+    public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
+        var uiDoc = revit.Application.ActiveUIDocument;
+        var doc = uiDoc.Document;
+
+        var prompt = new Follower(revit);
+
+        try
         {
-            UIApplication app = revit.Application;
-            UIDocument uidoc = revit.Application.ActiveUIDocument;
-            Document doc = uidoc.Document;
-            View view = doc.GetElement(uidoc.ActiveView.Id) as View;
+            prompt.lbl1.Content = "Pick Anchor Schedule";
+            var anchor = doc.GetElement(uiDoc.Selection.PickObject(ObjectType.Element, "Pick Anchor Schedule"));
 
-            Follower prompt = new Follower(revit);
+            prompt.lbl1.Content = "Pick Schedule To Adjust";
+            var dependent = doc.GetElement(uiDoc.Selection.PickObject(ObjectType.Element, "Pick Schedule To Adjust"));
 
-            IList<ElementId> ids = uidoc.Selection.GetElementIds() as IList<ElementId>;
-            double width = 1.0;
-            try
-            {
-                prompt.lbl1.Content = "Pick Anchor Schedule";
-                Element anchor = doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Anchor Schedule"));
-                width = (doc.GetElement((anchor as ScheduleSheetInstance).ScheduleId) as ViewSchedule).GetTableData().Width;
-
-                prompt.lbl1.Content = "Pick Schedule To Adjust";
-                Element dependent = doc.GetElement(uidoc.Selection.PickObject(ObjectType.Element, "Pick Schedule To Adjust"));
-
-                using (Transaction tx = new Transaction(doc, "Adjust Schedule Width"))
-                {
-                    if (tx.Start() == TransactionStatus.Started)
-                    {
-                        (doc.GetElement((dependent as ScheduleSheetInstance).ScheduleId) as ViewSchedule).GetTableData().Width = width;
-                    }
-
-                    tx.Commit();
-                }
-            }
-            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
-            {
-                prompt.Close();
-                return Result.Succeeded;
-            }
-            catch
-            {
-                prompt.Close();
+            if (anchor is not ScheduleSheetInstance ai || dependent is not ScheduleSheetInstance di)
                 return Result.Failed;
-            }
+
+            if(doc.GetElement(ai.ScheduleId) is not ViewSchedule avs || doc.GetElement(di.ScheduleId) is not ViewSchedule dvs)
+                return Result.Failed;
+                
+            var width = avs.GetTableData().Width;
+
+            using var tx = new Transaction(doc, "Adjust Schedule Width");
+            if (tx.Start() != TransactionStatus.Started)
+                return Result.Failed;
+            dvs.GetTableData().Width = width;
+            tx.Commit();
 
             prompt.Close();
             return Result.Succeeded;
-
+        }
+        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+        {
+            prompt.Close();
+            return Result.Cancelled;
+        }
+        catch
+        {
+            prompt.Close();
+            return Result.Failed;
         }
     }
 }

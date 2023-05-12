@@ -1,4 +1,4 @@
-﻿namespace Proficient
+﻿namespace Proficient.Forms
 {
     partial class ViewForm
     {
@@ -41,7 +41,7 @@
             this.viewdropdown.Size = new System.Drawing.Size(478, 21);
             this.viewdropdown.TabIndex = 0;
             this.viewdropdown.Text = "Select new view...";
-            this.viewdropdown.SelectedIndexChanged += new System.EventHandler(this.viewdropdown_SelectedIndexChanged);
+            this.viewdropdown.SelectedIndexChanged += new System.EventHandler(this.ViewDropdown_SelectedIndexChanged);
             // 
             // okbutton
             // 
@@ -51,7 +51,7 @@
             this.okbutton.TabIndex = 1;
             this.okbutton.Text = "OK";
             this.okbutton.UseVisualStyleBackColor = true;
-            this.okbutton.Click += new System.EventHandler(this.Okbutton_Click);
+            this.okbutton.Click += new System.EventHandler(this.OkButton_Click);
             // 
             // cancelbutton
             // 
@@ -61,7 +61,7 @@
             this.cancelbutton.TabIndex = 2;
             this.cancelbutton.Text = "Cancel";
             this.cancelbutton.UseVisualStyleBackColor = true;
-            this.cancelbutton.Click += new System.EventHandler(this.Cancelbutton_Click);
+            this.cancelbutton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // ViewForm
             // 
