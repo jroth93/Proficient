@@ -7,17 +7,19 @@ internal class DesignNotes
     public static void Hide(Document doc, List<ElementId> printViews)
     {
         ElementMulticategoryFilter mcf = new(new List<BuiltInCategory> { BuiltInCategory.OST_TextNotes, BuiltInCategory.OST_Lines, BuiltInCategory.OST_Dimensions, BuiltInCategory.OST_GenericAnnotation });
+        var allPrintViews = new List<ElementId>();
+        allPrintViews.AddRange(printViews);
 
         foreach (var id in printViews)
             if (doc.GetElement(id) is ViewSheet vs)
-                printViews.AddRange(vs.GetAllPlacedViews());
+                allPrintViews.AddRange(vs.GetAllPlacedViews());
 
         _designNoteViews.Clear();
 
         using Transaction tx = new (doc, "Hide Design Notes");
         if (tx.Start() != TransactionStatus.Started) return;
 
-        foreach (var viewId in printViews)
+        foreach (var viewId in allPrintViews)
         {
             if(doc.GetElement(viewId) is not View view) continue;
 
@@ -29,6 +31,8 @@ internal class DesignNotes
                     el is CurveElement ce && ce.LineStyle.Name.ToLower().Contains("design"))
                 .Select(el => el.Id)
                 .ToList();
+
+            if (!designEl.Any()) continue;
 
             _designNoteViews.Add(view, designEl);
             view.HideElements(designEl);

@@ -604,6 +604,7 @@
     <EmbeddedResource Include="Icons\tagduct.png" />
     <EmbeddedResource Include="Icons\wkst.png" />
     <EmbeddedResource Include="Icons\xl2rvt.png" />
+    <EmbeddedResource Include="Icons\reloadfam.png" />
   </ItemGroup>
   <ItemGroup Label="Nones">
     <None Include="app.config" />
@@ -634,10 +635,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icons\reloadfam.png" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+      <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Label="Post Build Events" />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath)" />

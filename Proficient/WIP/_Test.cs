@@ -37,7 +37,7 @@ class _Test : IExternalCommand
             view = (Autodesk.Revit.DB.View) doc.GetElement(view.ViewTemplateId);
         var cat = el.Category;
         string name = ((FamilyInstance) el).Symbol.FamilyName;
-        var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME), name);
+        var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME),name,true);
 
 
 #if TabOrganizer

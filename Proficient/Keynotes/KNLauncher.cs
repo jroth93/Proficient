@@ -9,7 +9,7 @@ internal class KnLauncher : IExternalCommand
     {
         var doc = revit.Application.ActiveUIDocument.Document;
 
-        var pn = doc.Title[5] == '.' ? 
+        string pn = doc.Title[5] == '.' ? 
             doc.Title.Substring(0, 7) : 
             doc.Title.Substring(0, 5);
 
@@ -24,8 +24,8 @@ internal class KnLauncher : IExternalCommand
             return Result.Succeeded;
         }       
             
-        var filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
-        var fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ?
+        string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
+        string fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ?
             Util.GetProjectFolder(revit) :
             Path.GetDirectoryName(filePath);
         var xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
