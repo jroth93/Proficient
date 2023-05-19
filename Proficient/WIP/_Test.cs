@@ -7,12 +7,15 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using UIFramework;
+using Autodesk.Revit.UI.Selection;
+using Xceed.Wpf.AvalonDock;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
 using DTEU = Proficient.Utilities.DocumentTabEventUtils;
 using PFRF = Autodesk.Revit.DB.ParameterFilterRuleFactory;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI.Selection;
+using Orientation = System.Windows.Controls.Orientation;
+
 
 namespace Proficient.WIP;
 
@@ -26,6 +29,7 @@ class _Test : IExternalCommand
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
 
+        /*
         //var eid = uiDoc.Selection.GetElementIds().First();
         var linkRef = uiDoc.Selection.PickObject(ObjectType.LinkedElement, "Pick an element");
         if (doc.GetElement(linkRef) is not RevitLinkInstance linkInst) return Result.Cancelled;
@@ -38,36 +42,37 @@ class _Test : IExternalCommand
         var cat = el.Category;
         string name = ((FamilyInstance) el).Symbol.FamilyName;
         var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME),name,true);
+        */
 
 
-#if TabOrganizer
-            var sfm = SpatialFieldManager.GetSpatialFieldManager(view);
-            var dm = DTEU.GetDockingManager(app);
-            var dtg = DTEU.GetDocumentTabGroup(app);
-            var dps = DTEU.GetDocumentPanes(dtg);
-            var dtp = DTEU.GetDocumentTabsPane(dtg);
-            var dts = DTEU.GetDocumentTabs(dtg).ToList();
-            ObservableCollection<LayoutContent> tabs = (dtg.Children[0] as LayoutDocumentPaneControl).ItemsSource as ObservableCollection<LayoutContent>;
+        var sfm = SpatialFieldManager.GetSpatialFieldManager(view);
 
-            var newTabs = tabs.OrderBy(t => t.ToolTip).ToList();
+        var wndRoot = (MainWindow)UIAppEventUtils.GetWindowRoot(app);
+        if (wndRoot == null)
+            return Result.Failed;
 
-            foreach (var tab in tabs.ToList())
-            {
-                
-                //tabs.Move(tabs.IndexOf(tab), newTabs.IndexOf(tab));
-            }
-            //dm.UpdateLayout();
-            //dm.UpdateDefaultStyle();
+        var dm = MainWindow.FindFirstChild<DockingManager>(wndRoot);
+        var lp = dm.Layout.Children.First(c => c is LayoutPanel) as LayoutPanel;
+        var ldpg = lp.Children.First(c => c is LayoutDocumentPaneGroup) as LayoutDocumentPaneGroup;
+        var ldps = ldpg.Children;
+        var ld = ldps[0].Children.First();
 
-            //(view as ViewSchedule).GetTableData().GetSectionData(0).GetCellText(1, 0);
+        //ldpg.Orientation = Orientation.Horizontal;
+        //ldps[0].RemoveChild(ld);
+        //(ldps[1] as LayoutDocumentPane).Children.Add(ld as LayoutDocument);
 
-            var wndRoot = (MainWindow)UIAppEventUtils.GetWindowRoot(app);
+        dm.UpdateLayout();
+        dm.UpdateDefaultStyle();
 
-            //MethodInfo getMFCDocMethod = doc.GetType().GetMethod("getMFCDoc", BindingFlags.Instance | BindingFlags.NonPublic);
-            //object mfcDoc = getMFCDocMethod.Invoke(doc, new object[] { });
-            //ViewTemplatesDlgUtil();
-            //ControlHost
-#endif
+        //(view as ViewSchedule).GetTableData().GetSectionData(0).GetCellText(1, 0);
+
+
+        var ms = view.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+        //MethodInfo getMFCDocMethod = doc.GetType().GetMethod("getMFCDoc", BindingFlags.Instance | BindingFlags.NonPublic);
+        //object mfcDoc = getMFCDocMethod.Invoke(doc, new object[] { });
+        //ViewTemplatesDlgUtil();
+        //ControlHost
+
 
 
 #if CLFollower
@@ -97,7 +102,7 @@ class _Test : IExternalCommand
 
             f.ShowDialog();
 #endif
-
+        /*
         using Transaction tx = new (doc, "commandname");
         if (tx.Start() != TransactionStatus.Started)
             return Result.Failed;
@@ -105,7 +110,7 @@ class _Test : IExternalCommand
         view.AddFilter(filter.Id);
         view.SetFilterVisibility(filter.Id, false);
         tx.Commit();
-
+        */
         return Result.Succeeded;
             
     }

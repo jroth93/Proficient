@@ -145,10 +145,16 @@ internal class Util
         string pn = GetProjectNumber(revit);
         var pfPar = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).FirstOrDefault();
 
-        if(pfPar is not null && pfPar.AsString() != string.Empty)
-            return pfPar.AsString();
+
         if (pfPar is null)
-            AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation, BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
+        {
+            AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation,
+                BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
+        }
+        else if (pfPar.AsString() != string.Empty)
+        {
+            return pfPar.AsString();
+        }
 
         string pfPath;
         var dirs = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn)).ToList();

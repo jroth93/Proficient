@@ -85,7 +85,7 @@ internal class FlipElements : IExternalCommand
         var p = Plane.CreateByNormalAndOrigin(sec.ViewDirection, sec.Origin);
             
         using var tx = new Transaction(doc, "Flip Section");
-        if (tx.Start() != TransactionStatus.Started)
+        if (tx.Start() == TransactionStatus.Started)
             ElementTransformUtils.MirrorElements(doc, new List<ElementId>{eid}, p, false);
         tx.Commit();
     }
