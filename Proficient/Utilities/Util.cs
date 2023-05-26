@@ -142,16 +142,15 @@ internal class Util
     public static string GetProjectFolder(ExternalCommandData revit)
     {
         var doc = revit.Application.ActiveUIDocument.Document;
-        string pn = GetProjectNumber(revit);
+        string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
         var pfPar = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).FirstOrDefault();
-
 
         if (pfPar is null)
         {
             AddSharedParameter(doc, revit.Application, BuiltInCategory.OST_ProjectInformation,
                 BuiltInParameterGroup.PG_GENERAL, "Titleblock", Names.Parameter.ProjectFolder);
         }
-        else if (pfPar.AsString() != string.Empty)
+        else if (pfPar.AsString() is not null && pfPar.AsString() != string.Empty)
         {
             return pfPar.AsString();
         }
@@ -177,11 +176,6 @@ internal class Util
         tx.Commit();
             
         return pfPath;
-    }
-    public static string GetProjectNumber(ExternalCommandData revit)
-    {
-        var doc = revit.Application.ActiveUIDocument.Document;
-        return doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
     }
 
     public static void AddSharedParameter(Document doc, UIApplication uiApp, BuiltInCategory bic, BuiltInParameterGroup pg, string defGroup, string parName)

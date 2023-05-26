@@ -28,7 +28,7 @@ class _Test : IExternalCommand
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
-
+        var sp = doc.GetWorksharingCentralModelPath().CentralServerPath;
         /*
         //var eid = uiDoc.Selection.GetElementIds().First();
         var linkRef = uiDoc.Selection.PickObject(ObjectType.LinkedElement, "Pick an element");

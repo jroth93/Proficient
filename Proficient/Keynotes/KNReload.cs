@@ -12,14 +12,11 @@ internal class KnReload : IExternalCommand
 
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        var pn = Util.GetProjectNumber(revit);
         var doc = revit.Application.ActiveUIDocument.Document;
+        string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
 
-        var filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath());
-        var fileDir = 
-            filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ? 
-                Util.GetProjectFolder(revit) : 
-                Path.GetDirectoryName(filePath);
+        string filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
+        string fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
 
         var xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
 
@@ -48,8 +45,8 @@ internal class KnReload : IExternalCommand
                 {
                     try
                     {
-                        var key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
-                        var note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
+                        string key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
+                        string note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
                         knList.Add(new KeynoteEntry(key, sheet.Name, note));
                     }
                     catch
@@ -79,9 +76,9 @@ internal class KnReload : IExternalCommand
             return Result.Failed;
         }
 
-        var externalResourceService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);
+        var ers = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService);
 
-        if (externalResourceService.GetServer(DbId) is not ExternalResourceDBServer knSrv)
+        if (ers.GetServer(DbId) is not ExternalResourceDBServer knSrv)
             return Result.Failed;
 
         knSrv.knList = knList;

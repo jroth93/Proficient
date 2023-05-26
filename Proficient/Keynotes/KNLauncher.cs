@@ -14,20 +14,17 @@ internal class KnLauncher : IExternalCommand
             doc.Title.Substring(0, 5);
 
         var ps = Process.GetProcessesByName("excel")
-            .Where(p => p.MainWindowTitle.Contains($"{pn} Keynotes.xlsx"))
-            .ToList()
-            .FirstOrDefault();
+            .FirstOrDefault(p => p.MainWindowTitle.Contains($"{pn} Keynotes.xlsx"));
+            
 
         if (ps is not null)
         {
             SetForegroundWindow(ps.MainWindowHandle);
             return Result.Succeeded;
-        }       
-            
-        string filePath = ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) ?? doc.PathName;
-        string fileDir = filePath.Substring(0, 7) == "BIM 360" || filePath.Substring(0, 8) == "Autodesk" ?
-            Util.GetProjectFolder(revit) :
-            Path.GetDirectoryName(filePath);
+        }
+
+        string filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
+        string fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
         var xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
 
         if (!File.Exists(xlPath))
