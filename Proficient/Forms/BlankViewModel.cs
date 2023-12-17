@@ -13,7 +13,7 @@ public class BlankViewModel : INotifyPropertyChanged
 {
     public BlankViewModel()
     {
-        StackPanelItems = new ObservableCollection<FrameworkElement>();
+        WrapPanelItems = new ObservableCollection<FrameworkElement>();
         Blank = new Blank()
         {
             DataContext = this
@@ -29,9 +29,9 @@ public class BlankViewModel : INotifyPropertyChanged
     }
 
     private Blank Blank { get; set; }
-    public Orientation StackPanelOrientation { get; set; } = Orientation.Vertical;
+    public Orientation WrapPanelOrientation { get; set; } = Orientation.Vertical;
 
-    public ObservableCollection<FrameworkElement> StackPanelItems { get; set; }
+    public ObservableCollection<FrameworkElement> WrapPanelItems { get; set; }
 
     public void AddButton(string style, string content, Action clickEvent, bool closeOnClick, bool? dialogResult)
     {
@@ -50,8 +50,8 @@ public class BlankViewModel : INotifyPropertyChanged
                 Blank.Close();
             }
         };
-        StackPanelItems.Add(btn);
-        NotifyPropertyChanged("StackPanelItems");
+        WrapPanelItems.Add(btn);
+        NotifyPropertyChanged("WrapPanelItems");
     }
 
     public void AddLabel(string content)
@@ -60,7 +60,7 @@ public class BlankViewModel : INotifyPropertyChanged
         {
             Content = content
         };
-        StackPanelItems.Add(lbl);
+        WrapPanelItems.Add(lbl);
     }
 
     public void SetLocation(int x, int y)

@@ -1,10 +1,9 @@
 ﻿using Proficient.Forms;
-using Proficient.Utilities;
 
 namespace Proficient.Filters;
 
 [Transaction(TransactionMode.Manual)]
-internal class TypeFilter : IExternalCommand
+internal class SelectionFilterType : IExternalCommand
 {
     internal static Document Doc;
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
@@ -28,15 +27,13 @@ internal class TypeFilter : IExternalCommand
 
         var bvm = new BlankViewModel();
 
-        var mousePos = Mouse.GetCursorPosition();
-        bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
         var selectedFamily = string.Empty;
         var selectedType = string.Empty;
 
         foreach (var type in types)
         {
-            var fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName;
-            var display = fam + " - " + type.Name;
+            string fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName;
+            string display = fam + " - " + type.Name;
             bvm.AddButton("smallBtn", display, () => { selectedFamily = fam; selectedType = type.Name; }, true, true);
         }
 
@@ -63,8 +60,8 @@ internal class TypeEqualityComparer : IEqualityComparer<Element>
 {
     public bool Equals(Element e1, Element e2)
     {
-        var f1 = (TypeFilter.Doc.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
-        var f2 = (TypeFilter.Doc.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
+        string f1 = (SelectionFilterType.Doc.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
+        string f2 = (SelectionFilterType.Doc.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
 
         if (e1 == null && e2 == null)
             return true;
@@ -75,6 +72,6 @@ internal class TypeEqualityComparer : IEqualityComparer<Element>
 
     public int GetHashCode(Element e)
     {
-        return TypeFilter.Doc.GetElement(e.Id).GetTypeId().IntegerValue.GetHashCode();
+        return SelectionFilterType.Doc.GetElement(e.Id).GetTypeId().IntegerValue.GetHashCode();
     }
 }

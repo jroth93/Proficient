@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     
     SizeToContent="WidthAndHeight"  
-    WindowStartupLocation="Manual" 
+    WindowStartupLocation="CenterOwner" 
     WindowStyle="None" 
     AllowsTransparency="True"
     ResizeMode="NoResize"
@@ -20,9 +20,13 @@
         <ResourceDictionary Source="FormStyles.xaml"/>
     </Window.Resources>
     
-    <Border>
-        <StackPanel Orientation="{Binding StackPanelOrientation}" Margin="10">
-            <ItemsControl ItemsSource="{Binding StackPanelItems, Mode=TwoWay}"/>
-        </StackPanel>
+    <Border Padding="10" MaxHeight="800">
+        <ItemsControl ItemsSource="{Binding WrapPanelItems, Mode=TwoWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                <WrapPanel Orientation="{Binding WrapPanelOrientation}"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
     </Border>
 </Window>

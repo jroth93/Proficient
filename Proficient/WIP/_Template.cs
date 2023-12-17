@@ -1,4 +1,4 @@
-﻿namespace Proficient.WIP;
+﻿namespace Proficient.Filters;
 
 [Transaction(TransactionMode.Manual)]
 internal class _Template : IExternalCommand
@@ -10,7 +10,7 @@ internal class _Template : IExternalCommand
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
 
-        using Transaction tx = new (doc, "commandname");
+        using Transaction tx = new(doc, "commandname");
         if (tx.Start() != TransactionStatus.Started)
             return Result.Failed;
 

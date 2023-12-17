@@ -12,7 +12,7 @@ internal class LoadNameUpdate : IExternalCommand
         var conMech = new FilteredElementCollector(doc)
             .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
             .OfType<FamilyInstance>()
-#if (R21 || R22 || R23)
+#if (FORGE)
             .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #else
                 .Where(fi => fi.MEPModel.ElectricalSystems != null);
@@ -28,7 +28,7 @@ internal class LoadNameUpdate : IExternalCommand
                           + fi.LookupParameter("MEI Display Separation").AsString()
                           + fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
 
-#if (R21 || R22 || R23)
+#if (FORGE)
             foreach (var es in fi.MEPModel.GetElectricalSystems())
                 es.LoadName = planTag;
 #else

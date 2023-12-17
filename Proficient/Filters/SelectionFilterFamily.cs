@@ -4,7 +4,7 @@ using Proficient.Utilities;
 namespace Proficient.Filters;
 
 [Transaction(TransactionMode.Manual)]
-internal class FamilyFilter : IExternalCommand
+internal class SelectionFilterFamily : IExternalCommand
 {
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {

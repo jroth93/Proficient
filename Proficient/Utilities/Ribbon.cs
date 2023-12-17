@@ -5,7 +5,7 @@ using Proficient.Filters;
 using Proficient.Keynotes;
 using Proficient.Mechanical;
 using Proficient.Toggles;
-using TypeFilter = Proficient.Filters.TypeFilter;
+using SelectionFilterType = Proficient.Filters.SelectionFilterType;
 
 namespace Proficient.Utilities;
 
@@ -155,9 +155,9 @@ internal static class Ribbon
 
 //filter panel
         var filters = filtRib.AddStackedItems(
-                new PushButtonData("catfilt", "Category", al, typeof(CategoryFilter).FullName),
-                new PushButtonData("famfilt", "Family", al, typeof(FamilyFilter).FullName),
-                new PushButtonData("typefilt", "Type", al, typeof(TypeFilter).FullName))
+                new PushButtonData("catfilt", "Category", al, typeof(SelectionFilterCategory).FullName),
+                new PushButtonData("famfilt", "Family", al, typeof(SelectionFilterFamily).FullName),
+                new PushButtonData("typefilt", "Type", al, typeof(SelectionFilterType).FullName))
             .Cast<PushButton>().ToList();
 
         filters[0].Image = Icons.ScaledIcon("cat", 16);

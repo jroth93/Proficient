@@ -56,7 +56,7 @@ internal class ElecLoadDmu : IUpdater
                     .Where(el => el is FamilyInstance)
                     .Cast<FamilyInstance>()
                     .Where(fi => fi.Symbol.Id == fs.Id)
-#if (R21 || R22 || R23)
+#if (FORGE)
                     .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null);
@@ -68,7 +68,7 @@ internal class ElecLoadDmu : IUpdater
                 fis = els
                     .Where(el => el is FamilyInstance)
                     .Cast<FamilyInstance>()
-#if (R21 || R22 || R23)
+#if (FORGE)
                     .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #else
                         .Where(fi => fi.MEPModel.ElectricalSystems != null);
@@ -105,7 +105,7 @@ internal class ElecLoadDmu : IUpdater
                 }
             }
 
-#if (R21 || R22 || R23)
+#if (FORGE)
             foreach (var es in fi.MEPModel.GetElectricalSystems())
                 es.LoadName = planTag;
 #else

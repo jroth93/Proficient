@@ -124,7 +124,7 @@ internal class AddLeader : IExternalCommand
 
                 if (knt && it.HasLeader)
                 {
-#if (R22 || R23)
+#if (FORGE && !R21)
                         Reference itRef = it.GetTaggedReferences()?.First();
                         if (it.HasLeaderElbow(itRef))
                             ldr.Elbow = it.GetLeaderElbow(itRef);

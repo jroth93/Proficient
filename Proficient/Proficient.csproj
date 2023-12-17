@@ -15,7 +15,7 @@
         <Deterministic>true</Deterministic>
         <SignAssembly>false</SignAssembly>
         <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-		<Configurations>Debug2019;Release2019;Publish2019;Debug2020;Release2020;Publish2020;Debug2021;Release2021;Publish2021;Debug2022;Release2022;Publish2022;Debug2023;Release2023;Publish2023</Configurations>
+		<Configurations>Debug2019;Release2019;Publish2019;Debug2020;Release2020;Publish2020;Debug2021;Release2021;Publish2021;Debug2022;Release2022;Publish2022;Debug2023;Release2023;Publish2023;Debug2024;Release2024;Publish2024</Configurations>
 		<PlatformTarget>x64</PlatformTarget>
 		<Platforms>x64</Platforms>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
@@ -157,6 +157,33 @@
 		<TargetFramework>net48</TargetFramework>
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 	</PropertyGroup>
+      <PropertyGroup Condition="'$(Configuration)' == 'Debug2024'">
+	      <DebugSymbols>true</DebugSymbols>
+	      <OutputPath>bin\Debug\2024</OutputPath>
+	      <DefineConstants>TRACE;DEBUG;R24;FORGE</DefineConstants>
+	      <DebugType>full</DebugType>
+	      <TargetFramework>net48</TargetFramework>
+	      <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	      <StartAction>Program</StartAction>
+	      <StartProgram>C:\Program Files\Autodesk\Revit 2024\Revit.exe</StartProgram>
+	      <XamlDebuggingInformation>True</XamlDebuggingInformation>
+      </PropertyGroup>
+      <PropertyGroup Condition="'$(Configuration)' == 'Release2024'">
+	      <OutputPath>bin\Release\2024</OutputPath>
+	      <DefineConstants>TRACE;DEBUG;R24;FORGE</DefineConstants>
+	      <DebugType>full</DebugType>
+	      <TargetFramework>net48</TargetFramework>
+	      <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+	      <XamlDebuggingInformation>True</XamlDebuggingInformation>
+      </PropertyGroup>
+      <PropertyGroup Condition="'$(Configuration)' == 'Publish2024'">
+	      <OutputPath>bin\Publish\2024</OutputPath>
+	      <DefineConstants>TRACE;R24;FORGE</DefineConstants>
+	      <Optimize>true</Optimize>
+	      <DebugType>pdbonly</DebugType>
+	      <TargetFramework>net48</TargetFramework>
+	      <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+      </PropertyGroup>
 	<ItemGroup Label="References">
 		<Reference Include="DocumentFormat.OpenXml">
 		  <HintPath>..\packages\DocumentFormat.OpenXml.2.16.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
@@ -194,7 +221,7 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2019\UIFramework.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2019' Or '$(Configuration)'=='Release2019' Or '$(Configuration)'=='Publish2019'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2019\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
@@ -218,7 +245,7 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2020\UIFramework.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2020' Or '$(Configuration)'=='Release2020' Or '$(Configuration)'=='Publish2020'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2020\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
@@ -244,7 +271,7 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\UIFramework.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2021' Or '$(Configuration)'=='Release2021' Or '$(Configuration)'=='Publish2021'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2021\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
@@ -268,7 +295,7 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2022\UIFramework.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2022' Or '$(Configuration)'=='Release2022' Or '$(Configuration)'=='Publish2022'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2022\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
@@ -292,8 +319,32 @@
 			<HintPath>C:\Program Files\Autodesk\Revit 2023\UIFramework.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2023' Or '$(Configuration)'=='Release2023' Or '$(Configuration)'=='Publish2023'">
 			<HintPath>C:\Program Files\Autodesk\Revit 2023\Xceed.Wpf.AvalonDock.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPI" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Xceed.Wpf.AvalonDock" Condition="'$(Configuration)'=='Debug2024' Or '$(Configuration)'=='Release2024' Or '$(Configuration)'=='Publish2024'">
+			<HintPath>C:\Program Files\Autodesk\Revit 2024\Xceed.Wpf.AvalonDock.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 
@@ -328,6 +379,10 @@
 	</ItemGroup>
   <ItemGroup Label="Code Files">
     <None Include="Archive\ClearUpDn.cs" />
+    <Compile Include="Filters\ViewFilterCatShow.cs" />
+    <Compile Include="Filters\ViewFilterCatHide.cs" />
+    <Compile Include="Filters\ViewFilterFamily.cs" />
+    <Compile Include="Filters\ViewFilterType.cs" />
     <Compile Include="Forms\BlankViewModel.cs" />
     <Compile Include="Forms\RelayCommand.cs" />
     <Compile Include="Forms\GlobalNotesSelectForm.xaml.cs">
@@ -410,9 +465,9 @@
     <None Include="Archive\GraphKNLauncher.cs" />
     <None Include="Archive\MSGraph.cs" />
     <EmbeddedResource Include="Icons\notespane.png" />
-    <Compile Include="Filters\TypeFilter.cs" />
-    <Compile Include="Filters\FamilyFilter.cs" />
-    <Compile Include="Filters\CategoryFilter.cs" />
+    <Compile Include="Filters\SelectionFilterType.cs" />
+    <Compile Include="Filters\SelectionFilterFamily.cs" />
+    <Compile Include="Filters\SelectionFilterCategory.cs" />
     <Compile Include="Toggles\ToggleEnlargedWorkset.cs" />
     <Compile Include="Toggles\FlipWorkPlane.cs" />
     <Compile Include="Toggles\FlipElements.cs" />

@@ -4,10 +4,11 @@ using Proficient.Forms;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Controls;
-using System.Windows.Forms;
-using System.Windows.Input;
+//using System.Windows.Forms;
+//using System.Windows.Input;
 using UIFramework;
 using Autodesk.Revit.UI.Selection;
+using Autodesk.Revit.DB;
 using Xceed.Wpf.AvalonDock;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -15,6 +16,10 @@ using DTEU = Proficient.Utilities.DocumentTabEventUtils;
 using PFRF = Autodesk.Revit.DB.ParameterFilterRuleFactory;
 using Autodesk.Revit.DB;
 using Orientation = System.Windows.Controls.Orientation;
+
+using System.Text.RegularExpressions;
+using Autodesk.Revit.ApplicationServices;
+using Application = Autodesk.Revit.Creation.Application;
 
 
 namespace Proficient.WIP;
@@ -24,29 +29,16 @@ class _Test : IExternalCommand
 {
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
-        var app = revit.Application;
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
-        var sp = doc.GetWorksharingCentralModelPath().CentralServerPath;
-        /*
-        //var eid = uiDoc.Selection.GetElementIds().First();
-        var linkRef = uiDoc.Selection.PickObject(ObjectType.LinkedElement, "Pick an element");
-        if (doc.GetElement(linkRef) is not RevitLinkInstance linkInst) return Result.Cancelled;
-        var link = linkInst.GetLinkDocument();
-        
-        var el = link.GetElement(linkRef.LinkedElementId);
-
-        if (view.ViewTemplateId != ElementId.InvalidElementId)
-            view = (Autodesk.Revit.DB.View) doc.GetElement(view.ViewTemplateId);
-        var cat = el.Category;
-        string name = ((FamilyInstance) el).Symbol.FamilyName;
-        var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME),name,true);
-        */
+        //var vs = view as ViewSchedule;
+        //var td = vs?.GetTableData();
+        //var id = (view as ViewSchedule).GetTableData().GetSectionData(1).GetCellParamId(4, 3);
+        //var par = doc.GetElement(id);
 
 
-        var sfm = SpatialFieldManager.GetSpatialFieldManager(view);
-
+#if taborganizer
         var wndRoot = (MainWindow)UIAppEventUtils.GetWindowRoot(app);
         if (wndRoot == null)
             return Result.Failed;
@@ -63,17 +55,7 @@ class _Test : IExternalCommand
 
         dm.UpdateLayout();
         dm.UpdateDefaultStyle();
-
-        //(view as ViewSchedule).GetTableData().GetSectionData(0).GetCellText(1, 0);
-
-
-        var ms = view.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
-        //MethodInfo getMFCDocMethod = doc.GetType().GetMethod("getMFCDoc", BindingFlags.Instance | BindingFlags.NonPublic);
-        //object mfcDoc = getMFCDocMethod.Invoke(doc, new object[] { });
-        //ViewTemplatesDlgUtil();
-        //ControlHost
-
-
+#endif
 
 #if CLFollower
             Follower f = new Forms.Follower(revit);
@@ -102,56 +84,45 @@ class _Test : IExternalCommand
 
             f.ShowDialog();
 #endif
-        /*
-        using Transaction tx = new (doc, "commandname");
-        if (tx.Start() != TransactionStatus.Started)
-            return Result.Failed;
-        var filter = ParameterFilterElement.Create(doc, name, new List<ElementId> { cat.Id }, new ElementParameterFilter(rule));
-        view.AddFilter(filter.Id);
-        view.SetFilterVisibility(filter.Id, false);
-        tx.Commit();
-        */
+
         return Result.Succeeded;
             
     }
 
-    static string GetTabUniqueId(TabItem tab)
-    {
-        return $"{((LayoutDocument)tab.Header).Title}+{tab.GetHashCode()}+{tab.IsSelected}";
-    }
 
-    static long GetTabDocumentId(LayoutContent tab)
+    public void GetAllMethods(Type t)
     {
-        return(
-            (MFCMDIFrameHost)(
-                (MFCMDIChildFrameControl)tab.Content
-            ).Content
-        ).document.ToInt64();
-    }
-    static long GetTabDocumentId(TabItem tab)
-    {
-        return (
-            (MFCMDIFrameHost)(
-                (MFCMDIChildFrameControl)(
-                    (LayoutDocument)tab.Content
-                ).Content
-            ).Content
-        ).document.ToInt64();
-    }
 
-    static long GetAPIDocumentId(Document doc)
-    {
-        MethodInfo getMFCDocMethod = doc.GetType().GetMethod("getMFCDoc", BindingFlags.Instance | BindingFlags.NonPublic);
-        object mfcDoc = getMFCDocMethod.Invoke(doc, new object[] { });
-        MethodInfo ptfValMethod = mfcDoc.GetType().GetMethod("GetPointerValue", BindingFlags.Instance | BindingFlags.NonPublic);
-        return ((IntPtr)ptfValMethod.Invoke(mfcDoc, new object[] { })).ToInt64();
+
+        StringBuilder st = new StringBuilder();
+        StreamWriter logger = new StreamWriter(@"C:\Users\jroth\Desktop\methods.txt");
+
+        MethodInfo[] docInternalMethods = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+
+        foreach (MethodInfo m in docInternalMethods)
+        {
+            string rep1 = "";
+            try
+            {
+                rep1 = m.GetParameters().ToList().Select(x => x.Name).Aggregate((a, x) => a + ", " + x);
+            }
+            catch
+            {
+
+            }
+
+            string rep = " Method: " + m.Name + ", Attribute: " + m.Attributes + ", CallingConvention: " +
+                         m.CallingConvention
+                         + ", Contains Generic Parameters: " + m.ContainsGenericParameters + ", Custom Attribute: " +
+                         m.CustomAttributes
+                         + ", Declaring Type: " + m.DeclaringType + ", Member Type: " + m.MemberType +
+                         ", Parameters: " + rep1;
+            logger.WriteLine(rep);
+        }
+
     }
 
     [DllImport("user32.dll")]
     static extern IntPtr GetForegroundWindow();
-
-    [DllImport("RevitMFC.dll")]
-    static extern IntPtr ViewTemplatesDlgUtil();
-
 
 }
