@@ -73,39 +73,38 @@ internal class ExcelAssign : IExternalCommand
 
         return ws;
     }
-#if (FORGE)
-    private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
-    {
-
-        try
-        {
-            switch (parType)
-            {
-                case "String":
-                    return Convert.ToString(_ws.Cells[row, col].Value);
-                case "Integer":
-                    int iVal = Convert.ToInt32(_ws.Cells[row, col].Value);
-                    iVal = (int)UnitUtils.ConvertToInternalUnits(iVal, dispUnit);
-                    return iVal;
-                case "Double":
-                    double dVal = Convert.ToDouble(_ws.Cells[row, col].Value);
-                    dVal = UnitUtils.ConvertToInternalUnits(dVal, dispUnit);
-                    return dVal;
-                case "ElementId":
-                    return new ElementId(Convert.ToInt32(_ws.Cells[row, col].Value));
-                default:
-                    return null;
-            }
-        }
-        catch
-        {
-            return null;
-        }
-
-    }
-#else
+#if PRE21
         private static dynamic GetCellVal(int row, int col, string parType, DisplayUnitType dispUnit)
         {
+            try
+            {
+                switch (parType)
+                {
+                    case "String":
+                        return Convert.ToString(_ws.Cells[row, col].Value);
+                    case "Integer":
+                        int iVal = Convert.ToInt32(_ws.Cells[row, col].Value);
+                        iVal = (int)UnitUtils.ConvertToInternalUnits(iVal, dispUnit);
+                        return iVal;
+                    case "Double":
+                        double dVal = Convert.ToDouble(_ws.Cells[row, col].Value);
+                        dVal = UnitUtils.ConvertToInternalUnits(dVal, dispUnit);
+                        return dVal;
+                    case "ElementId":
+                        return new ElementId(Convert.ToInt32(_ws.Cells[row, col].Value));
+                    default:
+                        return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+#else
+        private static dynamic GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
+        {
+
             try
             {
                 switch (parType)
@@ -243,10 +242,10 @@ internal class ExcelAssign : IExternalCommand
 
                 try
                 {
-#if (FORGE)
-                    var _ = fs.LookupParameter(parName).GetUnitTypeId();
+#if PRE21
+                    var _ = fs.LookupParameter(parName).DisplayUnitType;
 #else
-                        var _ = fs.LookupParameter(parName).DisplayUnitType;
+                    var _ = fs.LookupParameter(parName).GetUnitTypeId();
 #endif
                     hasUnits = true;
                 }
@@ -255,10 +254,10 @@ internal class ExcelAssign : IExternalCommand
                     hasUnits = false;
                 }
 
-#if (FORGE)
-                dynamic newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
+#if PRE21
+                var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
 #else
-                    var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
+                dynamic newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
 #endif
 
                 if (newVal == null)
@@ -317,10 +316,10 @@ internal class ExcelAssign : IExternalCommand
             var hasUnits = true;
             try
             {
-#if (FORGE)
-                var _ = fi.LookupParameter(parName).GetUnitTypeId();
+#if PRE21
+                var _ = fi.LookupParameter(parName).DisplayUnitType;
 #else
-                    var _ = fi.LookupParameter(parName).DisplayUnitType;
+                var _ = fi.LookupParameter(parName).GetUnitTypeId();
 #endif
             }
             catch (Autodesk.Revit.Exceptions.InvalidOperationException)
@@ -328,10 +327,10 @@ internal class ExcelAssign : IExternalCommand
                 hasUnits = false;
             }
 
-#if (FORGE)
-            dynamic newVal = hasUnits ? GetCellVal(row, parCol, parType, par.GetUnitTypeId()) : GetCellVal(row, parCol, parType);
+#if PRE21
+            var newVal = hasUnits ? GetCellVal(row, parCol, parType, par.DisplayUnitType) : GetCellVal(row, parCol, parType);
 #else
-                var newVal = hasUnits ? GetCellVal(row, parCol, parType, par.DisplayUnitType) : GetCellVal(row, parCol, parType);
+            dynamic newVal = hasUnits ? GetCellVal(row, parCol, parType, par.GetUnitTypeId()) : GetCellVal(row, parCol, parType);
 #endif
             if (newVal == null)
             {

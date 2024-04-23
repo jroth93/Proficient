@@ -33,7 +33,7 @@ internal class PipeSpacer : IExternalCommand
                 catch (Autodesk.Revit.Exceptions.OperationCanceledException)
                 {
                     prompt.Close();
-                    return Result.Succeeded;
+                    return Result.Cancelled;
                 }
 
                 if (doc.GetElement(elId1).Location is not LocationCurve lc1 || 

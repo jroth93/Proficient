@@ -29,6 +29,10 @@ internal class Names
         public const string DisplaySeparation = "MEI Display Separation";
         public const string BreakerOptions = "MEI Breaker Options";
         public const string DisplayVanes = "MEI Display Vanes";
+        public const string AtReturnAirTag = "Display Return Air Tag";
+        public const string AtRhTag = "Display Righthand Tag";
+        public const string AtLdrLength = "Leader Line Length";
+
     }
     public class Workset
     {
@@ -50,6 +54,9 @@ internal class Names
     public class Guids
     {
         public static Guid ProficientSchema = new ("7487EBF8-6F17-41BA-B531-C93DB46F2DD9");
+        public static Guid ElecLoadDmu = new ("088EE9E1-8EFA-438D-9287-F180436519BD");
+        public static Guid BreakerDmu = new ("86168304-BB36-4B81-B498-D19FFF96377B");
+        public static Guid DuctFittingDmu = new("76364FDC-B97B-4D3A-BDA7-EC6DD273B60F");
     }
 
 }

@@ -14,7 +14,7 @@ if %1 == Publish2022 set sign=true
 if %1 == Publish2023 set sign=true
 if %1 == Publish2024 set sign=true
 
-if %sign%==true "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /t "http://timestamp.digicert.com" /fd SHA256 /f "C:\Users\jroth\Documents\Certs\JRCert.pfx" /p "mei" %2
+if %sign%==true "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /t "http://timestamp.digicert.com" /fd SHA256 /f "C:\Users\jroth\source\Certs\JRCert.pfx" /p "mei" %2
 
 if %1 == Release2019 copy %2 "C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\R19"
 if %1 == Release2020 copy %2 "C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\R20"

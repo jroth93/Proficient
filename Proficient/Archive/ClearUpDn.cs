@@ -12,7 +12,7 @@ namespace Proficient.Archive
     {
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
-#if R19
+#if PRE20
             return Result.Failed;
 #else
             var uiApp = revit.Application;

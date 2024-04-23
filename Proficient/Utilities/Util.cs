@@ -16,7 +16,7 @@ internal class Util
                 .Cast<IndependentTag>()
                 .Where(e => e.Category.Id.IntegerValue != (int)BuiltInCategory.OST_KeynoteTags);
 
-#if R19 || R20 || R21
+#if PRE22
         return fec.Any(it => it.TaggedLocalElementId == el.Id);
 #else
         return fec.Any(it => it.GetTaggedLocalElementIds().Contains(el.Id));

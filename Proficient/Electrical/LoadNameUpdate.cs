@@ -12,10 +12,10 @@ internal class LoadNameUpdate : IExternalCommand
         var conMech = new FilteredElementCollector(doc)
             .OfCategory(BuiltInCategory.OST_MechanicalEquipment)
             .OfType<FamilyInstance>()
-#if (FORGE)
-            .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
+#if PRE21
+            .Where(fi => fi.MEPModel.ElectricalSystems != null);
 #else
-                .Where(fi => fi.MEPModel.ElectricalSystems != null);
+            .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #endif
 
         using var tx = new Transaction(doc, "Update Load Names");
@@ -28,12 +28,12 @@ internal class LoadNameUpdate : IExternalCommand
                           + fi.LookupParameter("MEI Display Separation").AsString()
                           + fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
 
-#if (FORGE)
-            foreach (var es in fi.MEPModel.GetElectricalSystems())
+#if PRE21
+            foreach (ElectricalSystem es in fi.MEPModel.ElectricalSystems)
                 es.LoadName = planTag;
 #else
-                foreach (ElectricalSystem es in fi.MEPModel.ElectricalSystems)
-                    es.LoadName = planTag;
+            foreach (var es in fi.MEPModel.GetElectricalSystems())
+                es.LoadName = planTag;
 #endif
             
         }

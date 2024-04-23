@@ -8,7 +8,7 @@ internal class DuctFittingDmu : IUpdater
 
     public DuctFittingDmu()
     {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), new Guid("76364FDC-B97B-4D3A-BDA7-EC6DD273B60F"));
+        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.DuctFittingDmu);
     }
 
     public void Execute(UpdaterData data)

@@ -11,7 +11,7 @@ internal class BreakerDmu : IUpdater
 
     public BreakerDmu()
     {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), new Guid("86168304-BB36-4B81-B498-D19FFF96377B"));
+        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.BreakerDmu);
     }
 
     public void Execute(UpdaterData data)

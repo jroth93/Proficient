@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI.Selection;
+using Proficient.Utilities;
 
 namespace Proficient.Toggles;
 
@@ -22,18 +23,27 @@ internal class FlipElements : IExternalCommand
                     FlipSection(doc, eid);
                     continue;
                 }
+
+                var el = doc.GetElement(eid);
+
+                if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_DuctTerminalTags)
+                {
+                    FlipAtTag(doc, el);
+                    continue;
+                }
+
                 try
                 {
                     using var tx = new Transaction(doc, "Flip Element");
                     if (tx.Start() != TransactionStatus.Started)
                         return Result.Failed;
 
-                    if (doc.GetElement(eid) is not FamilyInstance famInst)
+                    if (el is not FamilyInstance famInst)
                         continue;
 
                     if (famInst.CanFlipFacing)
                         famInst.flipFacing();
-                    else if ((famInst.MEPModel as MechanicalFitting)?.PartType == PartType.Tee)
+                    else if (famInst.MEPModel is MechanicalFitting { PartType: PartType.Tee })
                         FlipTee(uiDoc, doc, famInst);
 
                     tx.Commit();
@@ -53,6 +63,14 @@ internal class FlipElements : IExternalCommand
                 if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is ViewSection)
                 {
                     FlipSection(doc, new ElementId(eid.IntegerValue + 1));
+                    continue;
+                }
+
+                var el = doc.GetElement(eid);
+
+                if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_DuctTerminalTags)
+                {
+                    FlipAtTag(doc, el);
                     continue;
                 }
 
@@ -87,6 +105,38 @@ internal class FlipElements : IExternalCommand
         using var tx = new Transaction(doc, "Flip Section");
         if (tx.Start() == TransactionStatus.Started)
             ElementTransformUtils.MirrorElements(doc, new List<ElementId>{eid}, p, false);
+        tx.Commit();
+    }
+
+    private static void FlipAtTag(Document doc, Element el)
+    {
+        var elTypeId = el.GetTypeId();
+        var elType = doc.GetElement(elTypeId);
+
+        if (elType is not FamilySymbol elFs)
+            return;
+        if (!elFs.FamilyName.Contains("MEI Mech Tag AT"))
+            return;
+
+        var famTypeIds = elFs.Family.GetFamilySymbolIds();
+
+        //find the type that has the same rattail and length but with opposite direction
+        var newType = famTypeIds
+            .Select(doc.GetElement)
+            .Where(t =>
+                t.GetParameters(Names.Parameter.AtReturnAirTag).First().AsInteger() ==
+                elType.GetParameters(Names.Parameter.AtReturnAirTag).First().AsInteger())
+            .Where(t =>
+                t.GetParameters(Names.Parameter.AtRhTag).First().AsInteger() !=
+                elType.GetParameters(Names.Parameter.AtRhTag).First().AsInteger())
+            .FirstOrDefault(t =>
+                Math.Abs(t.GetParameters(Names.Parameter.AtLdrLength).First().AsDouble() - elType.GetParameters(Names.Parameter.AtLdrLength).First().AsDouble()) < 0.001);
+
+        if (newType is null) return;
+
+        using var tx = new Transaction(doc, "Test");
+        if (tx.Start() == TransactionStatus.Started)
+            el.ChangeTypeId(newType.Id);
         tx.Commit();
     }
 

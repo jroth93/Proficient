@@ -1,12 +1,12 @@
 ﻿namespace Proficient;
 
-[Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+[Transaction(TransactionMode.Manual)]
 class TagElKn : IExternalCommand
 {
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         UIDocument uidoc = revit.Application.ActiveUIDocument;
-        Document doc = revit.Application.ActiveUIDocument.Document;
+        Document doc = uidoc.Document;
         ElementId viewid = uidoc.ActiveView.Id;
         View view = doc.GetElement(viewid) as View;
 
@@ -19,33 +19,31 @@ class TagElKn : IExternalCommand
 
         FilteredElementCollector elcoll = GetMEPElements(doc);
 
-        using (Transaction tx = new Transaction(doc, "Add Element Keynotes"))
+        using Transaction tx = new Transaction(doc, "Add Element Keynotes");
+        if (tx.Start() == TransactionStatus.Started)
         {
-            if (tx.Start() == TransactionStatus.Started)
+            foreach (Element el in elcoll)
             {
-                foreach (Element el in elcoll)
+                foreach (Element fel in fsel)
                 {
-                    foreach (Element fel in fsel)
+                    if (el.GetTypeId() == fel.Id)
                     {
-                        if (el.GetTypeId() == fel.Id)
-                        {
-                            Reference newref = new Reference(el);
-                            IndependentTag newkn = IndependentTag.Create(doc, knfamid, viewid, newref, true, TagOrientation.Horizontal, (el.Location as LocationPoint).Point);
-                            newkn.get_Parameter(BuiltInParameter.KEY_VALUE).Set(fel.LookupParameter("Keynote").AsString());
-                            newkn.LeaderEndCondition = LeaderEndCondition.Attached;
-                            newkn.TagHeadPosition = (el.Location as LocationPoint).Point + new XYZ(4, 2, 0);
-#if (FORGE && !R21)
-                                newkn.SetLeaderElbow(newref, newkn.TagHeadPosition + new XYZ(-2, -0.04, 0));
+                        Reference newref = new Reference(el);
+                        IndependentTag newkn = IndependentTag.Create(doc, knfamid, viewid, newref, true, TagOrientation.Horizontal, (el.Location as LocationPoint).Point);
+                        newkn.get_Parameter(BuiltInParameter.KEY_VALUE).Set(fel.LookupParameter("Keynote").AsString());
+                        newkn.LeaderEndCondition = LeaderEndCondition.Attached;
+                        newkn.TagHeadPosition = (el.Location as LocationPoint).Point + new XYZ(4, 2, 0);
+#if PRE22
+                        newkn.LeaderElbow = newkn.TagHeadPosition + new XYZ(-2, -0.04, 0);
 #else
-                            newkn.LeaderElbow = newkn.TagHeadPosition + new XYZ(-2, -0.04, 0);
+                        newkn.SetLeaderElbow(newref, newkn.TagHeadPosition + new XYZ(-2, -0.04, 0));
 #endif
-                        }
                     }
                 }
             }
-
-            tx.Commit();
         }
+
+        tx.Commit();
 
         return Result.Succeeded;
     }
@@ -77,34 +75,27 @@ class TagElKn : IExternalCommand
             BuiltInCategory.OST_Wire,
         };
 
-        IList<ElementFilter> a
-            = new List<ElementFilter>(bics.Count());
+        List<ElementFilter> a = new();
 
         foreach (BuiltInCategory bic in bics)
         {
             a.Add(new ElementCategoryFilter(bic));
         }
 
-        LogicalOrFilter categoryFilter
-            = new LogicalOrFilter(a);
+        LogicalOrFilter categoryFilter = new(a);
 
-        LogicalAndFilter familyInstanceFilter
-            = new LogicalAndFilter(categoryFilter, new ElementClassFilter(typeof(FamilyInstance)));
+        LogicalAndFilter familyInstanceFilter = new(categoryFilter, new ElementClassFilter(typeof(FamilyInstance)));
 
-        IList<ElementFilter> b
-            = new List<ElementFilter>(6);
+        List<ElementFilter> b = new()
+        {
+            familyInstanceFilter
+        };
 
-        b.Add(familyInstanceFilter);
+        LogicalOrFilter classFilter = new(b);
 
-        LogicalOrFilter classFilter
-            = new LogicalOrFilter(b);
+        FilteredElementCollector collector = new(doc);
 
-        FilteredElementCollector collector
-            = new FilteredElementCollector(doc);
-
-        collector.WherePasses(classFilter);
-
-        return collector;
+        return collector.WherePasses(classFilter);
     }
 
 }

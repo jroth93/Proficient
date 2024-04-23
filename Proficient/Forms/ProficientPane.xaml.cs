@@ -26,7 +26,7 @@ public partial class ProficientPane : Page, IDockablePaneProvider
         data.InitialState = new DockablePaneState
         {
             DockPosition = DockPosition.Right,
-#if R19
+#if PRE20
 #else
             MinimumWidth = 200
 #endif

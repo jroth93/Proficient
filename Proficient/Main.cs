@@ -418,10 +418,10 @@ public class Main : IExternalApplication
         sb.AddMapField(SchemaKeys.BoolDict, typeof(string), typeof(bool));
         sb.AddMapField(SchemaKeys.IntDict, typeof(string), typeof(int));
         sb.AddMapField(SchemaKeys.DoubleDict, typeof(string), typeof(double))
-#if FORGE
-            .SetSpec(SpecTypeId.Custom);
+#if PRE21
+            .SetUnitType(UnitType.UT_Custom);
 #else
-                .SetUnitType(UnitType.UT_Custom);
+            .SetSpec(SpecTypeId.Custom);
 #endif
         sb.AddMapField(SchemaKeys.StringDict, typeof(string), typeof(string));
 
@@ -474,7 +474,8 @@ public class Main : IExternalApplication
                 {
                     TaskDialog.Show("Exception", ex.Message + "\n" + ex.StackTrace);
                 }
-            */}
+            */
+        }
     }
     private static void BeforeSync(object sender, BeforeExecutedEventArgs arg)
     {

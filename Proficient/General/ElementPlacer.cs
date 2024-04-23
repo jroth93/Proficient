@@ -11,42 +11,73 @@ internal class ElementPlacer : IExternalCommand
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = revit.Application.ActiveUIDocument.Document;
         var view = uiDoc.ActiveView;
-        var cRef = uiDoc.Selection.PickObject(ObjectType.Element, "Pick path line");
+        var prompt = new Follower(revit);
+        
 
+        bool prevErr = false;
         Curve pathCrv;
 
-        if (doc.GetElement(cRef).Location is LocationCurve lc && lc.Curve.IsBound)
+        while (true)
         {
-            pathCrv = lc.Curve;
-        }
-        else
-        {
-            new TaskDialog("Invalid Path Selection")
+            try
+            {
+                prompt.Show();
+                prompt.lbl1.Content = prevErr ? "Invalid Path Selection.\nPlease Try Again.\n\nPick Path Line." : "Pick Path Line";
+
+
+                var cRef = uiDoc.Selection.PickObject(ObjectType.Element, "Pick path line");
+                if(doc.GetElement(cRef).Location is LocationCurve lc && lc.Curve.IsBound)
                 {
-                    MainContent = "Invalid Path Selection. Please try again."
+                    pathCrv = lc.Curve;
                 }
-                .Show();
-            return Result.Failed;
+                else
+                {
+                    prevErr = true;
+                    continue;
+                }
+                break;
+            }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                prompt.Close();
+                return Result.Cancelled;
+            }
         }
 
         bool hosted;
         FamilySymbol fs;
-        var elRef = uiDoc.Selection.PickObject(ObjectType.Element, "Pick element to be placed");
+        FamilyInstance fi;
+        prevErr = false;
 
-        if (doc.GetElement(elRef) is FamilyInstance fi)
+        while (true)
         {
-            fs = fi.Symbol;
-            hosted = fi.Host != null;
-        }
-        else
-        {
-            new TaskDialog("Invalid Element Selection")
+            try
+            {
+                prompt.Show();
+                prompt.lbl1.Content = prevErr ? "Invalid Element Selection.\nPlease Try Again\n\nPick Element To Be Placed." : "Pick Element To Be Placed.";
+
+                var elRef = uiDoc.Selection.PickObject(ObjectType.Element, "Pick element to be placed");
+                fi = doc.GetElement(elRef) as FamilyInstance;
+                if (fi != null)
                 {
-                    MainContent = "Invalid element selection. Please try again."
+                    fs = fi.Symbol;
+                    hosted = fi.Host != null;
                 }
-                .Show();
-            return Result.Failed;
+                else
+                {
+                    prevErr = true;
+                    continue;
+                }
+                break;
+            }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                prompt.Close(); 
+                return Result.Cancelled;
+            }
         }
+
+        prompt.Close();
 
         var pef = new PlaceElFrm();
         bool placeByNumber;

@@ -10,7 +10,7 @@ internal class ElecLoadDmu : IUpdater
 
     public ElecLoadDmu()
     {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), new Guid("088EE9E1-8EFA-438D-9287-F180436519BD"));
+        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.ElecLoadDmu);
     }
 
     public void Execute(UpdaterData data)
@@ -56,10 +56,10 @@ internal class ElecLoadDmu : IUpdater
                     .Where(el => el is FamilyInstance)
                     .Cast<FamilyInstance>()
                     .Where(fi => fi.Symbol.Id == fs.Id)
-#if (FORGE)
-                    .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
+#if (PRE21)
+                    .Where(fi => fi.MEPModel.ElectricalSystems != null);
 #else
-                        .Where(fi => fi.MEPModel.ElectricalSystems != null);
+                    .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #endif
             }
             //handle elements being modified
@@ -68,10 +68,10 @@ internal class ElecLoadDmu : IUpdater
                 fis = els
                     .Where(el => el is FamilyInstance)
                     .Cast<FamilyInstance>()
-#if (FORGE)
-                    .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
+#if (PRE21)
+                    .Where(fi => fi.MEPModel.ElectricalSystems != null);
 #else
-                        .Where(fi => fi.MEPModel.ElectricalSystems != null);
+                    .Where(fi => fi.MEPModel.GetElectricalSystems() != null);
 #endif
             }
         }
@@ -105,15 +105,15 @@ internal class ElecLoadDmu : IUpdater
                 }
             }
 
-#if (FORGE)
-            foreach (var es in fi.MEPModel.GetElectricalSystems())
+#if (PRE21)
+            foreach (ElectricalSystem es in fi.MEPModel.ElectricalSystems)
                 es.LoadName = planTag;
 #else
-                foreach (ElectricalSystem es in fi.MEPModel.ElectricalSystems)
-                    es.LoadName = planTag;
+            foreach (var es in fi.MEPModel.GetElectricalSystems())
+                es.LoadName = planTag;
 #endif
         }
-                
+
     }
 
     private static void AddNewElementTriggers(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)

@@ -37,6 +37,16 @@ class _Test : IExternalCommand
         //var id = (view as ViewSchedule).GetTableData().GetSectionData(1).GetCellParamId(4, 3);
         //var par = doc.GetElement(id);
 
+        var selIds = uiDoc.Selection.GetElementIds();
+        var id = selIds.First();
+        var el = doc.GetElement(id);
+
+
+        using var tx = new Transaction(doc, "Test");
+        if (tx.Start() != TransactionStatus.Started) return Result.Failed;
+
+        tx.Commit();
+
 
 #if taborganizer
         var wndRoot = (MainWindow)UIAppEventUtils.GetWindowRoot(app);
