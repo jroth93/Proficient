@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>3a24f332-0ddb-4e90-89fe-119f07a7e419</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Proficient</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Archive\ClearUpDn.cs" />
+    <None Include="$(MSBuildThisFileDirectory)Archive\GraphConfig.cs" />
+    <None Include="$(MSBuildThisFileDirectory)Archive\GraphKNLauncher.cs" />
+    <None Include="$(MSBuildThisFileDirectory)Archive\GraphKNReload.cs" />
+    <None Include="$(MSBuildThisFileDirectory)Archive\MSGraph.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\Backend.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\DuctMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\DuctMain.Designer.cs">
+      <DependentUpon>DuctMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\DuctSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\DuctSettings.Designer.cs">
+      <DependentUpon>DuctSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Ductulator\FunctionsConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Electrical\BreakerDmu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Electrical\ElecLoadDmu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Electrical\LoadNameUpdate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Electrical\PanelUtil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\SelectionFilterCategory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\SelectionFilterFamily.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\SelectionFilterType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\ViewFilterCatHide.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\ViewFilterCatShow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\ViewFilterFamily.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\ViewFilterType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\Blank.xaml.cs">
+      <DependentUpon>Blank.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\BlankViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ElecPanelDataFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ElecPanelDataFrm.Designer.cs">
+      <DependentUpon>ElecPanelDataFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ElecPanelUtilFrm.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>ElecPanelUtilFrm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\EntryForm.xaml.cs">
+      <DependentUpon>EntryForm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ExcelAssignFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ExcelAssignFrm.Designer.cs">
+      <DependentUpon>ExcelAssignFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\Follower.xaml.cs">
+      <DependentUpon>Follower.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\GlobalNotesSelectForm.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>GlobalNotesSelectForm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\KeynoteUtilFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\KeynoteUtilFrm.Designer.cs">
+      <DependentUpon>KeynoteUtilFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\Markdown.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\MarkdownConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\MarkdownEditor.xaml.cs">
+      <DependentUpon>MarkdownEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\MsgBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\MsgBox.Designer.cs">
+      <DependentUpon>MsgBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\NotesPane.xaml.cs">
+      <DependentUpon>NotesPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\NotesPaneViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\PlaceElFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\PlaceElFrm.Designer.cs">
+      <DependentUpon>PlaceElFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ProficientPane.xaml.cs">
+      <DependentUpon>ProficientPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\RelayCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\SettingsForm.xaml.cs">
+      <DependentUpon>SettingsForm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\UpDn.xaml.cs">
+      <DependentUpon>UpDn.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Forms\ViewForm.Designer.cs">
+      <DependentUpon>ViewForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)General\AddLeader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\AlignSchedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\ChangeCalloutRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\CombineText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\EditSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\ElementPlacer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\ExcelAssign.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\FlattenText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\MatchSchWidth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\OpenSectionView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\ReloadFamily.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)General\TextLeader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keynotes\ExternalResourceDBServer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keynotes\ExternalResourceUIServer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keynotes\KeynoteUtil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keynotes\KnLauncher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keynotes\KnReload.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\DamperToggle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\DuctElbowToggle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\DuctFittingDmu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\DuctLauncher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\DuctTag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\HardBreak.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\PipeSpacer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\PipeTag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\SetFittingUpDn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\ToggleUpDn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mechanical\WipeMark.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Toggles\FlipElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Toggles\FlipWorkPlane.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Toggles\ScheduleWarningToggle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Toggles\ToggleDesignAnnotations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Toggles\ToggleEnlargedWorkset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\DesignNotes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\DocumentTabEventUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Icons.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\KeyListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\MeiDb.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Mouse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Names.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\NativeMethods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\NotesHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\NotesModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\NotesRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\RevitTask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Ribbon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\SchemaKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Settings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\ShowNotesPane.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\Util.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\VisualTreeHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\OpenViewTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\ReceptaclePlacer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\RoomSep2SpaceSep.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\TagElKn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\_Template.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIP\_Test.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Ductulator\DuctMain.resx">
+      <DependentUpon>DuctMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Ductulator\DuctSettings.resx">
+      <DependentUpon>DuctSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\ElecPanelDataFrm.resx">
+      <DependentUpon>ElecPanelDataFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\ExcelAssignFrm.resx">
+      <DependentUpon>ExcelAssignFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\KeynoteUtilFrm.resx">
+      <DependentUpon>KeynoteUtilFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\MsgBox.resx">
+      <DependentUpon>MsgBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\PlaceElFrm.resx">
+      <DependentUpon>PlaceElFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Forms\ViewForm.resx">
+      <DependentUpon>ViewForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\align.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\alignflip.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\callout.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\cat.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\combine.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\damper.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\duct.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\ducttoggle.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\elecpanel.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\elplc.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\enlwkst.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\fam.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flattentext.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flipel.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flipwp.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\hardbreak.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\keynoteutil.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\knxl.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\leader.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\leadertext.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\motor.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\msg.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\notes.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\notespane.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\reload.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\reloadfam.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\section.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\settings.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\spacepipe.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\tagduct.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\tagpipe.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\togupdown.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\type.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\updn.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\width.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\wipe.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\wkst.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\xl2rvt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\Blank.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\ElecPanelUtilFrm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\EntryForm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\Follower.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\FormStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\GlobalNotesSelectForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\MarkdownEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\MarkdownStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\NotesPane.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\NotesPaneStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\ProficientPane.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\SettingsForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Forms\UpDn.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\align-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\alignflip-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\callout-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\cat-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\combine-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\damper-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\duct-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\ducttoggle-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\elecpanel-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\elplc-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\enlwkst-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\fam-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flattentext-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flipel-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\flipwp-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\hardbreak-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\keynoteutil-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\knxl-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\leader-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\leadertext-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\motor-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\msg-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\notes-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\notespane-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\reload-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\reloadfam-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\section-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\settings-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\spacepipe-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\tagduct-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\tagpipe-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\togupdown-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\type-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\updn-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\width-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\wipe-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\wkst-white.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Icons\xl2rvt-white.png" />
+  </ItemGroup>
+</Project>
