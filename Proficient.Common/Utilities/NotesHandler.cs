@@ -31,7 +31,8 @@ public class NotesHandler : IExternalEventHandler
         using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set View Notes");
         if (tx.Start() != TransactionStatus.Started) return;
         
-        var view = NotesModel.NM.CurrentView;
+        var view = NotesModel.NM?.CurrentView;
+        if (view is null) return;
         var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
         var ent = view.GetEntity(pSchema);
         IDictionary<string, string> stringDict = new Dictionary<string, string>();
@@ -41,9 +42,12 @@ public class NotesHandler : IExternalEventHandler
         else
             stringDict = ent.Get<IDictionary<string, string>>(SchemaKeys.StringDict);
 
-        stringDict[SchemaKeys.MarkdownText] = NotesModel.NM.MarkdownCache;
-        NotesModel.NM.MarkdownCache = string.Empty;
-
+        if(NotesModel.NM is not null)
+        {
+            stringDict[SchemaKeys.MarkdownText] = NotesModel.NM.MarkdownCache;
+            NotesModel.NM.MarkdownCache = string.Empty;
+        }
+        
         ent.Set(SchemaKeys.StringDict, stringDict);
 
         view.SetEntity(ent);
@@ -79,7 +83,7 @@ public class NotesHandler : IExternalEventHandler
         // Create entity which store created info
         IDictionary<string, string> stringDict = new Dictionary<string, string>
         {
-            [SchemaKeys.MarkdownText] = NotesModel.NM.MarkdownCache
+            [SchemaKeys.MarkdownText] = NotesModel.NM?.MarkdownCache ?? string.Empty
         };
         entity.Set(SchemaKeys.StringDict,stringDict);
         projectStorage.SetEntity(entity);
@@ -91,8 +95,8 @@ public class NotesHandler : IExternalEventHandler
     {
         using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set Db Id");
         if (tx.Start() != TransactionStatus.Started) return;
-        var view = NotesModel.NM.CurrentView;
-
+        var view = NotesModel.NM?.CurrentView;
+        if(view is null) return;
         var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
         var ent = view.GetEntity(pSchema);
         IDictionary<string, int> intDict = new Dictionary<string, int>();
@@ -106,8 +110,11 @@ public class NotesHandler : IExternalEventHandler
             intDict = ent.Get<IDictionary<string, int>>(SchemaKeys.IntDict);
         }
 
-        intDict[SchemaKeys.DbNotesId] = NotesModel.NM.IdCache;
-        NotesModel.NM.IdCache = 0;
+        if(NotesModel.NM is not null)
+        {
+            intDict[SchemaKeys.DbNotesId] = NotesModel.NM.IdCache;
+            NotesModel.NM.IdCache = 0;
+        }
 
         ent.Set(SchemaKeys.IntDict, intDict);
 

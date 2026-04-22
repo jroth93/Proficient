@@ -111,7 +111,7 @@ class _Test : IExternalCommand
 
         foreach (MethodInfo m in docInternalMethods)
         {
-            string rep1 = "";
+            var rep1 = "";
             try
             {
                 rep1 = m.GetParameters().ToList().Select(x => x.Name).Aggregate((a, x) => a + ", " + x);

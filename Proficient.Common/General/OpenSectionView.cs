@@ -11,7 +11,11 @@ internal class OpenSectionView : IExternalCommand
 
         foreach (var id in selectedIds)
         {
+#if PRE24
             var idView = new ElementId(id.IntegerValue + 1);
+#else
+            var idView = new ElementId(id.Value);
+#endif
             if (doc.GetElement(idView) is not View vw) 
                 continue;
             uiDoc.RequestViewChange(vw);

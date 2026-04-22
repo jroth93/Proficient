@@ -10,7 +10,7 @@ internal class CombineText : IExternalCommand
         var view = uiDoc.ActiveView;
 
         var selIds = uiDoc.Selection.GetElementIds();
-        if (!selIds.Any()) 
+        if (selIds.Count == 0) 
             return Result.Cancelled; 
 
         var sortedEls = selIds
@@ -21,11 +21,11 @@ internal class CombineText : IExternalCommand
             .ThenBy(el => el.Coord.X)
             .ToList();
 
-        if (!sortedEls.Any()) 
+        if (sortedEls.Count == 0) 
             return Result.Cancelled; 
 
         var combText = string.Empty;
-        TextElement previous = null;
+        TextElement? previous = null;
             
         foreach (var el in sortedEls)
         {

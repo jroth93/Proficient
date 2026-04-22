@@ -40,7 +40,7 @@ public partial class MarkdownEditor : Window
         int pos = tb.CaretIndex;
         string newMd = tb.Text.Insert(pos, snippet ?? string.Empty);
         tb.Text = newMd;
-        tb.CaretIndex = pos + snippet.Length;
+        tb.CaretIndex = pos + (snippet?.Length ?? 0);
     }
 
 }

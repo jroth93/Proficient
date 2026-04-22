@@ -11,11 +11,15 @@ internal class Util
 {
     public static bool IsTagged(Document doc, ElementId viewId, Element el)
     {
-        var fec = 
+        var fec =
             new FilteredElementCollector(doc, viewId)
                 .OfClass(typeof(IndependentTag))
-                .Cast<IndependentTag>()
-                .Where(e => e.Category.Id.IntegerValue != (int)BuiltInCategory.OST_KeynoteTags);
+                .Cast<IndependentTag>();
+#if PRE24
+        fec = fec.Where(e => e.Category.Id.IntegerValue != (int)BuiltInCategory.OST_KeynoteTags);
+#else
+        fec = fec.Where(e => e.Category.Id.Value != (int)BuiltInCategory.OST_KeynoteTags);
+#endif
 
 #if PRE22
         return fec.Any(it => it.TaggedLocalElementId == el.Id);
@@ -184,7 +188,7 @@ internal class Util
     public static string GetProjectFolder(ExternalCommandData revit)
     {
         var doc = revit.Application.ActiveUIDocument.Document;
-        string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
+        var pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
         var pfPar = doc.ProjectInformation.GetParameters(Names.Parameter.ProjectFolder).FirstOrDefault();
 
         if (pfPar is null)
@@ -205,13 +209,13 @@ internal class Util
         string pfPath;
         var dirs = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").Where(d => d.Contains(pn)).ToList();
 
-        if (dirs.Any())
+        if (dirs.Count > 0)
         {
             pfPath = dirs.First();
         }
         else
         {
-            string parentDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").First(d => d.Contains(pn.Substring(0, 5)));
+            var parentDir = Directory.GetDirectories($@"K:\20{pn.Substring(0, 2)}\").First(d => d.Contains(pn.Substring(0, 5)));
             pfPath = Directory.GetDirectories(parentDir).First(d => d.Contains(pn));
         }
 

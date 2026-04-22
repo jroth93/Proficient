@@ -49,14 +49,14 @@ internal class PipeSpacer : IExternalCommand
 
                 var lineDir = line1.Direction;
                 XYZ vec;
-                double pipeDist = Convert.ToDouble(view.Scale) * Main.Settings.PipeDist / 1152;
+                var pipeDist = Convert.ToDouble(view.Scale) * (Main.Settings?.PipeDist ?? 9) / 1152;
 
                 if (Math.Abs(Math.Abs(lineDir.Z) - 1) < 0.001)
                 {
                     var pt1 = line1.GetEndPoint(0);
                     var pt2 = lc2.Curve.GetEndPoint(0);
-                    double xDiff = pt1.X - pt2.X;
-                    double yDiff = pt1.Y - pt2.Y;
+                    var xDiff = pt1.X - pt2.X;
+                    var yDiff = pt1.Y - pt2.Y;
                     vec = Math.Abs(xDiff) > Math.Abs(yDiff) ? 
                         new XYZ(xDiff - Math.Sign(xDiff) * pipeDist, yDiff, 0) : 
                         new XYZ(xDiff, yDiff - Math.Sign(yDiff) * pipeDist, 0);
@@ -66,11 +66,16 @@ internal class PipeSpacer : IExternalCommand
                     XYZ dirVec = new(-lineDir.Y, lineDir.X, 0.0);
                     var intLine1 = Line.CreateUnbound(new XYZ(lc2.Curve.Evaluate(0.5, true).X, lc2.Curve.Evaluate(0.5, true).Y, 0), new XYZ(lineDir.X, lineDir.Y, 0.0));
                     var intLine2 = Line.CreateUnbound(new XYZ(line1.Evaluate(0.5, true).X, line1.Evaluate(0.5, true).Y, 0), dirVec);
+
+#if PRE26
                     intLine2.Intersect(intLine1, out var resArray);
                     var intPnt = resArray.get_Item(0).XYZPoint;
-
-                    double curDist = intPnt.DistanceTo(new XYZ(line1.Evaluate(0.5, true).X, line1.Evaluate(0.5, true).Y, 0));
-                    double moveDist = curDist - pipeDist;
+#else
+                    CurveIntersectResult intersectResult = intLine2.Intersect(intLine1, CurveIntersectResultOption.Detailed);
+                    var intPnt = intersectResult.GetOverlaps()[0].Point;
+#endif
+                    var curDist = intPnt.DistanceTo(new XYZ(line1.Evaluate(0.5, true).X, line1.Evaluate(0.5, true).Y, 0));
+                    var moveDist = curDist - pipeDist;
                     var moveDir = new XYZ(line1.Evaluate(0.5, true).X - intPnt.X, line1.Evaluate(0.5, true).Y - intPnt.Y, 0).Normalize();
                     vec = moveDist * moveDir;
                 }

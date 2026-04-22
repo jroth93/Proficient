@@ -5,7 +5,7 @@ public static class Constants
     public const double Rho = 0.0753;
     public const double Pi = 3.1415926525897;
     public const double Sigma = 0.0005; ///material absolute roughness factor
-    public static double Fprecision = Math.Pow(10, Main.Settings.FricPrec);
+    public static double Fprecision = Math.Pow(10, Convert.ToDouble(Main.Settings?.FricPrec ?? 3));
     public static string NumPattern = @"^\d+(\.\d+)?$";
     public static string Pattern = @"^\d*\.?\d+\s*([\+\-\*\/]\s*\d+(\.\d+)?\s*)*$";
 

@@ -45,7 +45,7 @@ namespace Proficient.Keynotes;
 /// </summary>
 public class ExternalResourceDBServer : IExternalResourceServer
 {
-    private Guid dbGuid;
+    private readonly Guid dbGuid;
     /// <summary>
     /// Default constructor
     /// </summary>
@@ -67,7 +67,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
     }
 
     /// Uniquely identifies this server to Revit's ExternalService registry
-    public System.Guid GetServerId()
+    public Guid GetServerId()
     {
         return dbGuid;
     }
@@ -75,7 +75,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
     /// <summary>
     /// Implement this method to return the name of the server.
     /// </summary>
-    public System.String GetName()
+    public string GetName()
     {
         return "KNServer";
     }
@@ -84,7 +84,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
     /// <summary>
     /// # Implement this method to return the id of the vendor of the server.   
     /// </summary>
-    public System.String GetVendorId()
+    public string GetVendorId()
     {
         return "JR";
     }
@@ -92,7 +92,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
     /// <summary>
     /// Provide a short description of the server for display to the end user.
     /// </summary>
-    public System.String GetDescription()
+    public string GetDescription()
     {
         return "KN Resource Server";
     }
@@ -204,8 +204,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
         loadContent.LoadStatus = ExternalResourceLoadStatus.Failure;
         loadContent.Version = DateTime.Now.ToString();
 
-        KeyBasedTreeEntriesLoadContent kdrlc = (KeyBasedTreeEntriesLoadContent)loadContent;
-        if (kdrlc == null)
+        if (loadContent is not KeyBasedTreeEntriesLoadContent kdrlc)
             throw new ArgumentException("Wrong type of ExternalResourceLoadContent (expecting a KeyBasedTreeEntriesLoadContent) for keynote data.", "loadContent");
 
         kdrlc.Reset();
@@ -248,5 +247,5 @@ public class ExternalResourceDBServer : IExternalResourceServer
 
     #endregion IExternalResourceServer Implementation
 
-    public List<KeynoteEntry> knList;
+    public List<KeynoteEntry> knList = [];
 }

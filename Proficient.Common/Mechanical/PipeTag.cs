@@ -27,8 +27,9 @@ internal class PipeTag : IExternalCommand
         IEnumerable<Element> pipes;
         IEnumerable<FamilyInstance> fittings;
 
-        if (selEls is not null && selEls.Any())
+        if (selEls is not null && selEls.Count > 0)
         {
+#if PRE24
             pipes = selEls
                 .Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_PipeCurves)
                 .Where(p => p.Location is LocationCurve lc && lc.Curve.Length > 3 && !Util.IsTagged(doc, view.Id, p));
@@ -37,6 +38,16 @@ internal class PipeTag : IExternalCommand
                 .Where(pf => pf is FamilyInstance && !Util.IsTagged(doc, view.Id, pf))
                 .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) is not null)
                 .Cast<FamilyInstance>();
+#else
+            pipes = selEls
+                .Where(el => el.Category.Id.Value == (long)BuiltInCategory.OST_PipeCurves)
+                .Where(p => p.Location is LocationCurve lc && lc.Curve.Length > 3 && !Util.IsTagged(doc, view.Id, p));
+            fittings = selEls
+                .Where(el => el.Category.Id.Value == (long)BuiltInCategory.OST_PipeFitting)
+                .Where(pf => pf is FamilyInstance && !Util.IsTagged(doc, view.Id, pf))
+                .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) is not null)
+                .Cast<FamilyInstance>();
+#endif
         }
         else
         {
@@ -131,6 +142,7 @@ internal class PipeTag : IExternalCommand
 
         foreach (var c in cons)
         {
+            if(c is null) continue;
             var cf = c.AllRefs
                 .Cast<Connector>()
                 .FirstOrDefault(cn => cn.ConnectorType == ConnectorType.End && cn.Owner.Location is LocationPoint);
@@ -146,16 +158,16 @@ internal class PipeTag : IExternalCommand
             switch (zDir)
             {
                 case -1:
-                    double top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
-                    double viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
+                    var top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
+                    var viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
                     if (viewTop - top > 70)
                         viewTop -= 100;
                     if (top <= viewTop)
                         continue;
                     break;
                 case 1:
-                    double bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
-                    double viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
+                    var bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
+                    var viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
                     if (viewBottom - bottom > 70)
                         viewBottom -= 100;
                     if (bottom >= viewBottom)
@@ -173,4 +185,5 @@ internal class PipeTag : IExternalCommand
 
         return Result.Succeeded;
     }
+
 }

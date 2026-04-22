@@ -9,7 +9,7 @@ namespace Proficient.Utilities;
 public class RevitTask
 {
     private EventHandler _handler;
-    private TaskCompletionSource<object> _tcs;
+    private TaskCompletionSource<object>? _tcs;
     private ExternalEvent _externalEvent;
 
     /// <summary>
@@ -34,11 +34,16 @@ public class RevitTask
     /// and results in object of <see cref="TResult"/> type.</param>
     public Task<TResult> Run<TResult>(Func<UIApplication, TResult> func)
     {
+        if (_tcs != null && !_tcs.Task.IsCompleted)
+        {
+            throw new InvalidOperationException("A Revit Task is already in progress.");
+        }
+
         _tcs = new TaskCompletionSource<object>();
 
         var task = Task.Run(async () => (TResult)await _tcs.Task);
 
-        _handler.Func = (app) => func(app);
+        _handler.Func = app => func(app)!;
 
         _externalEvent.Raise();
 
@@ -73,8 +78,10 @@ public class RevitTask
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="result"></param>
-    private void OnEventCompleted(object sender, object result)
+    private void OnEventCompleted(object? sender, object result)
     {
+        if (_tcs == null) return;
+
         if (_handler.Exception == null)
         {
             _tcs.TrySetResult(result);
@@ -87,23 +94,25 @@ public class RevitTask
 
     private class EventHandler : IExternalEventHandler
     {
-        private Func<UIApplication, object> _func;
+        private Func<UIApplication, object>? _func = null;
 
-        public event EventHandler<object> EventCompleted;
+        public event EventHandler<object>? EventCompleted;
 
-        public Exception Exception { get; private set; }
+        public Exception? Exception { get; private set; }
 
-        public Func<UIApplication, object> Func
+        public Func<UIApplication, object>? Func
         {
-            get => _func;
-            set => _func = value ?? throw new ArgumentNullException();
+            get => _func ?? null;
+            set => _func = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public void Execute(UIApplication app)
         {
-            object result = null;
+            object? result = null;
 
             Exception = null;
+
+            if (Func is null) return;
 
             try
             {
@@ -114,7 +123,8 @@ public class RevitTask
                 Exception = ex;
             }
 
-            EventCompleted?.Invoke(this, result);
+            if(result is not null)            
+                EventCompleted?.Invoke(this, result);
         }
 
         public string GetName()

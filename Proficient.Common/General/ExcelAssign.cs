@@ -7,21 +7,26 @@ namespace Proficient.General;
 [Transaction(TransactionMode.Manual)]
 internal class ExcelAssign : IExternalCommand
 {
-    private static Document _doc;
-    private static XL.Application _xl;
-    private static XL.Workbook _wb;
-    private static XL.Worksheet _ws;
-    private static bool _xlReadOnly;
+    private static Document? _doc;
+    private static readonly XL.Application _xl = new();
+    private static XL.Workbook _wb = new();
+    private static XL.Worksheet _ws = new();
+    private static bool _xlReadOnly = false;
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         _doc = revit.Application.ActiveUIDocument.Document;
         var eaFrm = new ExcelAssignFrm();
         eaFrm.ShowDialog();
 
-        if (_wb is null) return Result.Cancelled;
+        if (_xlReadOnly) 
+        {
+            File.Delete(_wb.FullName);
+        }
+        else 
+        {
+            _wb.Close(false); 
+        }
 
-        if (_xlReadOnly) File.Delete(_wb.FullName);
-        else _wb.Close(false);
 
         return Result.Succeeded;
     }
@@ -34,11 +39,11 @@ internal class ExcelAssign : IExternalCommand
         var totCols = _ws.UsedRange.Columns.Count;
 
         if (totCols == 0) 
-            return cols.ToArray();
+            return [.. cols];
 
         for (var i = 1; i <= totCols; i++)
         {
-            var cellValObj = ((XL.Range)_ws.Cells[hdrRow, i]).Value;
+            var cellValObj = ((XL.Range)_ws.Cells[hdrRow, i])?.Value;
 
             if (Convert.ToString(cellValObj) is string cellVal)
             {
@@ -55,8 +60,6 @@ internal class ExcelAssign : IExternalCommand
 
     public static string[] OpenExcel(string xlPath)
     {
-        _xl = new XL.Application();
-
         try
         {
             var stream = File.Open(xlPath, FileMode.Open, FileAccess.Read);
@@ -77,7 +80,7 @@ internal class ExcelAssign : IExternalCommand
         }
 
         _wb = _xl.Workbooks.Open(Filename: xlPath, ReadOnly: true);
-        string[] ws = _wb.Worksheets.Cast<XL.Worksheet>().Select(ws => ws.Name).ToArray();
+        string[] ws = [.. _wb.Worksheets.Cast<XL.Worksheet>().Select(ws => ws.Name)];
 
         return ws;
     }
@@ -112,30 +115,22 @@ internal class ExcelAssign : IExternalCommand
 #else
         private static dynamic? GetCellVal(int row, int col, string parType, ForgeTypeId dispUnit)
         {
-
             try
             {
-                switch (parType)
+                var val = ((XL.Range)_ws.Cells[row, col]).Value;
+
+                return parType switch
                 {
-                    case "String":
-                        return Convert.ToString(((XL.Range)_ws.Cells[row, col]).Value);
-                    case "Integer":
-                        int iVal = Convert.ToInt32(((XL.Range)_ws.Cells[row, col]).Value);
-                        iVal = (int)UnitUtils.ConvertToInternalUnits(iVal, dispUnit);
-                        return iVal;
-                    case "Double":
-                        double dVal = Convert.ToDouble(((XL.Range)_ws.Cells[row, col]).Value);
-                        dVal = UnitUtils.ConvertToInternalUnits(dVal, dispUnit);
-                        return dVal;
-                    case "ElementId":
+                    "String" => Convert.ToString(val),
+                    "Integer" => (int)UnitUtils.ConvertToInternalUnits(Convert.ToInt32(val), dispUnit),
+                    "Double" => UnitUtils.ConvertToInternalUnits(Convert.ToDouble(val), dispUnit),
 #if PRE24
-                    return new ElementId(Convert.ToInt32(((XL.Range)_ws.Cells[row, col]).Value));
+                    "ElementId" => new ElementId(Convert.ToInt32(val)),
 #else
-                    return new ElementId(Convert.ToInt64(((XL.Range)_ws.Cells[row, col]).Value));
+                    "ElementId" => new ElementId(Convert.ToInt64(val)),
 #endif
-                default:
-                        return null;
-                }
+                    _ => null
+                };
             }
             catch
             {
@@ -143,37 +138,43 @@ internal class ExcelAssign : IExternalCommand
             }
         }
 #endif
-                    private static dynamic? GetCellVal(int row, int col, string parType)
-    {
-        try
+        private static dynamic? GetCellVal(int row, int col, string parType)
         {
-            return parType switch
+            try
             {
-                "String" => Convert.ToString(((XL.Range)_ws.Cells[row, col]).Value),
-                "Integer" => Convert.ToInt32(((XL.Range)_ws.Cells[row, col]).Value),
-                "Double" => Convert.ToDouble(((XL.Range)_ws.Cells[row, col]).Value),
-#if PRE24
-                "ElementId" => new ElementId(Convert.ToInt32(((XL.Range)_ws.Cells[row, col]).Value)),
-#else
-                "ElementId" => new ElementId(Convert.ToInt64(((XL.Range)_ws.Cells[row, col]).Value)),
-#endif
-                _ => null
-            };
+                var val = ((XL.Range)_ws.Cells[row, col]).Value;
+                
+                return parType switch
+                {
+                    "String" => Convert.ToString(val),
+                    "Integer" => Convert.ToInt32(val),
+                    "Double" => Convert.ToDouble(val),
+    #if PRE24
+                    "ElementId" => new ElementId(Convert.ToInt32(val)),
+    #else
+                    "ElementId" => new ElementId(Convert.ToInt64(val)),
+    #endif
+                    _ => null
+                };
+            }
+            catch
+            {
+                return null;
+            }
         }
-        catch
-        {
-            return null;
-        }
-    }
 
     public static void WriteErrorFile(string errorLog)
     {
-        string logFilePath = _wb.Path + "\\ExcelToRevitErrorLog.txt";
+        if(_wb.Path == string.Empty) return;
+
+        var logFilePath = _wb.Path + "\\ExcelToRevitErrorLog.txt";
         File.CreateText(logFilePath).Write(errorLog);
     }
 
     public static string[] GetCategories()
     {
+        if (_doc is null) return [];
+
         var cList = _doc.Settings.Categories
             .Cast<Category>()
             .Where(c => c.AllowsBoundParameters)
@@ -184,12 +185,12 @@ internal class ExcelAssign : IExternalCommand
         cList.Sort();
 
 
-        return cList.ToArray();
+        return [.. cList];
     }
 
     public static string[] GetFamiliesOfCategory(string catName)
     {
-        string[] fn = new FilteredElementCollector(_doc)
+        var fn = new FilteredElementCollector(_doc)
             .OfClass(typeof(Family))
             .Cast<Family>()
             .Where(q => q.FamilyCategory.Name == catName)
@@ -229,13 +230,14 @@ internal class ExcelAssign : IExternalCommand
         if(fiPars != null)
             pars.AddRange(fiPars);
 
-        return pars.ToArray();
+        return [.. pars];
     }
 
     public static string AssignTypeParameters(string familyName, string parName, int keyCol, int startRow, int parCol)
     {
+
         var errorLog = string.Empty;
-        int totRows = _ws.UsedRange.Rows.Count;
+        var totRows = _ws.UsedRange.Rows.Count;
 
         var fsList = new FilteredElementCollector(_doc)
             .OfClass(typeof(FamilySymbol))
@@ -244,13 +246,15 @@ internal class ExcelAssign : IExternalCommand
             .ToList();
 
         var parType = Convert.ToString(fsList.First().LookupParameter(parName).StorageType);
+        if (parType is null) 
+            return $"No Parameter Type for {parName}";
 
         foreach (var fs in fsList)
         {
-            string typeMark = fs.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString();
-            for (int r = startRow; r <= totRows; r++)
+            var typeMark = fs.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_MARK).AsString();
+            for (var r = startRow; r <= totRows; r++)
             {
-                string? keyCellVal = Convert.ToString(((XL.Range)_ws.Cells[r, keyCol]).Value);
+                var keyCellVal = Convert.ToString(((XL.Range)_ws.Cells[r, keyCol]).Value);
                 if (typeMark != keyCellVal) 
                     continue;
                     
@@ -273,7 +277,7 @@ internal class ExcelAssign : IExternalCommand
 #if PRE21
                 var newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).DisplayUnitType) : GetCellVal(r, parCol, parType);
 #else
-                dynamic newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
+                dynamic? newVal = hasUnits ? GetCellVal(r, parCol, parType, fs.LookupParameter(parName).GetUnitTypeId()) : GetCellVal(r, parCol, parType);
 #endif
 
                 if (newVal == null)
@@ -307,6 +311,8 @@ internal class ExcelAssign : IExternalCommand
             .ToList();
 
         var parType = Convert.ToString(fis.First().LookupParameter(parName).StorageType);
+        if (parType is null)
+            return $"No Parameter Type for {parName}";
 
         var rvtMarks = fis
             .Select(x => x.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString())
@@ -346,7 +352,7 @@ internal class ExcelAssign : IExternalCommand
 #if PRE21
             var newVal = hasUnits ? GetCellVal(row, parCol, parType, par.DisplayUnitType) : GetCellVal(row, parCol, parType);
 #else
-            dynamic newVal = hasUnits ? GetCellVal(row, parCol, parType, par.GetUnitTypeId()) : GetCellVal(row, parCol, parType);
+            dynamic? newVal = hasUnits ? GetCellVal(row, parCol, parType, par.GetUnitTypeId()) : GetCellVal(row, parCol, parType);
 #endif
             if (newVal == null)
             {

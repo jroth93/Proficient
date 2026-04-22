@@ -19,7 +19,7 @@ internal class ViewFilterCatShow : IExternalCommand
             .Where(cat => view.GetCategoryHidden(cat.Id))
             .OrderBy(cat => cat.Name);
 
-        Category selectedCat = null;
+        Category? selectedCat = null;
 
         var bvm = new BlankViewModel();
         foreach (var cat in cats)

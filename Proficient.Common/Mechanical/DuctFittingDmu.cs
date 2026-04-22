@@ -4,18 +4,14 @@ namespace Proficient.Mechanical;
 
 internal class DuctFittingDmu : IUpdater
 {
-    private static UpdaterId _updaterId;
-
-    public DuctFittingDmu()
-    {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.DuctFittingDmu);
-    }
+    private static UpdaterId _updaterId = new(new AddInId(Main.AppId), Names.Guids.DuctFittingDmu);
 
     public void Execute(UpdaterData data)
     {
+        if (data is null) return;
         var doc = data.GetDocument();
 
-        if (data.GetAddedElementIds().Any())
+        if (data.GetAddedElementIds().Count != 0)
         {
             foreach (var id in data.GetAddedElementIds())
             {
@@ -30,7 +26,7 @@ internal class DuctFittingDmu : IUpdater
             }
         }
 
-        if (!data.GetModifiedElementIds().Any()) 
+        if (data.GetModifiedElementIds().Count == 0) 
             return;
             
         foreach (var id in data.GetModifiedElementIds())

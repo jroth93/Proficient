@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Proficient.Forms"
         mc:Ignorable="d"
-        Title="EntryForm" Height="600" Width="600" WindowStyle="None" AllowsTransparency="True" MouseDown="Window_MouseDown" ResizeMode="CanResize">
+        Title="Electrical Panel Utility" Height="600" Width="600" WindowStyle="None" AllowsTransparency="True" MouseDown="Window_MouseDown" ResizeMode="CanResize">
     <Window.Resources>
         <ResourceDictionary Source="FormStyles.xaml"/>
     </Window.Resources>

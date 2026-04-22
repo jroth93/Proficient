@@ -35,7 +35,7 @@ public static class Backend
             f = Ceiling(Functions.FrictionSolver(airflow, 0, width, i, false) * Constants.Fprecision) / Constants.Fprecision;
             output[0] += $"\n{width} / {i}";
             output[1] += $"\n{vel}";
-            output[2] += "\n" + f.ToString("F" + Main.Settings.FricPrec);
+            output[2] += "\n" + f.ToString("F" + Main.Settings?.FricPrec.ToString() ?? "2");
         }
 
         return output;
@@ -68,7 +68,7 @@ public static class Backend
             }
             actVel = Convert.ToInt32(Functions.VelocitySolver(airflow, 0, width, i, false));
             output[0] += $"\n{width} / {i}";
-            output[1] += "\n" + fRect.ToString("F" + Main.Settings.FricPrec);
+            output[1] += "\n" + fRect.ToString("F" + Main.Settings?.FricPrec.ToString() ?? "2");
             output[2] += $"\n{actVel}";
         }
 

@@ -46,7 +46,7 @@ internal class ElementPlacer : IExternalCommand
 
         bool hosted;
         FamilySymbol fs;
-        FamilyInstance fi;
+        FamilyInstance? fi;
         prevErr = false;
 
         while (true)

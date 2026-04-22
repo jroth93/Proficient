@@ -1,6 +1,4 @@
-﻿using Autodesk.Revit.DB.Electrical;
-
-namespace Proficient.Electrical;
+﻿namespace Proficient.Electrical;
 
 [Transaction(TransactionMode.Manual)]
 internal class LoadNameUpdate : IExternalCommand

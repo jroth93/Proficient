@@ -15,8 +15,9 @@ namespace Proficient.Forms;
 /// </summary>
 public partial class EntryForm : Window
 {
-    public string Entry { get; private set; }
-        
+    public string Entry { get; private set; } = string.Empty;
+
+
     public EntryForm()
     {
         InitializeComponent();

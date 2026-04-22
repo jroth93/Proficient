@@ -1,86 +1,99 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	<Version>1.1.2.1</Version>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<Configurations>Debug2025</Configurations>
-	<Configurations>$(Configurations);Release2025</Configurations>
-	<Configurations>$(Configurations);Publish2025</Configurations>
-	<PlatformTarget>x64</PlatformTarget>
-	<UseWindowsForms>true</UseWindowsForms>
-	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-	<Platforms>x64</Platforms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Version>1.1.2.1</Version>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug2025;Debug2026;Debug2027;Release2025;Release2026;Release2027;Publish2025;Publish2026;Publish2027;Debug2026</Configurations>
+		<Configurations>$(Configurations);Release2025;Release2026;Release2027</Configurations>
+		<Configurations>$(Configurations);Publish2025;Publish2026;Publish2027</Configurations>
+		<PlatformTarget>x64</PlatformTarget>
+		<LangVersion>12.0</LangVersion>
+		<UseWindowsForms>true</UseWindowsForms>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<Platforms>x64</Platforms>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="$(Configuration.Contains('Debug')) Or $(Configuration.Contains('Release'))">
-	<DebugType>full</DebugType>
-	<DebugSymbols>true</DebugSymbols>
-	<DefineConstants>TRACE,DEBUG</DefineConstants>
-	<XamlDebuggingInformation>True</XamlDebuggingInformation>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration.Contains('Publish'))">
-	<Optimize>true</Optimize>
-	<DebugType>pdbonly</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="$(Configuration.Contains('Debug')) Or $(Configuration.Contains('Release'))">
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+		<DefineConstants>TRACE,DEBUG</DefineConstants>
+		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(Configuration.Contains('Publish'))">
+		<Optimize>true</Optimize>
+		<DebugType>pdbonly</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="$(Configuration.Contains('2025'))">
-	<RevitVersion>2025</RevitVersion>
-	<TargetFramework>net8.0-windows</TargetFramework>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-	<StartAction>Program</StartAction>
-	<StartProgram>C:\Program Files\Autodesk\Revit $(RevitVersion)\Revit.exe</StartProgram>
-	<StartArguments>/language ENG</StartArguments>
-  </PropertyGroup>	
+	<PropertyGroup Condition="$(Configuration.Contains('2025'))">
+		<RevitVersion>2025</RevitVersion>
+		<TargetFramework>net8.0-windows</TargetFramework>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(Configuration.Contains('2026'))">
+		<RevitVersion>2026</RevitVersion>
+		<TargetFramework>net8.0-windows</TargetFramework>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(Configuration.Contains('2027'))">
+		<RevitVersion>2027</RevitVersion>
+		<TargetFramework>net10.0-windows</TargetFramework>
+	</PropertyGroup>
 	
-  <ItemGroup>
-	<FrameworkReference Include="Microsoft.WindowsDesktop.App" />
-	<PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
-	<PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
-	<PackageReference Include="MySql.Data.EntityFramework" Version="8.3.0" />
-	<PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
-	<Reference Include="RevitAPI">
-	  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPI.dll</HintPath>
-	  <Private>False</Private>
-	</Reference>
-	<Reference Include="RevitAPIUI">
-	  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPIUI.dll</HintPath>
-	  <Private>False</Private>
-	</Reference>
-	<Reference Include="AdWindows">
-	  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\AdWindows.dll</HintPath>
-	  <Private>False</Private>
-	</Reference>
-	<Reference Include="RevitAPIBrowserUtils">
-	  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPIBrowserUtils.dll</HintPath>
-	  <Private>False</Private>
-	</Reference>
-	  <Reference Include="Newtonsoft.Json">
-		  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\Newtonsoft.Json.dll</HintPath>
-		  <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UIFramework">
-		  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\UIFramework.dll</HintPath>
-		  <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Xceed.Wpf.AvalonDock">
-		  <HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\Xceed.Wpf.AvalonDock.dll</HintPath>
-		  <Private>False</Private>
-	  </Reference>
+	<PropertyGroup Condition="$(RevitVersion) != '' And $(RevitVersion) &lt; 2026">
+		<DefineConstants>$(DefineConstants);PRE26</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(RevitVersion) != '' And $(RevitVersion) &lt; 2027">
+		<DefineConstants>$(DefineConstants);PRE27</DefineConstants>
+	</PropertyGroup>
 
-  </ItemGroup>		
-	
-  <ItemGroup>
-    <Using Include="Autodesk.Revit.Attributes" />
-    <Using Include="Autodesk.Revit.DB" />
-    <Using Include="Autodesk.Revit.UI" />
-  </ItemGroup>		
-	
-  <Import Project="..\Proficient.Common\Proficient.projitems" Label="Shared" />
+	<PropertyGroup>
+		<StartAction>Program</StartAction>
+		<StartProgram>C:\Program Files\Autodesk\Revit $(RevitVersion)\Revit.exe</StartProgram>
+		<StartArguments>/language ENG</StartArguments>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
+		<PackageReference Include="MySql.Data.EntityFramework" Version="9.6.0" />
+		<PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.7" />
+		<Reference Include="RevitAPI">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIUI">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPIUI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="RevitAPIBrowserUtils">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPIBrowserUtils.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIFramework">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\UIFramework.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Xceed.Wpf.AvalonDock">
+			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\Xceed.Wpf.AvalonDock.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Autodesk.Revit.Attributes" />
+		<Using Include="Autodesk.Revit.DB" />
+		<Using Include="Autodesk.Revit.UI" />
+	</ItemGroup>
+
+	<Import Project="..\Proficient.Common\Proficient.projitems" Label="Shared" />
+	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetPath)" />
+		<Exec Command="call $(ProjectDir)PostBuild.cmd $(ConfigurationName) $(TargetDir) $(TargetPath)" />
 	</Target>
 </Project>

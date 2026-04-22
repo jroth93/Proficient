@@ -7,7 +7,7 @@ namespace Proficient.Forms;
 /// </summary>
 public partial class Follower : Window
 {
-    static Follower mw;
+    static Follower? mw;
     public Follower(ExternalCommandData revit)
     {
         InitializeComponent();
@@ -16,7 +16,7 @@ public partial class Follower : Window
         _hookID = SetHook(_proc);
     }
 
-    public static Autodesk.Revit.DB.Rectangle de;
+    private static Rectangle de = new();
 
     private void Window_Closed(object sender, EventArgs e)
     {
@@ -28,29 +28,26 @@ public partial class Follower : Window
 
     private static IntPtr SetHook(LowLevelMouseProc proc)
     {
-        using (Process curProcess = Process.GetCurrentProcess())
-        using (ProcessModule curModule = curProcess.MainModule)
-        {
-            return SetWindowsHookEx(WH_MOUSE_LL, proc,
-                GetModuleHandle(curModule.ModuleName), 0);
-        }
+        using ProcessModule? curModule = Process.GetCurrentProcess()?.MainModule;
+        return curModule?.ModuleName is null
+            ? IntPtr.Zero
+            : SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
     }
 
     private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
-        if (nCode >= 0 &&
-            MouseMessages.WM_MOUSEMOVE == (MouseMessages)wParam)
+        if (nCode >= 0 && (MouseMessages)wParam == MouseMessages.WM_MOUSEMOVE)
         {
-            MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-            if (hookStruct.pt.x <= de.Right
-                && hookStruct.pt.x >= de.Left
-                && hookStruct.pt.y <= de.Bottom
-                && hookStruct.pt.y >= de.Top)
+            MSLLHOOKSTRUCT hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
+            if (mw is null) return CallNextHookEx(_hookID, nCode, wParam, lParam);
+
+            if (IsMouseInDrawingArea(hookStruct.pt))
             {
-                mw.Left = hookStruct.pt.x + 30;
-                mw.Top = hookStruct.pt.y + 30;
+                var dpiScale = mw.GetDpiScale();
+                mw.Left = hookStruct.pt.x / dpiScale + 30;
+                mw.Top = hookStruct.pt.y / dpiScale + 30;
                 if (!mw.IsVisible)
                 {
                     mw.Show();
@@ -59,11 +56,33 @@ public partial class Follower : Window
             }
             else
             {
-                mw.Hide();
+                if(mw.IsVisible) mw.Hide();
             }
 
         }
         return CallNextHookEx(_hookID, nCode, wParam, lParam);
+    }
+
+    private static bool IsMouseInDrawingArea(POINT mousePt)
+    {
+        return mousePt.x <= de.Right &&
+               mousePt.x >= de.Left &&
+               mousePt.y <= de.Bottom &&
+               mousePt.y >= de.Top;
+    }
+
+    private double GetDpiScale()
+    {
+        // Get the scaling factor for the monitor where the window is located
+        var source = PresentationSource.FromVisual(this);
+
+        if (source?.CompositionTarget != null)
+        {
+            // This returns the ratio (e.g., 1.25 for 125% scaling)
+            return source.CompositionTarget.TransformToDevice.M11;
+        }
+
+        return 1.0; // Fallback to no scaling
     }
 
     private const int WH_MOUSE_LL = 14;

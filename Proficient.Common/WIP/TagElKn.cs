@@ -8,10 +8,10 @@ class TagElKn : IExternalCommand
         UIDocument uidoc = revit.Application.ActiveUIDocument;
         Document doc = uidoc.Document;
         ElementId viewid = uidoc.ActiveView.Id;
-        View view = doc.GetElement(viewid) as View;
+        var view = doc.GetElement(viewid) as View;
 
         FilteredElementCollector coll = new FilteredElementCollector(doc).WherePasses(new ElementClassFilter(typeof(FamilySymbol)));
-        ElementId knfamid = coll.Where(el => (el as FamilySymbol).FamilyName.Contains("MEI Keynote Tag")).First().Id as ElementId;
+        ElementId knfamid = coll.First(el => (el as FamilySymbol)?.FamilyName.Contains("MEI Keynote Tag") ?? false).Id;
         var fsel = coll
             .Select(el => el.LookupParameter("Keynote"))
             .Where(el => el != null && el.HasValue == true)
@@ -28,11 +28,12 @@ class TagElKn : IExternalCommand
                 {
                     if (el.GetTypeId() == fel.Id)
                     {
-                        Reference newref = new Reference(el);
-                        IndependentTag newkn = IndependentTag.Create(doc, knfamid, viewid, newref, true, TagOrientation.Horizontal, (el.Location as LocationPoint).Point);
+                        var newref = new Reference(el);
+                        if (el.Location is not LocationPoint) continue;
+                        var newkn = IndependentTag.Create(doc, knfamid, viewid, newref, true, TagOrientation.Horizontal, (el.Location as LocationPoint)?.Point);
                         newkn.get_Parameter(BuiltInParameter.KEY_VALUE).Set(fel.LookupParameter("Keynote").AsString());
                         newkn.LeaderEndCondition = LeaderEndCondition.Attached;
-                        newkn.TagHeadPosition = (el.Location as LocationPoint).Point + new XYZ(4, 2, 0);
+                        newkn.TagHeadPosition = (el.Location as LocationPoint)?.Point + new XYZ(4, 2, 0);
 #if PRE22
                         newkn.LeaderElbow = newkn.TagHeadPosition + new XYZ(-2, -0.04, 0);
 #else
@@ -51,7 +52,7 @@ class TagElKn : IExternalCommand
     static FilteredElementCollector GetMEPElements(Document doc)
     {
 
-        BuiltInCategory[] bics = new BuiltInCategory[] {
+        BuiltInCategory[] bics = [
             BuiltInCategory.OST_CableTray,
             BuiltInCategory.OST_CableTrayFitting,
             BuiltInCategory.OST_Conduit,
@@ -73,9 +74,9 @@ class TagElKn : IExternalCommand
             BuiltInCategory.OST_SpecialityEquipment,
             BuiltInCategory.OST_Sprinklers,
             BuiltInCategory.OST_Wire,
-        };
+        ];
 
-        List<ElementFilter> a = new();
+        List<ElementFilter> a = [];
 
         foreach (BuiltInCategory bic in bics)
         {
@@ -86,10 +87,7 @@ class TagElKn : IExternalCommand
 
         LogicalAndFilter familyInstanceFilter = new(categoryFilter, new ElementClassFilter(typeof(FamilyInstance)));
 
-        List<ElementFilter> b = new()
-        {
-            familyInstanceFilter
-        };
+        List<ElementFilter> b = [familyInstanceFilter];
 
         LogicalOrFilter classFilter = new(b);
 

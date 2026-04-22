@@ -50,7 +50,7 @@ internal class SelectionFilterCategory : IExternalCommand
 
 internal class CategoryEqualityComparer : IEqualityComparer<Category>
 {
-    public bool Equals(Category c1, Category c2)
+    public bool Equals(Category? c1, Category? c2)
     {
         if (c1 == null && c2 == null)
             return true;
@@ -59,8 +59,12 @@ internal class CategoryEqualityComparer : IEqualityComparer<Category>
         return c1.Name == c2.Name;
     }
 
-    public int GetHashCode(Category c)
+    public int GetHashCode(Category? c)
     {
-        return c.Id.IntegerValue.GetHashCode();
+#if PRE24
+        return c?.Id.IntegerValue.GetHashCode() ?? 0;
+#else
+        return c?.Id.Value.GetHashCode() ?? 0;
+#endif
     }
 }

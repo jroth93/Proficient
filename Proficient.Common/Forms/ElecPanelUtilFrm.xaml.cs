@@ -15,7 +15,6 @@ namespace Proficient.Forms;
 /// </summary>
 public partial class ElecPanelUtilFrm : Window
 {
-    public string Entry { get; private set; }
         
     public ElecPanelUtilFrm()
     {

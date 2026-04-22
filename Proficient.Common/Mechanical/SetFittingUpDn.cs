@@ -21,9 +21,14 @@ internal class SetFittingUpDn : IExternalCommand
                 .Select(doc.GetElement)
                 .ToList();
 
+#if PRE24
         static bool IsFitting(Element el) => 
             el.Category.Id.IntegerValue is (int)BuiltInCategory.OST_DuctFitting or (int)BuiltInCategory.OST_PipeFitting;
-        
+#else
+        static bool IsFitting(Element el) =>
+            el.Category.Id.Value is (long)BuiltInCategory.OST_DuctFitting or (long)BuiltInCategory.OST_PipeFitting;
+#endif
+
         IEnumerable<FamilyInstance> fittings;
         if(selEls is not null && selEls.Any())
         {

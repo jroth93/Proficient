@@ -13,15 +13,15 @@ public enum NotesType
 }
 public class NotesModel
 {
-    public static NotesModel NM { get; set; }
-    public NotesPaneViewModel NPVM { get; set; }
-    public View CurrentView { get; set; }
-    public Document CurrentDoc { get; set; }
+    public static NotesModel? NM { get; set; }
+    public NotesPaneViewModel? NPVM { get; set; }
+    public View? CurrentView { get; set; }
+    public Document? CurrentDoc { get; set; }
     public string MarkdownCache { get; set; } = string.Empty;
     public int IdCache { get; set; } = 0;
 
-    private NotesHandler m_Handler;
-    private ExternalEvent m_ExEvent;
+    private readonly NotesHandler m_Handler;
+    private readonly ExternalEvent m_ExEvent;
 
     public NotesModel(ExternalEvent exEvent, NotesHandler handler)
     {
@@ -64,7 +64,7 @@ public class NotesModel
     public void ViewChange(View view)
     {
         CurrentView = view;
-        if(NPVM.CurrentType != NotesType.Project)
+        if(NPVM is not null && NPVM.CurrentType != NotesType.Project)
         {
             NPVM.Markdown = GetMarkdown(NPVM.CurrentType);
         }
@@ -72,20 +72,20 @@ public class NotesModel
 
     private string GetViewNotes()
     {
-        Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        if (CurrentView is null) return string.Empty;
         Entity ent = CurrentView.GetEntity(pSchema);
 
         if (ent.Schema != null)
         {
             IDictionary<string, string> stringDict = ent.Get<IDictionary<string, string>>(SchemaKeys.StringDict);
-            stringDict.TryGetValue(SchemaKeys.MarkdownText, out string md);
-            return md;
+            stringDict.TryGetValue(SchemaKeys.MarkdownText, out var md);
+            return md ?? string.Empty;
         }
         else
         {
             return string.Empty;
         }
-
     }
     private void SaveViewNotes(string notes)
     {
@@ -97,7 +97,7 @@ public class NotesModel
     public void ProjectChange(Document doc)
     {
         CurrentDoc = doc;
-        if(NPVM.CurrentType == NotesType.Project)
+        if(NPVM is not null && NPVM.CurrentType == NotesType.Project)
         {
             NPVM.Markdown = GetMarkdown(NotesType.Project);
         }
@@ -121,8 +121,8 @@ public class NotesModel
         if (ent.Schema != null)
         {
             IDictionary<string, string> stringDict = ent.Get<IDictionary<string, string>>(SchemaKeys.StringDict);
-            stringDict.TryGetValue(SchemaKeys.MarkdownText, out string md);
-            return md;
+            stringDict.TryGetValue(SchemaKeys.MarkdownText, out var md);
+            return md ?? string.Empty;
         }
         else
         {
@@ -151,7 +151,7 @@ public class NotesModel
             return string.Empty;
         }
             
-        EqiNote dn = MeiDbConn.GetEqiNote(id);
+        EqiNote? dn = MeiDbConn.GetEqiNote(id);
 
         if (dn != null)
         {
@@ -174,6 +174,7 @@ public class NotesModel
     public int GetDbId()
     {
         Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        if(CurrentView is null) return 0;
         Entity ent = CurrentView.GetEntity(pSchema);
 
         if (ent.Schema != null)

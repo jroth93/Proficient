@@ -12,7 +12,7 @@ public partial class DuctMain : Form
     public DuctMain()
     {
         InitializeComponent();
-        Main.Settings = new Settings();
+        Main.Settings ??= new Settings();
 
         TopMost = Main.Settings.AppOnTop;
         ActiveControl = Airflowtxt1;
@@ -41,10 +41,10 @@ public partial class DuctMain : Form
             TotalCFM.Text = @"Not Valid Input";
             return;
         }
-        int airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
-        double friction = Convert.ToDouble(new DataTable().Compute(inputs[1], null));
-        int minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
-        int maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
+        var airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
+        var friction = Convert.ToDouble(new DataTable().Compute(inputs[1], null));
+        var minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
         var result = Regex.Match(inputs[0], Constants.NumPattern);
         TotalCFM.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
@@ -108,11 +108,11 @@ public partial class DuctMain : Form
         label5.Visible = isRnd;
         Diatxt1.Visible = isRnd;
 
-        if (isRnd & Main.Settings.AppVert)
+        if (isRnd && Main.Settings is not null && Main.Settings.AppVert)
         {
             Output5.Location = new Point(40, 130);
         }
-        else if (!isRnd & Main.Settings.AppVert)
+        else if (!isRnd && Main.Settings is not null && Main.Settings.AppVert)
         {
             Output5.Location = new Point(40, 170);
         }
@@ -120,7 +120,7 @@ public partial class DuctMain : Form
         TotalCFM3.Text = "";
         Output5.Text = "";
 
-        var inputs = isRnd ? new List<string> { Airflowtxt3.Text, Diatxt1.Text } : new List<string> { Airflowtxt3.Text, Widthtxt1.Text, Depthtxt1.Text };
+        var inputs = isRnd ? new List<string> { Airflowtxt3.Text, Diatxt1.Text } : [Airflowtxt3.Text, Widthtxt1.Text, Depthtxt1.Text];
 
         if (Parser(inputs) == false)
         {
@@ -128,16 +128,16 @@ public partial class DuctMain : Form
             return;
         }
 
-        int airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
-        int dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
-        int width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
-        int depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
+        var dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+        var width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+        var depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
         var result = Regex.Match(inputs[0], Constants.NumPattern);
         TotalCFM3.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
 
-        int velocity = Convert.ToInt32(Functions.VelocitySolver(airflow, dia, width, depth, isRnd));
-        double friction = Math.Ceiling(Functions.FrictionSolver(airflow, dia, width, depth, isRnd) * Constants.Fprecision) / Constants.Fprecision;
+        var velocity = Convert.ToInt32(Functions.VelocitySolver(airflow, dia, width, depth, isRnd));
+        var friction = Math.Ceiling(Functions.FrictionSolver(airflow, dia, width, depth, isRnd) * Constants.Fprecision) / Constants.Fprecision;
 
         Output5.Text = $"{friction} In./100 ft.\n\n{velocity} FPM";
     }
@@ -154,14 +154,14 @@ public partial class DuctMain : Form
         label6.Visible = !isRnd;
         label7.Visible = !isRnd;
 
-        if (isRnd & Main.Settings.AppVert)
+        if (isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output6.Location = new Point(40, 130);
-        else if (!isRnd & Main.Settings.AppVert)
+        else if (!isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output6.Location = new Point(40, 170);
 
         Output6.Text = "";
 
-        var inputs = isRnd ? new List<string> { frictiontxt2.Text, diatxt2.Text } : new List<string> { frictiontxt2.Text, widthtxt2.Text, depthtxt2.Text };
+        var inputs = isRnd ? new List<string> { frictiontxt2.Text, diatxt2.Text } : [frictiontxt2.Text, widthtxt2.Text, depthtxt2.Text];
 
         if (Parser(inputs) == false)
         {
@@ -191,9 +191,9 @@ public partial class DuctMain : Form
         dialbl3.Visible = isRnd;
         diatxt3.Visible = isRnd;
 
-        if (isRnd & Main.Settings.AppVert)
+        if (isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output8.Location = new Point(40, 130);
-        else if (!isRnd & Main.Settings.AppVert)
+        else if (!isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output8.Location = new Point(40, 170);
 
         Output8.Text = "";
@@ -206,13 +206,13 @@ public partial class DuctMain : Form
             return;
         }
 
-        double velocity = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
-        int dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
-        int width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
-        int depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var velocity = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+        var dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+        var width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+        var depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
-        int airflow = Convert.ToInt32(isRnd ? velocity * Math.PI * Math.Pow(dia, 2) / 576 : velocity * width * depth / 144.0);
-        double friction = Convert.ToInt32(Functions.FrictionSolver(airflow, dia, width, depth, isRnd) * Constants.Fprecision) / Constants.Fprecision;
+        var airflow = Convert.ToInt32(isRnd ? velocity * Math.PI * Math.Pow(dia, 2) / 576 : velocity * width * depth / 144.0);
+        var friction = Convert.ToInt32(Functions.FrictionSolver(airflow, dia, width, depth, isRnd) * Constants.Fprecision) / Constants.Fprecision;
 
         Output8.Text = $"{airflow} CFM\n\n{friction} In./100 ft.";
     }
@@ -232,14 +232,14 @@ public partial class DuctMain : Form
         label15.Top = isRnd ? 95 : 133;
         label13.Top = isRnd ? 95 : 133;
 
-        if (isRnd & Main.Settings.AppVert)
+        if (isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output9.Location = new Point(40, 130);
-        else if (!isRnd & Main.Settings.AppVert)
+        else if (!isRnd && Main.Settings is not null && Main.Settings.AppVert)
             Output9.Location = new Point(40, 170);
 
         Output9.Text = "";
 
-        var inputs = isRnd ? new List<string> { diatxt4.Text, "1", depthmintxt3.Text, depthmaxtxt3.Text } : new List<string> { widthtxt4.Text, depthtxt4.Text, depthmintxt3.Text, depthmaxtxt3.Text };
+        var inputs = isRnd ? new List<string> { diatxt4.Text, "1", depthmintxt3.Text, depthmaxtxt3.Text } : [widthtxt4.Text, depthtxt4.Text, depthmintxt3.Text, depthmaxtxt3.Text];
 
         if (Parser(inputs) == false)
         {
@@ -247,32 +247,29 @@ public partial class DuctMain : Form
             return;
         }
 
-        int dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[0], null)) : 0;
-        int width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[0], null));
-        int depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
-        int minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
-        int maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
+        var dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[0], null)) : 0;
+        var width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[0], null));
+        var depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+        var minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
-        string output = Backend.EquivalentDuct(dia, width, depth, minDepth, maxDepth, isRnd);
+        var output = Backend.EquivalentDuct(dia, width, depth, minDepth, maxDepth, isRnd);
 
         Output9.Text = output;
 
         WindowSize(Output9.Height);
     }
 
-    public bool Parser(List<string> inputs)
+    public static bool Parser(List<string> inputs)
     {
 
         foreach (var input in inputs)
         {
             if (!Regex.Match(input, Constants.Pattern).Success)
-            {
                 return false;
-            }
-            if (Convert.ToDouble(new DataTable().Compute(input, null)) <= 0 || Convert.ToDouble(new DataTable().Compute(input, null)) > 2147483647)
-            {
+            var inputVal = Convert.ToDouble(new DataTable().Compute(input, null));
+            if (inputVal is <= 0 or > 2147483647)
                 return false;
-            }
         }
 
         return inputs.Count != 0;
@@ -280,6 +277,8 @@ public partial class DuctMain : Form
 
     private void WindowSize(int size)
     {
+        if (Main.Settings is null) return;
+
         if (Main.Settings.AppVert)
         {
             Height = size > 170 ? size + 300 : 450;
@@ -324,11 +323,11 @@ public partial class DuctMain : Form
     // Drag from any point on form
     public const int WM_NCLBUTTONDOWN = 0xA1;
     public const int HT_CAPTION = 0x2;
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [DllImport("user32.dll")]
     public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [DllImport("user32.dll")]
     public static extern bool ReleaseCapture();
-    private void Form1_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+    private void Form1_MouseDown(object sender, MouseEventArgs e)
     {
         if (e.Button != MouseButtons.Left) return;
         ReleaseCapture();

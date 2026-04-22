@@ -14,8 +14,9 @@ internal class DamperToggle : IExternalCommand
         var dtFec = new FilteredElementCollector(doc).OfClass(typeof(DuctType)).Cast<DuctType>();
         var sel = uiDoc.Selection.GetElementIds();
 
-        if (sel.Any())
+        if (sel.Count != 0)
         {
+#if PRE24
             var taps =
                 sel.Select(id => doc.GetElement(id))
                     .Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctFitting)
@@ -24,7 +25,16 @@ internal class DamperToggle : IExternalCommand
                     .Cast<MechanicalFitting>()
                     .Where(mf => mf.PartType == PartType.TapPerpendicular)
                     .Select(mf => mf.ConnectorManager.Owner);
-
+#else
+            var taps =
+                sel.Select(id => doc.GetElement(id))
+                    .Where(el => el.Category.Id.Value == (int)BuiltInCategory.OST_DuctFitting)
+                    .Cast<FamilyInstance>()
+                    .Select(fi => fi.MEPModel)
+                    .Cast<MechanicalFitting>()
+                    .Where(mf => mf.PartType == PartType.TapPerpendicular)
+                    .Select(mf => mf.ConnectorManager.Owner);
+#endif
             var tapTuples = 
                 dtFec.Where(dt => dt.RoutingPreferenceManager.GetNumberOfRules(RPRGT.Junctions) > 1)
                     .Select(dt => 

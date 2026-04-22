@@ -5,11 +5,11 @@ using Form = System.Windows.Forms.Form;
 
 namespace Proficient.Forms;
 
-[Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+[Transaction(TransactionMode.Manual)]
 public partial class ExcelAssignFrm : Form
 {
     private int _parCnt = 1;
-    private string[] _cols;
+    private string[] _cols = [];
     private bool _byType;
     private readonly List<ComboBox> _colDrops = new();
     private readonly List<ComboBox> _parDrops = new();
@@ -64,8 +64,8 @@ public partial class ExcelAssignFrm : Form
         for (var i = 1; i <= _parCnt; i++)
         {
             var parName = Convert.ToString(_parDrops[i - 1].SelectedItem);
-            parName = parName.Substring(0, parName.Length - 7);
-            var familyName = Convert.ToString(familyDrop.SelectedItem);
+            parName = parName?.Substring(0, parName.Length - 7) ?? string.Empty;
+            var familyName = Convert.ToString(familyDrop.SelectedItem) ?? string.Empty;
             int keyCol = KeyColDrop.SelectedIndex + 1;
             int parCol = KeyColDrop.Items.IndexOf(_colDrops[i - 1].SelectedItem) + 1;
             int startRow = Convert.ToInt32(hdrRowCtrl.Value) + 1;
@@ -106,7 +106,7 @@ public partial class ExcelAssignFrm : Form
 
     private void CatDrop_SelectedIndexChanged(object sender, EventArgs e)
     {
-        var catName = Convert.ToString(catDrop.SelectedItem);
+        var catName = Convert.ToString(catDrop.SelectedItem) ?? string.Empty;
         familyDrop.Items.Clear();
         familyDrop.Items.AddRange(GetFamiliesOfCategory(catName).ToArray<object>());
     }
@@ -124,7 +124,7 @@ public partial class ExcelAssignFrm : Form
     {
         dp1.Items.Clear();
 
-        var familyName = Convert.ToString(familyDrop.SelectedItem);
+        var familyName = Convert.ToString(familyDrop.SelectedItem) ?? string.Empty;
 
         dp1.Items.AddRange(GetFamilyParameters(familyName).ToArray<object>());
         dp1.SelectedIndex = 0;
@@ -134,7 +134,7 @@ public partial class ExcelAssignFrm : Form
     private void DP1_SelectedIndexChanged(object sender, EventArgs e)
     {
         var curItem = Convert.ToString(dp1.SelectedItem);
-        string typeInst = curItem.Substring(curItem.Length - 5, 4);
+        string typeInst = curItem?.Substring(curItem.Length - 5, 4) ?? string.Empty;
 
         _byType = typeInst != "inst";
         typeInstLbl.Text = _byType ? @"Assigning by Type" : @"Assigning by Instance";

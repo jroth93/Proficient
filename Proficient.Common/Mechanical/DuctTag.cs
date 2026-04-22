@@ -26,8 +26,9 @@ internal class DuctTag : IExternalCommand
         IEnumerable<Duct> ducts;
         IEnumerable<FamilyInstance> fittings;
 
-        if(selEls is not null && selEls.Any())
+        if(selEls is not null && selEls.Count != 0)
         {
+#if PRE24
             ducts = selEls
                 .Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctCurves)
                 .Where(d => d.Location is LocationCurve lc && lc.Curve.Length > 3 && !Util.IsTagged(doc, view.Id, d))
@@ -37,6 +38,17 @@ internal class DuctTag : IExternalCommand
                 .Where(df => df is FamilyInstance && !Util.IsTagged(doc, view.Id, df))
                 .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) is not null)
                 .Cast<FamilyInstance>();
+#else
+            ducts = selEls
+                .Where(el => el.Category.Id.Value == (int)BuiltInCategory.OST_DuctCurves)
+                .Where(d => d.Location is LocationCurve lc && lc.Curve.Length > 3 && !Util.IsTagged(doc, view.Id, d))
+                .Cast<Duct>();
+            fittings = selEls
+                .Where(el => el.Category.Id.Value == (int)BuiltInCategory.OST_DuctFitting)
+                .Where(df => df is FamilyInstance && !Util.IsTagged(doc, view.Id, df))
+                .Where(f => f.LookupParameter(Names.Parameter.FittingUpDn) is not null)
+                .Cast<FamilyInstance>();
+#endif
         }
         else
         {

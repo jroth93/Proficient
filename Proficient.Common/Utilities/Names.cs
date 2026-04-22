@@ -42,13 +42,12 @@ internal class Names
     }
     public class File
     {
-        public const string UserSettings = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
-        public const string DependencyDir = @"C:\ProgramData\Autodesk\ApplicationPlugins\Proficient.bundle\Contents\Dependencies\";
+        public static string UserSettings = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
         public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
         public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R24\Proficient.dll";
         public const string CommonSettings = @"Z:\Revit\Proficient\Proficient Config Files\appsettings.json";
         public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
-        public const string SilentUpdateExe = @"Z:\Revit\Proficient\ProficientSilentUpdate.exe";
+        public const string ProficientInstaller = @"Z:\Revit\Proficient\ProficientInstaller.exe";
     }
 
     public class Guids

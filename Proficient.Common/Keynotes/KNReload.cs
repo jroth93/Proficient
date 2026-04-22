@@ -13,10 +13,12 @@ internal class KnReload : IExternalCommand
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         var doc = revit.Application.ActiveUIDocument.Document;
-        string pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
+        var pn = doc.Title[5] == '.' ? doc.Title.Substring(0, 7) : doc.Title.Substring(0, 5);
 
-        string filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
-        string fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+        var filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
+        var fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+        if(fileDir == null)             
+            return Result.Failed;
 
         var xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
 
@@ -29,7 +31,7 @@ internal class KnReload : IExternalCommand
         {
             using var xlDoc = SpreadsheetDocument.Open(xlPath, false);
             var wbp = xlDoc.WorkbookPart;
-            if (wbp?.SharedStringTablePart == null || wbp.Workbook.Sheets == null)
+            if (wbp?.SharedStringTablePart == null || wbp.Workbook?.Sheets == null)
                 return Result.Failed;
             var sst = wbp.SharedStringTablePart.SharedStringTable;
 
@@ -40,13 +42,16 @@ internal class KnReload : IExternalCommand
                     .First(sh => sh.Id != null && sh.Id.Value == wbp.GetIdOfPart(wsp));
                     
                 knList.Add(new KeynoteEntry(sheet.Name?.Value, string.Empty));
-                var data = wsp.Worksheet.Elements<SheetData>().First();
+                var data = wsp.Worksheet?.Elements<SheetData>().First();
+                if (data == null) continue;
                 foreach (var r in data.Elements<Row>())
                 {
                     try
                     {
-                        string key = sst.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
-                        string note = sst.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
+                        var key = sst?.ElementAt(int.Parse(r.ElementAt(0).InnerText)).InnerText;
+                        var note = sst?.ElementAt(int.Parse(r.ElementAt(1).InnerText)).InnerText;
+
+                        if(string.IsNullOrEmpty(key) || string.IsNullOrEmpty(note)) continue;
                         knList.Add(new KeynoteEntry(key, sheet.Name, note));
                     }
                     catch

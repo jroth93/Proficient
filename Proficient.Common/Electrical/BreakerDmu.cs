@@ -6,13 +6,8 @@ namespace Proficient.Electrical;
 
 internal class BreakerDmu : IUpdater
 {
-    private static UpdaterId _updaterId;
-    private static ICollection<ElementId> _addedIds;
-
-    public BreakerDmu()
-    {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.BreakerDmu);
-    }
+    private static readonly UpdaterId _updaterId = new(new AddInId(Main.AppId), Names.Guids.BreakerDmu);
+    private static ICollection<ElementId>? _addedIds;
 
     public void Execute(UpdaterData data)
     {
@@ -20,7 +15,7 @@ internal class BreakerDmu : IUpdater
         {
             var doc = data.GetDocument();
 
-            if (data.GetAddedElementIds().Any())
+            if (data.GetAddedElementIds().Count > 0 && Main.App is not null)
             {
                 _addedIds = data.GetAddedElementIds();
                 Main.App.Idling += AddNewElementTriggers;
@@ -41,9 +36,13 @@ internal class BreakerDmu : IUpdater
             foreach (var id in data.GetModifiedElementIds())
             {
                 var el = doc.GetElement(id);
+#if PRE24
                 var bic = (BuiltInCategory)el.Category.Id.IntegerValue;
-                bool panelChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
-                bool circuitChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
+#else
+                var bic = (BuiltInCategory)el.Category.Id.Value;
+#endif
+                var panelChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)));
+                var circuitChange = data.IsChangeTriggered(id, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.RBS_ELEC_WIRE_CIRCUITS)));
 
                 if (panelChange || circuitChange)
                 {
@@ -78,7 +77,7 @@ internal class BreakerDmu : IUpdater
                     foreach (var p in ps)
                         p.Set(newVal);
                 }
-                else if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
+                else if (bic == BuiltInCategory.OST_ElectricalCircuit)
                 {
                     var newVal = el.LookupParameter(Names.Parameter.BreakerOptions).AsString();
 
@@ -103,24 +102,31 @@ internal class BreakerDmu : IUpdater
 
     }
 
-    private static void AddNewElementTriggers(object sender, IdlingEventArgs e)
+    private static void AddNewElementTriggers(object? sender, IdlingEventArgs e)
     {
-        if (sender is not UIApplication uiApp) return;
+        if (sender is not UIApplication uiApp || _addedIds is null) return;
+
         var doc = uiApp.ActiveUIDocument.Document;
         foreach (var id in _addedIds)
         {
             var el = doc.GetElement(id);
+#if PRE24
+            var bic = (BuiltInCategory)el.Category.Id.IntegerValue;
+#else
+            var bic = (BuiltInCategory)el.Category.Id.Value;
+#endif
             var par = el.LookupParameter(Names.Parameter.BreakerOptions);
             var f = new ElementCategoryFilter(BuiltInCategory.OST_Wire);
 
-            if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_ElectricalCircuit)
+            if (bic == BuiltInCategory.OST_ElectricalCircuit)
                 f = new ElementCategoryFilter(BuiltInCategory.OST_ElectricalCircuit);
 
             if (par != null)
                 UpdaterRegistry.AddTrigger(_updaterId, f, Element.GetChangeTypeParameter(par));
         }
 
-        Main.App.Idling -= AddNewElementTriggers;
+        if(Main.App is not null)
+            Main.App.Idling -= AddNewElementTriggers;
     }
 
     public string GetAdditionalInformation() => "Josh Roth";

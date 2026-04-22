@@ -10,9 +10,9 @@ namespace Proficient.Utilities;
 [DbConfigurationType(typeof(MySqlEFConfiguration))]
 public class MeiDb : DbContext
 {
-    public DbSet<EqiNote> EqiNotes { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<UserRevitVersion> UserRevitVersions { get; set; }
+    public DbSet<EqiNote> EqiNotes { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<UserRevitVersion> UserRevitVersions { get; set; } = null!;
     public MeiDb() {}
     public MeiDb(DbConnection existingConnection, bool contextOwnsConnection) : base(existingConnection, contextOwnsConnection){}
 }
@@ -20,19 +20,19 @@ public class MeiDb : DbContext
 public class EqiNote
 {
     public int Id { get; set; }
-    public string Description { get; set; }
-    public string Markdown { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Markdown { get; set; } = string.Empty;
 }
 
 public class User
 {
     public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string AutodeskUser { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string AutodeskUser { get; set; } = string.Empty;
     public bool GlobalNoteEditor { get; set; }
     public bool GlobalNoteManager { get; set; }
-    public string ProficientVersion { get; set; }
+    public string ProficientVersion { get; set; } = string.Empty;
 }
 
 public class UserRevitVersion
@@ -43,13 +43,13 @@ public class UserRevitVersion
     [Key]
     [Column(Order = 2)]
     public int VersionNumber { get; set; }
-    public string VersionBuild { get; set; }
+    public string VersionBuild { get; set; } = string.Empty;
 }
 
 internal class MeiDbConn
 {
     private const string ConnectionString = "server=10.10.0.17;port=3306;database=mei;uid=jroth;password=ahuskynamedscout";
-    public static EqiNote GetEqiNote(int id)
+    public static EqiNote? GetEqiNote(int id)
     {
         using MySqlConnection connection = new (ConnectionString);
         connection.Open();
@@ -65,7 +65,7 @@ internal class MeiDbConn
         connection.Open();
 
         using MeiDb context = new (connection, false);
-        return context.EqiNotes.ToList();
+        return [.. context.EqiNotes];
     }
 
     public static int CreateEqiNote(string desc)
@@ -133,7 +133,7 @@ internal class MeiDbConn
         return context.Users.ToList();
     }
 
-    public static User GetUserByAdId(string adUser)
+    public static User? GetUserByAdId(string adUser)
     {
         using MySqlConnection connection = new (ConnectionString);
         using MeiDb context = new (connection, false);

@@ -21,8 +21,9 @@ internal class DuctElbowToggle : IExternalCommand
         var elbowRule = rpm.GetRule(RPRGT.Elbows, 0);
 
 
-        if (sel.Any())
+        if (sel.Count != 0)
         {
+#if PRE24
             var elbows =
                 sel.Select(doc.GetElement)
                     .Where(el => el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctFitting)
@@ -31,6 +32,19 @@ internal class DuctElbowToggle : IExternalCommand
                     .OfType<MechanicalFitting>()
                     .Where(mf => mf.PartType == PartType.Elbow)
                     .Select(mf  => mf.ConnectorManager.Owner);
+
+#else
+
+            var elbows =
+                sel.Select(doc.GetElement)
+                    .Where(el => el.Category.Id.Value == (int)BuiltInCategory.OST_DuctFitting)
+                    .Cast<FamilyInstance>()
+                    .Select(fi => fi.MEPModel)
+                    .OfType<MechanicalFitting>()
+                    .Where(mf => mf.PartType == PartType.Elbow)
+                    .Select(mf => mf.ConnectorManager.Owner);
+
+#endif
 
             var el1Id = elbowRule.MEPPartId;
             var el2Id = rpm.GetRule(RPRGT.Elbows, 1).MEPPartId;

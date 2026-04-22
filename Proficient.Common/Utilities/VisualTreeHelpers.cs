@@ -9,16 +9,16 @@ public class VisualTreeHelpers
     /// <summary>
     /// Returns the first ancester of specified type
     /// </summary>
-    public static T FindAncestor<T>(DependencyObject current)
+    public static T? FindAncestor<T>(DependencyObject current)
         where T : DependencyObject
     {
         current = VisualTreeHelper.GetParent(current);
 
         while (current != null)
         {
-            if (current is T)
+            if (current is T t)
             {
-                return (T)current;
+                return t;
             }
             current = VisualTreeHelper.GetParent(current);
         };
@@ -28,14 +28,14 @@ public class VisualTreeHelpers
     /// <summary>
     /// Returns a specific ancester of an object
     /// </summary>
-    public static T FindAncestor<T>(DependencyObject current, T lookupItem)
+    public static T? FindAncestor<T>(DependencyObject current, T lookupItem)
         where T : DependencyObject
     {
         while (current != null)
         {
-            if (current is T && current == lookupItem)
+            if (current is T t && current == lookupItem)
             {
-                return (T)current;
+                return t;
             }
             current = VisualTreeHelper.GetParent(current);
         };
@@ -45,7 +45,7 @@ public class VisualTreeHelpers
     /// <summary>
     /// Finds an ancestor object by name and type
     /// </summary>
-    public static T FindAncestor<T>(DependencyObject current, string parentName)
+    public static T? FindAncestor<T>(DependencyObject current, string parentName)
         where T : DependencyObject
     {
         while (current != null)
@@ -53,14 +53,14 @@ public class VisualTreeHelpers
             if (!string.IsNullOrEmpty(parentName))
             {
                 var frameworkElement = current as FrameworkElement;
-                if (current is T && frameworkElement != null && frameworkElement.Name == parentName)
+                if (current is T t && frameworkElement != null && frameworkElement.Name == parentName)
                 {
-                    return (T)current;
+                    return t;
                 }
             }
-            else if (current is T)
+            else if (current is T t)
             {
-                return (T)current;
+                return t;
             }
             current = VisualTreeHelper.GetParent(current);
         };
@@ -72,21 +72,21 @@ public class VisualTreeHelpers
     /// <summary>
     /// Looks for a child control within a parent by name
     /// </summary>
-    public static T FindChild<T>(DependencyObject parent, string childName)
+    public static T? FindChild<T>(DependencyObject parent, string childName)
         where T : DependencyObject
     {
         // Confirm parent and childName are valid.
         if (parent == null) return null;
 
-        T foundChild = null;
+        T? foundChild = null;
 
-        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-        for (int i = 0; i < childrenCount; i++)
+        var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < childrenCount; i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
             // If the child is not of the request child type child
-            T childType = child as T;
-            if (childType == null)
+            var childType = child as T;
+            if (childType is null)
             {
                 // recursively drill down the tree
                 foundChild = FindChild<T>(child, childName);
@@ -127,20 +127,20 @@ public class VisualTreeHelpers
     /// <summary>
     /// Looks for a child control within a parent by type
     /// </summary>
-    public static T FindChild<T>(DependencyObject parent)
+    public static T? FindChild<T>(DependencyObject parent)
         where T : DependencyObject
     {
         // Confirm parent is valid.
         if (parent == null) return null;
 
-        T foundChild = null;
+        T? foundChild = null;
 
-        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-        for (int i = 0; i < childrenCount; i++)
+        var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < childrenCount; i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
             // If the child is not of the request child type child
-            T childType = child as T;
+            var childType = child as T;
             if (childType == null)
             {
                 // recursively drill down the tree

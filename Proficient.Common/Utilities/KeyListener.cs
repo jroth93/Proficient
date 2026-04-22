@@ -22,7 +22,7 @@ public class KeyListener
     private static extern IntPtr GetModuleHandle(string lpModuleName);
  
     public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-    public event EventHandler<KeyPressedArgs> OnKeyPressed;
+    public event EventHandler<KeyPressedArgs>? OnKeyPressed;
     private readonly LowLevelKeyboardProc _proc;
     private IntPtr _hookId = IntPtr.Zero;
 
@@ -45,29 +45,24 @@ public class KeyListener
     {
         using var curProcess = Process.GetCurrentProcess();
         using var curModule = curProcess.MainModule;
-        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName), 0);
+        var moduleName = curModule?.ModuleName ?? "explorer.exe";
+        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(moduleName), 0);
     }
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
         if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
         {
-            int vkCode = Marshal.ReadInt32(lParam);
+            var vkCode = Marshal.ReadInt32(lParam);
 
             OnKeyPressed?.Invoke(this, new KeyPressedArgs(KeyInterop.KeyFromVirtualKey(vkCode)));
         }
 
         return CallNextHookEx(_hookId, nCode, wParam, lParam);
     }
-
 }
 
-public class KeyPressedArgs : EventArgs
+public class KeyPressedArgs(Key key) : EventArgs
 {
-    public Key KeyPressed { get; }
-
-    public KeyPressedArgs(Key key)
-    {
-        KeyPressed = key;
-    }
+    public Key KeyPressed { get; } = key;
 }

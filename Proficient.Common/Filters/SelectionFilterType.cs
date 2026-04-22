@@ -5,7 +5,7 @@ namespace Proficient.Filters;
 [Transaction(TransactionMode.Manual)]
 internal class SelectionFilterType : IExternalCommand
 {
-    internal static Document Doc;
+    internal static Document? Doc;
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         var uiDoc = revit.Application.ActiveUIDocument;
@@ -32,7 +32,7 @@ internal class SelectionFilterType : IExternalCommand
 
         foreach (var type in types)
         {
-            string fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName;
+            string fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
             string display = fam + " - " + type.Name;
             bvm.AddButton("smallBtn", display, () => { selectedFamily = fam; selectedType = type.Name; }, true, true);
         }
@@ -58,10 +58,10 @@ internal class SelectionFilterType : IExternalCommand
 
 internal class TypeEqualityComparer : IEqualityComparer<Element>
 {
-    public bool Equals(Element e1, Element e2)
+    public bool Equals(Element? e1, Element? e2)
     {
-        string f1 = (SelectionFilterType.Doc.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
-        string f2 = (SelectionFilterType.Doc.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
+        string? f1 = (SelectionFilterType.Doc?.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
+        string? f2 = (SelectionFilterType.Doc?.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
 
         if (e1 == null && e2 == null)
             return true;
@@ -70,8 +70,12 @@ internal class TypeEqualityComparer : IEqualityComparer<Element>
         return e1.Name == e2.Name && f1 == f2;
     }
 
-    public int GetHashCode(Element e)
+    public int GetHashCode(Element? e)
     {
-        return SelectionFilterType.Doc.GetElement(e.Id).GetTypeId().IntegerValue.GetHashCode();
+#if PRE24
+        return SelectionFilterType.Doc?.GetElement(e?.Id).GetTypeId().IntegerValue.GetHashCode() ?? 0;
+#else
+        return SelectionFilterType.Doc?.GetElement(e?.Id).GetTypeId().Value.GetHashCode() ?? 0;
+#endif
     }
 }

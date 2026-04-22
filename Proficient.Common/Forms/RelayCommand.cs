@@ -5,7 +5,7 @@ namespace Proficient.Forms;
 public class RelayCommand : ICommand
 {
     readonly Action _targetExecuteMethod;
-    private readonly Func<bool> _targetCanExecuteMethod;
+    private readonly Func<bool>? _targetCanExecuteMethod;
 
     public RelayCommand(Action executeMethod)
     {
@@ -20,28 +20,24 @@ public class RelayCommand : ICommand
 
     public void RaiseCanExecuteChanged()
     {
-        CanExecuteChanged(this, EventArgs.Empty);
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
     #region ICommand Members
 
-    bool ICommand.CanExecute(object parameter)
+    bool ICommand.CanExecute(object? parameter)
     {
         if (_targetCanExecuteMethod != null)
         {
             return _targetCanExecuteMethod();
         }
-        if (_targetExecuteMethod != null)
-        {
-            return true;
-        }
-        return false;
+        return _targetExecuteMethod != null;
     }
 
     // Beware - should use weak references if command instance lifetime is longer than lifetime of UI objects that get hooked up to command
     // Prism commands solve this in their implementation
-    public event EventHandler CanExecuteChanged = delegate { };
+    public event EventHandler? CanExecuteChanged = delegate { };
 
-    void ICommand.Execute(object parameter)
+    void ICommand.Execute(object? parameter)
     {
         if (_targetExecuteMethod != null)
         {
@@ -54,7 +50,7 @@ public class RelayCommand : ICommand
 public class RelayCommand<T> : ICommand
 {
     private readonly Action<T> _targetExecuteMethod;
-    private readonly Func<T, bool> _targetCanExecuteMethod;
+    private readonly Func<T, bool>? _targetCanExecuteMethod;
 
     public RelayCommand(Action<T> executeMethod)
     {
@@ -69,34 +65,27 @@ public class RelayCommand<T> : ICommand
 
     public void RaiseCanExecuteChanged()
     {
-        CanExecuteChanged(this, EventArgs.Empty);
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-    #region ICommand Members
 
-    bool ICommand.CanExecute(object parameter)
+    bool ICommand.CanExecute(object? parameter)
     {
         if (_targetCanExecuteMethod != null)
         {
-            var tPar = (T)parameter;
-            return _targetCanExecuteMethod(tPar);
+            return parameter is T tPar && _targetCanExecuteMethod(tPar);
         }
-        if (_targetExecuteMethod != null)
-        {
-            return true;
-        }
-        return false;
+        return _targetExecuteMethod != null;
     }
 
     // Beware - should use weak references if command instance lifetime is longer than lifetime of UI objects that get hooked up to command
     // Prism commands solve this in their implementation
-    public event EventHandler CanExecuteChanged = delegate { };
+    public event EventHandler? CanExecuteChanged = delegate { };
 
-    void ICommand.Execute(object parameter)
+    void ICommand.Execute(object? parameter)
     {
-        if (_targetExecuteMethod != null)
+        if (_targetExecuteMethod != null && parameter is T tPar)
         {
-            _targetExecuteMethod((T)parameter);
+            _targetExecuteMethod(tPar);
         }
     }
-    #endregion
 }

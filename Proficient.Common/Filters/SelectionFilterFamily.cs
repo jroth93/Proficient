@@ -30,7 +30,12 @@ internal class SelectionFilterFamily : IExternalCommand
         var selectedFam = string.Empty;
 
         foreach (var fam in fams)
+        {
+            if (fam is null)
+                continue;
             bvm.AddButton("smallBtn", fam, () => selectedFam = fam, true, true);
+        }
+            
 
         if (!bvm.ShowWindow(true) ?? false)
             return Result.Cancelled;

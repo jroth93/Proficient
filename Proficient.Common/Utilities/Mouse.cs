@@ -174,13 +174,17 @@ public static class Mouse
     /// <param name="y">y coordinate</param>
     /// <param name="data">scroll wheel amount</param>
     /// <param name="flags">SendMouseInputFlags flags</param>
+#if PRE25
     [PermissionSet(SecurityAction.Assert, Name = "FullTrust")]
+#endif
     private static void SendMouseInput(int x, int y, int data, SendMouseInputFlags flags)
     {
+#if PRE25
         PermissionSet permissions = new (PermissionState.Unrestricted);
         permissions.Demand();
+#endif
 
-        uint intflags = (uint)flags;
+        var intflags = (uint)flags;
 
         if ((intflags & (int)SendMouseInputFlags.Absolute) != 0)
         {
@@ -189,16 +193,24 @@ public static class Mouse
             intflags |= NativeMethods.MouseeventfVirtualdesk;
         }
 
-        var mi = new NativeMethods.INPUT();
-        mi.Type = NativeMethods.INPUT_MOUSE;
-        mi.Data.Mouse.dx = x;
-        mi.Data.Mouse.dy = y;
-        mi.Data.Mouse.mouseData = data;
-        mi.Data.Mouse.dwFlags = intflags;
-        mi.Data.Mouse.time = 0;
-        mi.Data.Mouse.dwExtraInfo = new IntPtr(0);
+        var mi = new NativeMethods.INPUT
+        {
+            Type = NativeMethods.INPUT_MOUSE,
+            Data = new NativeMethods.MOUSEKEYBDHARDWAREINPUT
+            {
+                Mouse = new NativeMethods.MOUSEINPUT
+                {
+                    dx = x,
+                    dy = y,
+                    mouseData = data,
+                    dwFlags = intflags,
+                    time = 0,
+                    dwExtraInfo = IntPtr.Zero
+                }
+            }
+        };
 
-        if (NativeMethods.SendInput(1, new NativeMethods.INPUT[] { mi }, Marshal.SizeOf(mi)) == 0)
+        if (NativeMethods.SendInput(1, [mi], Marshal.SizeOf(mi)) == 0)
         {
             throw new Win32Exception(Marshal.GetLastWin32Error());
         }
@@ -288,6 +300,9 @@ public static class Mouse
         // The key ting here is that unlike points in coordinate geometry, pixels take up
         // space, so are often better treated like rectangles - and if you want to target
         // a particular pixel, target its rectangle's midpoint, not its edge.
+        if (vScreenWidth == 0) vScreenWidth = 1920;
+        if (vScreenHeight == 0) vScreenHeight = 1080;
+
         x = ((x - vScreenLeft) * 65536) / vScreenWidth + 65536 / (vScreenWidth * 2);
         y = ((y - vScreenTop) * 65536) / vScreenHeight + 65536 / (vScreenHeight * 2);
     }
@@ -320,7 +335,7 @@ public static class Mouse
         return mouseButtonState;
     }
 
-    #endregion Private Methods
+#endregion Private Methods
 }
 
 internal enum MouseButtonState

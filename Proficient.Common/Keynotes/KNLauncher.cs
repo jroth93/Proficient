@@ -16,15 +16,16 @@ internal class KnLauncher : IExternalCommand
         var ps = Process.GetProcessesByName("excel")
             .FirstOrDefault(p => p.MainWindowTitle.Contains($"{pn} Keynotes.xlsx"));
             
-
         if (ps is not null)
         {
             SetForegroundWindow(ps.MainWindowHandle);
             return Result.Succeeded;
         }
 
-        string filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
-        string fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+        var filePath = doc.IsWorkshared ? ModelPathUtils.ConvertModelPathToUserVisiblePath(doc.GetWorksharingCentralModelPath()) : doc.PathName;
+        var fileDir = doc.IsModelInCloud ? Util.GetProjectFolder(revit) : Path.GetDirectoryName(filePath);
+        if (fileDir == null) return Result.Failed;
+        
         var xlPath = $"{fileDir}\\{pn} Keynotes.xlsx";
 
         if (!File.Exists(xlPath))

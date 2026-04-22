@@ -15,7 +15,7 @@ internal class TextLeader : IExternalCommand
         var txtType = new FilteredElementCollector(doc)
             .OfClass(typeof(TextNoteType))
             .Cast<TextNoteType>()
-            .FirstOrDefault(t => t.Name == Main.Settings.DefFont);
+            .FirstOrDefault(t => t.Name == Main.Settings?.DefFont);
 
         if (txtType == null)
             return Result.Failed;

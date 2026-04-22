@@ -21,7 +21,7 @@ public class BlankViewModel : INotifyPropertyChanged
         Blank.PreviewKeyDown += HandleEsc;
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private void NotifyPropertyChanged(string propertyName = "")
     {

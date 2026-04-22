@@ -5,13 +5,8 @@ namespace Proficient.Electrical;
 
 internal class ElecLoadDmu : IUpdater
 {
-    private static UpdaterId? _updaterId;
+    private static readonly UpdaterId _updaterId = new (new AddInId(Main.AppId), Names.Guids.ElecLoadDmu);
     private static ICollection<ElementId>? _addedIds;
-
-    public ElecLoadDmu()
-    {
-        _updaterId = new UpdaterId(new AddInId(Main.AppId), Names.Guids.ElecLoadDmu);
-    }
 
     public void Execute(UpdaterData data)
     {
@@ -22,7 +17,7 @@ internal class ElecLoadDmu : IUpdater
 
         var circClasses = new []{"HVAC -", "ELEC HEAT -", "MOTOR -"};
 
-        if (_addedIds.Count != 0)
+        if (_addedIds.Count != 0 && Main.App is not null)
         {
 #if PRE24
             if (doc.GetElement(_addedIds.First()).Category.Id.IntegerValue != (int)BuiltInCategory.OST_ElectricalCircuit)
@@ -103,17 +98,14 @@ internal class ElecLoadDmu : IUpdater
             }
             else
             {
-                if(typeMark == string.Empty && mark != string.Empty)
+                if (typeMark == string.Empty && mark != string.Empty)
                 {
                     planTag = mark;
                 }
-                else if(mark == string.Empty && typeMark != string.Empty)
-                {
-                    planTag = typeMark;
-                }
                 else
                 {
-                    planTag = typeMark + "-" + mark;
+                    var typeMarkOnly = mark == string.Empty && typeMark != string.Empty;
+                    planTag = typeMarkOnly ? typeMark : planTag = typeMark + "-" + mark;
                 }
             }
 
@@ -153,14 +145,15 @@ internal class ElecLoadDmu : IUpdater
             }
         }
 
-        Main.App.Idling -= AddNewElementTriggers;
+        if(Main.App is not null)
+            Main.App.Idling -= AddNewElementTriggers;
     }
 
     public string GetAdditionalInformation() => "Josh Roth";
 
     public ChangePriority GetChangePriority() => ChangePriority.MEPSystems;
 
-    public UpdaterId? GetUpdaterId() => _updaterId;
+    public UpdaterId GetUpdaterId() => _updaterId;
 
     public string GetUpdaterName() => "ElecLoadDmu";
 }

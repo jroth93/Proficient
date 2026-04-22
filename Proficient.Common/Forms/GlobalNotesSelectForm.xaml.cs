@@ -45,26 +45,26 @@ public class NotesSelectViewModel : INotifyPropertyChanged
 
         if(curId != 0)
         {
-            NoteEntry = NoteEntries.Where(x => x.Id == curId).FirstOrDefault();
+            NoteEntry = NoteEntries.FirstOrDefault(x => x.Id == curId);
         }
     }
 
     public List<EqiNote> NoteEntries { get; set; }
 
-    private EqiNote _noteEntry;
+    private EqiNote? _noteEntry;
 
-    public EqiNote NoteEntry
+    public EqiNote? NoteEntry
     {
-        get { return _noteEntry; }
+        get => _noteEntry;
         set
         {
             if (_noteEntry == value) return;
             _noteEntry = value;
-                
+
             NotifyPropertyChanged("NoteEntry");
         }
     }
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private void NotifyPropertyChanged(string propertyName)
     {

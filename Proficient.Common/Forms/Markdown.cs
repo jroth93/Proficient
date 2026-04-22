@@ -292,7 +292,7 @@ public class Markdown : DependencyObject
         }
     }
 
-    private static string _nestedBracketsPattern;
+    private static string? _nestedBracketsPattern;
 
     /// <summary>
     /// Reusable pattern to match balanced [brackets]. See Friedl's 
@@ -316,7 +316,7 @@ public class Markdown : DependencyObject
         return _nestedBracketsPattern;
     }
 
-    private static string _nestedParensPattern;
+    private static string? _nestedParensPattern;
 
     /// <summary>
     /// Reusable pattern to match balanced (parens). See Friedl's 
@@ -340,7 +340,7 @@ public class Markdown : DependencyObject
         return _nestedParensPattern;
     }
 
-    private static string _nestedParensPatternWithWhiteSpace;
+    private static string? _nestedParensPatternWithWhiteSpace;
 
     /// <summary>
     /// Reusable pattern to match balanced (parens), including whitespace. See Friedl's 
@@ -431,12 +431,12 @@ public class Markdown : DependencyObject
 
         string linkText = match.Groups[2].Value;
         string url = match.Groups[3].Value;
-        BitmapImage imgSource = null;
+        BitmapImage? imgSource = null;
         try
         {
-            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute) && !System.IO.Path.IsPathRooted(url))
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute) && !Path.IsPathRooted(url))
             {
-                url = System.IO.Path.Combine(AssetPathRoot ?? string.Empty, url);
+                url = Path.Combine(AssetPathRoot ?? string.Empty, url);
             }
 
             imgSource = new BitmapImage();
@@ -453,7 +453,7 @@ public class Markdown : DependencyObject
             return new Run("!" + url) { Foreground = Brushes.Red };
         }
 
-        Image image = new Image { Source = imgSource, Tag = linkText };
+        var image = new Image { Source = imgSource, Tag = linkText };
         if (ImageStyle is null)
         {
             image.Margin = new Thickness(0);
@@ -466,13 +466,15 @@ public class Markdown : DependencyObject
         // Bind size so document is updated when image is downloaded
         if (imgSource.IsDownloading)
         {
-            Binding binding = new Binding(nameof(BitmapImage.Width));
-            binding.Source = imgSource;
-            binding.Mode = BindingMode.OneWay;
+            var binding = new Binding(nameof(BitmapImage.Width))
+            {
+                Source = imgSource,
+                Mode = BindingMode.OneWay
+            };
 
             BindingExpressionBase bindingExpression = BindingOperations.SetBinding(image, Image.WidthProperty, binding);
                 
-            void downloadCompletedHandler(object sender, EventArgs e)
+            void downloadCompletedHandler(object? sender, EventArgs e)
             {
                 imgSource.DownloadCompleted -= downloadCompletedHandler;
                 bindingExpression.UpdateTarget();

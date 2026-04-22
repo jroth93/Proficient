@@ -16,6 +16,8 @@ internal static class Ribbon
         var app = Main.App;
         string al = Assembly.GetExecutingAssembly().Location;
         const string ugUrl = "https://github.com/jroth93/Proficient/wiki/Proficient-User-Guide";
+
+        if (app == null) return;
         app.CreateRibbonTab("Proficient");
 
         var genRib = app.CreateRibbonPanel("Proficient", "General");

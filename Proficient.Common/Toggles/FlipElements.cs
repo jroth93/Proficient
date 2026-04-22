@@ -18,38 +18,7 @@ internal class FlipElements : IExternalCommand
         {
             foreach (var eid in selIds)
             {
-                if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is ViewSection)
-                {
-                    FlipSection(doc, eid);
-                    continue;
-                }
-
-                var el = doc.GetElement(eid);
-
-                if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_DuctTerminalTags)
-                {
-                    FlipAtTag(doc, el);
-                    continue;
-                }
-
-                try
-                {
-                    using var tx = new Transaction(doc, "Flip Element");
-                    if (tx.Start() != TransactionStatus.Started)
-                        return Result.Failed;
-
-                    if (el is not FamilyInstance famInst)
-                        continue;
-
-                    if (famInst.CanFlipFacing)
-                        famInst.flipFacing();
-                    else if (famInst.MEPModel is MechanicalFitting { PartType: PartType.Tee })
-                        FlipTee(uiDoc, doc, famInst);
-
-                    tx.Commit();
-
-                }
-                catch (NullReferenceException) {  }
+                Flip(doc, uiDoc, eid);
             }
             return Result.Succeeded;
         }
@@ -59,34 +28,7 @@ internal class FlipElements : IExternalCommand
             try
             {
                 var eid = uiDoc.Selection.PickObject(ObjectType.Element).ElementId;
-
-                if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is ViewSection)
-                {
-                    FlipSection(doc, new ElementId(eid.IntegerValue + 1));
-                    continue;
-                }
-
-                var el = doc.GetElement(eid);
-
-                if ((BuiltInCategory)el.Category.Id.IntegerValue == BuiltInCategory.OST_DuctTerminalTags)
-                {
-                    FlipAtTag(doc, el);
-                    continue;
-                }
-
-                using var tx = new Transaction(doc, "Flip Element");
-                if (tx.Start() != TransactionStatus.Started)
-                    return Result.Failed;
-
-                if (doc.GetElement(eid) is FamilyInstance famInst)
-                {
-                    if (famInst.CanFlipFacing)
-                        famInst.flipFacing();
-                    else if ((famInst.MEPModel as MechanicalFitting)?.PartType == PartType.Tee)
-                        FlipTee(uiDoc, doc, famInst);
-                }
-                tx.Commit();
-                
+                Flip(doc, uiDoc, eid);
             }
             catch (NullReferenceException) { }
             catch (Autodesk.Revit.Exceptions.OperationCanceledException)
@@ -96,15 +38,60 @@ internal class FlipElements : IExternalCommand
         }
     }
 
-    private static void FlipSection(Document doc, ElementId eid)
+    private static void Flip(Document doc, UIDocument uiDoc, ElementId eid)
     {
-        if (doc.GetElement(new ElementId(eid.IntegerValue + 1)) is not View sec) return;
-            
+
+#if PRE24
+        var vsId = new ElementId(eid.IntegerValue + 1);
+#else
+        var vsId = new ElementId(eid.Value + 1);
+#endif
+        if (doc.GetElement(vsId) is ViewSection sec)
+        {
+            FlipSection(doc, sec);
+            return;
+        }
+
+        var el = doc.GetElement(eid);
+
+#if PRE24
+        var elCatId = el.Category.Id.IntegerValue;
+#else
+        var elCatId = el.Category.Id.Value;
+#endif
+        if ((BuiltInCategory)elCatId == BuiltInCategory.OST_DuctTerminalTags)
+        {
+            FlipAtTag(doc, el);
+            return;
+        }
+
+        try
+        {
+            using var tx = new Transaction(doc, "Flip Element");
+            if (tx.Start() != TransactionStatus.Started)
+                return;
+
+            if (el is not FamilyInstance famInst)
+                return;
+
+            if (famInst.CanFlipFacing)
+                famInst.flipFacing();
+            else if (famInst.MEPModel is MechanicalFitting { PartType: PartType.Tee })
+                FlipTee(uiDoc, doc, famInst);
+
+            tx.Commit();
+
+        }
+        catch (NullReferenceException) { }
+    }
+
+    private static void FlipSection(Document doc, ViewSection sec)
+    {            
         var p = Plane.CreateByNormalAndOrigin(sec.ViewDirection, sec.Origin);
             
         using var tx = new Transaction(doc, "Flip Section");
         if (tx.Start() == TransactionStatus.Started)
-            ElementTransformUtils.MirrorElements(doc, new List<ElementId>{eid}, p, false);
+            ElementTransformUtils.MirrorElements(doc, new List<ElementId>{sec.Id}, p, false);
         tx.Commit();
     }
 
@@ -144,24 +131,40 @@ internal class FlipElements : IExternalCommand
     {
         var teeCons = fi.MEPModel.ConnectorManager.Connectors;
         var cons = new List<Connector>();
-        var locs = new List<LocationCurve>();
+        var lcs = new List<LocationCurve>();
         foreach (Connector con in teeCons)
         {
             foreach (Connector refCon in con.AllRefs)
             {
                 cons.Add(refCon);
-                locs.Add(refCon.Owner.Location as LocationCurve);
+
+                if(refCon.Owner.Location is LocationCurve lc)
+                {
+                    lcs.Add(lc);
+                }
+                else
+                {
+                    return;
+                }
             }
         }
 
         var dirSet = new List<XYZ>();
 
-        foreach (var lc in locs)
+        foreach (var lc in lcs)
         {
-            dirSet.Add((lc.Curve as Line).Direction);
+            if (lc.Curve is Line l)
+            {
+                dirSet.Add(l.Direction);
+            }
+            else
+            {
+                return;
+            }
+                
         }
 
-        Connector con1 = null, con2 = null, con3 = null;
+        Connector? con1 = null, con2 = null, con3 = null;
         if (Math.Round(dirSet[0].X, 3) == Math.Round(dirSet[1].X, 3) && Math.Round(dirSet[0].Y, 3) == Math.Round(dirSet[1].Y, 3))
         {
             con1 = cons[0];

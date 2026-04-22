@@ -13,17 +13,19 @@ internal class ReceptaclePlacer : IExternalCommand
         UIDocument uiDoc = revit.Application.ActiveUIDocument;
         Document doc = uiDoc.Document;
         Selection sel = uiDoc.Selection;
-        Space sp = doc.GetElement(sel.GetElementIds().First()) as Space;
-        var bsList = sp.GetBoundarySegments(new SpatialElementBoundaryOptions())[0].Select(x => x.GetCurve() as Curve);
-        double per = bsList.Select(x => x.Length).Sum();
+        var sp = doc.GetElement(sel.GetElementIds().First()) as Space;
+        if (sp is null) return Result.Failed;
 
-        View view = doc.GetElement(uiDoc.ActiveView.Id) as View;
+        var bsList = sp.GetBoundarySegments(new SpatialElementBoundaryOptions())[0].Select(x => x.GetCurve());
+        var per = bsList.Select(x => x.Length).Sum();
 
-        using (Transaction tx = new Transaction(doc, "commandname"))
+        var view = doc.GetElement(uiDoc.ActiveView.Id) as View;
+
+        using (var tx = new Transaction(doc, "commandname"))
         {
             if (tx.Start() == TransactionStatus.Started)
             {
-                foreach (Line l in bsList)
+                foreach (Line l in bsList.Cast<Line>())
                 {
                     doc.Create.NewDetailCurve(view, l);
                 }

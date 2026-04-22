@@ -11,7 +11,8 @@ internal class ToggleEnlargedWorkset : IExternalCommand
 
         if (view.ViewTemplateId != ElementId.InvalidElementId)
             view = doc.GetElement(view.ViewTemplateId) as View;
-        if (view == null) return Result.Failed;
+
+        if (view is null || Main.Settings is null) return Result.Failed;
 
         var wsList = new FilteredWorksetCollector(doc).ToWorksets();
 
@@ -25,8 +26,8 @@ internal class ToggleEnlargedWorkset : IExternalCommand
 
         if (enlWs != null)
         {
-            bool isHidden = view.GetWorksetVisibility(enlWs.Id) == WorksetVisibility.UseGlobalSetting;
-            string alert = isHidden ? "on" : "off";
+            var isHidden = view.GetWorksetVisibility(enlWs.Id) == WorksetVisibility.UseGlobalSetting;
+            var alert = isHidden ? "on" : "off";
             view.SetWorksetVisibility(enlWs.Id,
                 isHidden 
                 ? WorksetVisibility.Visible
@@ -34,7 +35,6 @@ internal class ToggleEnlargedWorkset : IExternalCommand
             Utilities.Util.BalloonTip("Enlarged Workset", $"Enlarged workset is {alert}.","");
         }
             
-
         tx.Commit();
 
         return Result.Succeeded;

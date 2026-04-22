@@ -41,7 +41,7 @@ public class NotesPaneViewModel : INotifyPropertyChanged
         GlobalNotesManager = user.GlobalNoteManager;
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {
@@ -83,7 +83,7 @@ public class NotesPaneViewModel : INotifyPropertyChanged
     public ICommand EditNotesCommand { get; private set; }
     private void EditNotes()
     {
-        if (CurrentType != NotesType.Global || NotesModel.NM.GetDbId() != 0)
+        if (CurrentType != NotesType.Global || NotesModel.NM?.GetDbId() != 0)
         {
             new MarkdownEditor
             {
@@ -111,11 +111,10 @@ public class NotesPaneViewModel : INotifyPropertyChanged
     public ICommand AddLinkCommand {get;}
     private void AddLink()
     {
-        var defDesc = NotesModel.NM.CurrentView.Name;
-
+        var defDesc = NotesModel.NM?.CurrentView?.Name ?? string.Empty;
         var ef = new EntryForm("Enter Description for Notes Entry", defDesc);
         if (!ef.ShowDialog() ?? true) return;
-        NotesModel.NM.AddGlobalNotes(ef.Entry);
+        NotesModel.NM?.AddGlobalNotes(ef.Entry);
         Markdown = string.Empty;
 
     }
@@ -123,17 +122,20 @@ public class NotesPaneViewModel : INotifyPropertyChanged
     public ICommand EditLinkCommand {get; }
     private void EditLink()
     {
-        var gnsf = new GlobalNotesSelectForm(NotesModel.NM.GetDbId());
+        var gnsf = new GlobalNotesSelectForm(NotesModel.NM?.GetDbId() ?? 0);
         if (!gnsf.ShowDialog() ?? true) return;
         var dn = ((NotesSelectViewModel)gnsf.DataContext).NoteEntry;
-        NotesModel.NM.SaveDbId(dn.Id);
+        
+        if (dn == null) return;
+
+        NotesModel.NM?.SaveDbId(dn.Id);
         Markdown = dn.Markdown;
     }
 
     public ICommand RemoveLinkCommand {get; }
     private void RemoveLink()
     {
-        NotesModel.NM.SaveDbId(0);
+        NotesModel.NM?.SaveDbId(0);
         Markdown = string.Empty;
     }
 }
@@ -147,7 +149,7 @@ public class GlobalTabButtonConverter : IValueConverter
         return globalTab && NotesPaneViewModel.GlobalNotesManager ? new GridLength(25) : new GridLength(0);
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => null;
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => null;
 }
 
 [ValueConversion(typeof(bool), typeof(GridLength))]
@@ -159,7 +161,7 @@ public class EditButtonConverter : IValueConverter
         return (globalTab && NotesPaneViewModel.GlobalNotesEditor) || !globalTab ? new GridLength(35) : new GridLength(0);
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => null;
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => null;
 }
 
 

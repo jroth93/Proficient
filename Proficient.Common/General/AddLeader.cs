@@ -54,16 +54,13 @@ internal class AddLeader : IExternalCommand
                      (doc.GetElement(el.GetTypeId()) as ElementType)?.FamilyName;
 
         var loc = new XYZ();
-        var knt = false;
-        var txtEl = false;
-        IndependentTag it = null;
-        TextNote txt = null;
+        IndependentTag? it = null;
+        TextNote? txt = null;
         int dir;
 
         switch (elType)
         {
             case Names.Family.KeynoteTag:
-                knt = true;
                 it = (IndependentTag)el;
                 dir = Math.Sign(endPt.X - it.TagHeadPosition.X);
                 loc = new XYZ(
@@ -82,7 +79,6 @@ internal class AddLeader : IExternalCommand
                 break;
             }
             case "Text":
-                txtEl = true;
                 txt = (TextNote)el;
                 dir = Math.Sign(endPt.X - txt.Coord.X);
                 break;
@@ -101,7 +97,7 @@ internal class AddLeader : IExternalCommand
         using var tx = new Transaction(doc, "Add Leader");
         if (tx.Start() != TransactionStatus.Started) return Result.Failed;
 
-        if (txtEl)
+        if (txt is not null)
         {
             var ldr = txt.AddLeader(dir == 1 ?
                 TextNoteLeaderTypes.TNLT_STRAIGHT_R :
@@ -122,13 +118,13 @@ internal class AddLeader : IExternalCommand
                 var ldr = fias.GetLeaders()[0];
                 ldr.End = endPt;
 
-                if (knt && it.HasLeader)
+                if (it is not null && it.HasLeader)
                 {
-#if (PRE22)
+#if PRE22
                     if (it.HasElbow)
                         ldr.Elbow = it.LeaderElbow;
 #else
-                    Reference itRef = it.GetTaggedReferences()?.First();
+                    Reference? itRef = it.GetTaggedReferences()?.First();
                     if (it.HasLeaderElbow(itRef))
                         ldr.Elbow = it.GetLeaderElbow(itRef);
 #endif

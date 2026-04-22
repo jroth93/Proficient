@@ -10,6 +10,7 @@ internal class ChangeCalloutRef : IExternalCommand
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
 
+#if PRE24
         var selCalloutIds = uiDoc.Selection.GetElementIds()?
             .Select(doc.GetElement)
             .Where(el => el is ViewPlan)
@@ -17,8 +18,16 @@ internal class ChangeCalloutRef : IExternalCommand
             .Where(el => el.OwnerViewId.IntegerValue != -1)
             .Select(el => el.Id)
             .ToList();
-
-        if (selCalloutIds is null || !selCalloutIds.Any())
+#else
+        var selCalloutIds = uiDoc.Selection.GetElementIds()?
+            .Select(doc.GetElement)
+            .Where(el => el is ViewPlan)
+            .Where(el => el.get_Parameter(BuiltInParameter.SECTION_PARENT_VIEW_NAME) is not null)
+            .Where(el => el.OwnerViewId.Value != -1)
+            .Select(el => el.Id)
+            .ToList();
+#endif
+        if (selCalloutIds is null || selCalloutIds.Count == 0)
             return Result.Cancelled;
 
         var allCallouts = new FilteredElementCollector(doc)
@@ -28,9 +37,7 @@ internal class ChangeCalloutRef : IExternalCommand
             .Cast<View>()
             .ToList();
 
-        string[] calloutNames = allCallouts
-            .Select(c => c.Name)
-            .ToArray();
+        string[] calloutNames = [.. allCallouts.Select(c => c.Name)];
 
         var vf =  new ViewForm(calloutNames);
 

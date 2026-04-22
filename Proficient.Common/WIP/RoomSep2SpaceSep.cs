@@ -16,22 +16,28 @@ class RoomSep2SpaceSep : IExternalCommand
         Autodesk.Revit.Creation.Document doccreation = doc.Create;
 
         ElementId viewid = uidoc.ActiveView.Id;
-        View view = doc.GetElement(viewid) as View;
+        var view = doc.GetElement(viewid) as View;
         FilteredElementCollector coll = new FilteredElementCollector(doc).WherePasses(new ElementClassFilter(typeof(CurveElement)));
         var rslines = coll.Where(el => el.Category.Name == "<Room Separation>");
 
-        using (Transaction tx = new Transaction(doc, "Change Division Lines"))
+        using (var tx = new Transaction(doc, "Change Division Lines"))
         {
             if (tx.Start() == TransactionStatus.Started)
             {
                 foreach (Element rsline in rslines)
                 {
-                    SketchPlane skp = (rsline as CurveElement).SketchPlane;
-                    View curview = doc.GetElement((doc.GetElement(rsline.LevelId) as Level).FindAssociatedPlanViewId()) as View;
-                    Curve cclone = (rsline.Location as LocationCurve).Curve.Clone();
-                    CurveArray curvearr = new CurveArray();
-                    curvearr.Append(cclone);
-                    doccreation.NewSpaceBoundaryLines(skp, curvearr, curview);
+                    var skp = (rsline as CurveElement)?.SketchPlane;
+                    var curview = doc.GetElement((doc.GetElement(rsline.LevelId) as Level)?.FindAssociatedPlanViewId()) as View;
+                    var cclone = (rsline.Location as LocationCurve)?.Curve.Clone();
+                    var curvearr = new CurveArray();
+                    if (cclone != null)
+                    {
+                        curvearr.Append(cclone);
+                    }
+                    if (skp != null && curview != null)
+                    {
+                        doccreation.NewSpaceBoundaryLines(skp, curvearr, curview);
+                    }
 
                 }
             }

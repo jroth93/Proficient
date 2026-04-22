@@ -1,7 +1,7 @@
-﻿using System.Globalization;
+﻿using Proficient.Utilities;
+using System.Globalization;
+using System.Text.Json;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using Proficient.Utilities;
 using Form = System.Windows.Forms.Form;
 
 namespace Proficient.Ductulator;
@@ -11,6 +11,8 @@ public partial class UserSettings : Form
     public UserSettings()
     {
         InitializeComponent();
+
+        Main.Settings ??= new();
         TopMost = Main.Settings.AppOnTop;
         radiovert.Checked = Main.Settings.AppVert;
         radiohor.Checked = !Main.Settings.AppVert;
@@ -29,6 +31,8 @@ public partial class UserSettings : Form
 
     private void Savebutton_Click(object sender, EventArgs e)
     {
+        Main.Settings ??= new();
+
         Main.Settings.DefFriction = Convert.ToDouble(Frictiontxt.Text);
         Main.Settings.DefVelocity = Convert.ToInt32(Velocitytxt.Text);
         Main.Settings.DefDepthMax = Convert.ToInt32(maxdepthtxt.Text);
@@ -38,7 +42,13 @@ public partial class UserSettings : Form
         Main.Settings.AppVert = radiovert.Checked;
         MessageBox.Show(@"Please restart program for new settings to take effect.", @"Restart Program");
 
-        string jsonSettings = JsonConvert.SerializeObject(Main.Settings);
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        string jsonSettings = JsonSerializer.Serialize(Main.Settings, options);
+
         File.WriteAllText(Names.File.UserSettings, jsonSettings);
         this.Close();
     }

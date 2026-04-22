@@ -53,7 +53,7 @@ internal class ViewFilterType : IExternalCommand
 
         if (view.ViewTemplateId != ElementId.InvalidElementId)
             view = (View)doc.GetElement(view.ViewTemplateId);
-        string famName = (doc.GetElement(el.GetTypeId()) as ElementType)?.FamilyName;
+        string famName = (doc.GetElement(el.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
         string typeName = el.Name;
         string filtName = "*" + famName + "-" + typeName;
         var pfes = new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement));
@@ -64,8 +64,13 @@ internal class ViewFilterType : IExternalCommand
         }
         else
         {
+#if PRE23
             var famRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME), famName, true);
             var typeRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), typeName, true);
+#else
+            var famRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME), famName);
+            var typeRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), typeName);
+#endif
             var epf = new ElementParameterFilter(new List<FilterRule> {famRule, typeRule});
             using Transaction ftx = new(doc, "Create View Filter");
             if (ftx.Start() != TransactionStatus.Started) return Result.Failed;

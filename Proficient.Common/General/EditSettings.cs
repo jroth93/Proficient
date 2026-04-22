@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿
 using Proficient.Forms;
 using Proficient.Utilities;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Proficient.General;
 
@@ -11,6 +12,7 @@ internal class EditSettings : IExternalCommand
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         var doc = revit.Application.ActiveUIDocument.Document;
+        Main.Settings ??= new Utilities.Settings();
 
         var sf = new SettingsForm
         {
@@ -28,7 +30,7 @@ internal class EditSettings : IExternalCommand
             }
         };
 
-        var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
         sf.Version.Content = $"Proficient Version {assemblyVersion}";
 
         sf.Loaded += (_, _) =>
@@ -51,13 +53,14 @@ internal class EditSettings : IExternalCommand
 
         if (sf.ShowDialog() ?? false)
         {
-            Main.Settings.DefWorkset = sf.DefaultWorkset.SelectedItem.ToString();
+            Main.Settings.DefWorkset = sf.DefaultWorkset.SelectedItem?.ToString() ?? string.Empty;
             Main.Settings.SwitchEnlarged = (bool)sf.SwitchEnlWorkset.IsChecked;
             Main.Settings.PipeDist = Convert.ToInt32(sf.PipeDist.Text);
-            Main.Settings.DefFont = sf.DefaultFont.SelectedItem.ToString();
+            Main.Settings.DefFont = sf.DefaultFont.SelectedItem?.ToString() ?? string.Empty;
             Main.Settings.HideDesignNotes = (bool)sf.HideDesignNotes.IsChecked;
 
-            var jsonSettings = JsonConvert.SerializeObject(Main.Settings);
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonSettings = JsonSerializer.Serialize(Main.Settings, options);
             File.WriteAllText(Names.File.UserSettings, jsonSettings);
         }
 
