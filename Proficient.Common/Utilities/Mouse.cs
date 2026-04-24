@@ -49,7 +49,7 @@ public static class Mouse
     /// <param name="mouseButton">The mouse button to use.</param>
     public static void Down(MouseButton mouseButton)
     {
-        var inputFlags = GetInputFlags(mouseButton, false, out int additionalData);
+        var inputFlags = GetInputFlags(mouseButton, false, out var additionalData);
         SendMouseInput(0, 0, additionalData, inputFlags);
     }
 
@@ -118,7 +118,7 @@ public static class Mouse
     /// </param>
     public static void Scroll(double lines)
     {
-        int amount = (int)(NativeMethods.WheelDelta * lines);
+        var amount = (int)(NativeMethods.WheelDelta * lines);
         SendMouseInput(0, 0, amount, SendMouseInputFlags.Wheel);
     }
 
@@ -128,7 +128,7 @@ public static class Mouse
     /// <param name="mouseButton">The mouse button to use.</param>
     public static void Up(MouseButton mouseButton)
     {
-        var inputFlags = GetInputFlags(mouseButton, true, out int additionalData);
+        var inputFlags = GetInputFlags(mouseButton, true, out var additionalData);
         SendMouseInput(0, 0, additionalData, inputFlags);
     }
 
@@ -275,10 +275,10 @@ public static class Mouse
 
     private static void NormalizeCoordinates(ref int x, ref int y)
     {
-        int vScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SMCxvirtualscreen);
-        int vScreenHeight = NativeMethods.GetSystemMetrics(NativeMethods.SMCyvirtualscreen);
-        int vScreenLeft = NativeMethods.GetSystemMetrics(NativeMethods.SMXvirtualscreen);
-        int vScreenTop = NativeMethods.GetSystemMetrics(NativeMethods.SMYvirtualscreen);
+        var vScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SMCxvirtualscreen);
+        var vScreenHeight = NativeMethods.GetSystemMetrics(NativeMethods.SMCyvirtualscreen);
+        var vScreenLeft = NativeMethods.GetSystemMetrics(NativeMethods.SMXvirtualscreen);
+        var vScreenTop = NativeMethods.GetSystemMetrics(NativeMethods.SMYvirtualscreen);
 
         // Absolute input requires that input is in 'normalized' coords - with the entire
         // desktop being (0,0)...(65536,65536). Need to convert input x,y coords to this
@@ -311,7 +311,7 @@ public static class Mouse
     {
         var mouseButtonState = MouseButtonState.Released;
 
-        int virtualKeyCode = 0;
+        var virtualKeyCode = 0;
         switch (mouseButton)
         {
             case MouseButton.Left:

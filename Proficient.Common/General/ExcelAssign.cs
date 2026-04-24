@@ -178,7 +178,7 @@ internal class ExcelAssign : IExternalCommand
         var cList = _doc.Settings.Categories
             .Cast<Category>()
             .Where(c => c.AllowsBoundParameters)
-            .Where(c => new FilteredElementCollector(_doc).OfCategoryId(c.Id).Any())
+            .Where(c => new FilteredElementCollector(_doc).OfCategoryId(c.Id).ToList().Count > 0)
             .Select(c => c.Name)
             .ToList();
 
@@ -302,7 +302,7 @@ internal class ExcelAssign : IExternalCommand
     {
         var errorLog = string.Empty;
 
-        int totRows = _ws.UsedRange.Rows.Count;
+        var totRows = _ws.UsedRange.Rows.Count;
 
         var fis = new FilteredElementCollector(_doc)
             .OfClass(typeof(FamilyInstance))
@@ -319,9 +319,9 @@ internal class ExcelAssign : IExternalCommand
             .ToList();
         var markRowIndex = new Dictionary<string, int>();
 
-        for (int r = startRow; r <= totRows; r++)
+        for (var r = startRow; r <= totRows; r++)
         {
-            string curXlMark = Convert.ToString(((XL.Range)_ws.Cells[r, keyCol]).Value) ?? string.Empty;
+            var curXlMark = Convert.ToString(((XL.Range)_ws.Cells[r, keyCol]).Value) ?? string.Empty;
             if (rvtMarks.Contains(curXlMark))
                 markRowIndex.Add(curXlMark, r);
         }
@@ -332,8 +332,8 @@ internal class ExcelAssign : IExternalCommand
 
         foreach (var fi in fisMatch)
         {
-            string mark = fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
-            int row = markRowIndex[mark];
+            var mark = fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).AsString();
+            var row = markRowIndex[mark];
             var par = fi.LookupParameter(parName);
             var hasUnits = true;
             try

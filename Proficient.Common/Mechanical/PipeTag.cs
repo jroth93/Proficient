@@ -100,9 +100,9 @@ internal class PipeTag : IExternalCommand
             var ep1 = pc.GetEndPoint(0);
             var ep2 = pc.GetEndPoint(1);
 
-            bool isVert = Math.Abs(Math.Round(ep1.X, 4) - Math.Round(ep2.X, 4)) < 0.01;
-            bool isHor = Math.Abs(Math.Round(ep1.Y, 4) - Math.Round(ep2.Y, 4)) < 0.01;
-            bool isInPlane = Math.Abs(Math.Round(ep1.Z, 4) - Math.Round(ep2.Z, 4)) < 0.01;
+            var isVert = Math.Abs(Math.Round(ep1.X, 4) - Math.Round(ep2.X, 4)) < 0.01;
+            var isHor = Math.Abs(Math.Round(ep1.Y, 4) - Math.Round(ep2.Y, 4)) < 0.01;
+            var isInPlane = Math.Abs(Math.Round(ep1.Z, 4) - Math.Round(ep2.Z, 4)) < 0.01;
 
             if (!isInPlane) continue;
 
@@ -121,7 +121,7 @@ internal class PipeTag : IExternalCommand
         #region tag pipe drops/rises
 
         using Transaction pfTx = new (doc, "Add fitting tags");
-        List<PartType> noTag = new() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
+        List<PartType> noTag = [PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular];
         if (pfTx.Start() != TransactionStatus.Started) 
             return Result.Failed;
         

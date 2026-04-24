@@ -13,41 +13,29 @@ internal class ToggleDesignAnnotations : IExternalCommand
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
 
-        bool visible = GetVisibilityField(view);
+        var visible = GetVisibilityField(view);
 
-        ElementMulticategoryFilter mcf = new(new List<BuiltInCategory>{
+        ElementMulticategoryFilter mcf = new([
             BuiltInCategory.OST_TextNotes,
             BuiltInCategory.OST_Lines, 
             BuiltInCategory.OST_Dimensions, 
             BuiltInCategory.OST_GenericAnnotation,
-            BuiltInCategory.OST_DetailComponents});
-        List<ElementId> designElIds;
+            BuiltInCategory.OST_DetailComponents]);
 
-        if (visible)
-        {
-            designElIds = new FilteredElementCollector(doc, view.Id)
-                .WherePasses(mcf)
-                .Concat(new FilteredElementCollector(doc, view.Id).OfClass(typeof(IndependentTag)))
-                .Where(el =>
+        IEnumerable<Element> designEls = new FilteredElementCollector(doc, view.Id).WherePasses(mcf);
+
+        designEls = visible ?
+            designEls.Concat(new FilteredElementCollector(doc, view.Id).OfClass(typeof(IndependentTag))) :
+            designEls.Concat(new FilteredElementCollector(doc).OfClass(typeof(IndependentTag))).Where(el => el.IsHidden(view));
+
+        var designElIds = designEls
+            .Where(el =>
                     el.Name.ToLower().Contains("design") ||
                     el is CurveElement ce && ce.LineStyle.Name.ToLower().Contains("design"))
-                .Select(el => el.Id)
-                .ToList();
-        }
-        else
-        {
-            designElIds = new FilteredElementCollector(doc)
-                .WherePasses(mcf)
-                .Concat(new FilteredElementCollector(doc).OfClass(typeof(IndependentTag)))
-                .Where(el => el.IsHidden(view))
-                .Where(el =>
-                    el.Name.ToLower().Contains("design") ||
-                    el is CurveElement ce && ce.LineStyle.Name.ToLower().Contains("design"))
-                .Select(el => el.Id)
-                .ToList();
-        }
+            .Select(el => el.Id)
+            .ToList();
 
-        if (!designElIds.Any())
+        if (designElIds.Count <= 0)
             return Result.Succeeded;
 
         using Transaction tx = new (doc, "Toggle Design Note Visibility");
@@ -59,7 +47,7 @@ internal class ToggleDesignAnnotations : IExternalCommand
             view.UnhideElements(designElIds);
         
         SetVisibilityField(view, !visible);
-        string alert = visible ? "hidden" : "visible";
+        var alert = visible ? "hidden" : "visible";
         Util.BalloonTip("Design Notes", $"Design notes are {alert}.","");
 
         tx.Commit();
@@ -77,7 +65,7 @@ internal class ToggleDesignAnnotations : IExternalCommand
             return true;
         
         ent.Get<IDictionary<string, bool>>(field)
-            .TryGetValue(SchemaKeys.DesignNoteVisibility, out bool visible);
+            .TryGetValue(SchemaKeys.DesignNoteVisibility, out var visible);
         
         return visible;
     }
@@ -88,7 +76,7 @@ internal class ToggleDesignAnnotations : IExternalCommand
         var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
         var ent = view.GetEntity(pSchema);
         var field = pSchema.GetField(SchemaKeys.BoolDict);
-        IDictionary<string, bool> boolDict = new Dictionary<string, bool>();
+        var boolDict = new Dictionary<string, bool>();
 
         if (ent.Schema is null)
             ent = new Entity(pSchema);

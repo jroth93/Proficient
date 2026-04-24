@@ -12,7 +12,7 @@ internal class PipeSpacer : IExternalCommand
         var doc = revit.Application.ActiveUIDocument.Document;
         var view = uiDoc.ActiveView;
 
-        bool prevErr = false;
+        var prevErr = false;
         var prompt = new Follower(revit);
 
         try

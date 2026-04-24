@@ -12,7 +12,7 @@ internal class ToggleUpDn : IExternalCommand
         var doc = uiDoc.Document;
         var selIds = uiDoc.Selection.GetElementIds();
 
-        if (selIds is not null && selIds.Any())
+        if (selIds is not null && selIds.Count > 0)
         {
             foreach (var elId in selIds)
             {

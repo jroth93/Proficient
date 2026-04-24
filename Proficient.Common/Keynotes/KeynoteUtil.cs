@@ -27,13 +27,13 @@ internal class KeynoteUtil : IExternalCommand
             var knNum = it.get_Parameter(BuiltInParameter.KEYNOTE_NUMBER).AsString();
 
             if (!knViewDict.ContainsKey(knNum))
-                knViewDict.Add(knNum, new List<ElementId>());
+                knViewDict.Add(knNum, []);
 
             var ownerId = it.OwnerViewId;
             if (doc.GetElement(ownerId) is not View v)
                 continue;
             var dvIds = v.GetDependentViewIds();
-            if (dvIds.Any())
+            if (dvIds.Count > 0)
             {
                 foreach (var viewId in dvIds)
                 {
@@ -52,30 +52,29 @@ internal class KeynoteUtil : IExternalCommand
             if (ke.KeynoteText == string.Empty) 
                 continue;
 
-            if (knViewDict.ContainsKey(ke.Key))
+            if (knViewDict.TryGetValue(ke.Key, out List<ElementId>? value))
             {
-                var sheets = knViewDict[ke.Key]
-                    .Where(id => viewSheetDict.ContainsKey(id))
+                var sheets = value.Where(viewSheetDict.ContainsKey)
                     .Select(id => viewSheetDict[id])
                     .ToList();
 
-                if (sheets.Any())
+                if (sheets.Count > 0)
                 {
                     var sheetsOutput = sheets.Count > 1 ? 
                         string.Join(", ", sheets.Distinct().OrderBy(x => x).ToArray()) : 
                         sheets[0];
-                    object[] row = { ke.Key, ke.KeynoteText, sheetsOutput };
+                    object[] row = [ ke.Key, ke.KeynoteText, sheetsOutput ];
                     kuf.dgv.Rows.Add(row);
                 }
                 else
                 {
-                    object[] row = { ke.Key, ke.KeynoteText, "None" };
+                    object[] row = [ ke.Key, ke.KeynoteText, "None" ];
                     kuf.dgv.Rows.Add(row);
                 }
             }
             else
             {
-                object[] row = { ke.Key, ke.KeynoteText, "None" };
+                object[] row = [ ke.Key, ke.KeynoteText, "None" ];
                 kuf.dgv.Rows.Add(row);
             }
         }

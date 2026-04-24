@@ -20,7 +20,7 @@ namespace Proficient.Archive
             var doc = uiDoc.Document;
 
             var elIds = uiDoc.Selection.GetElementIds();
-            if (elIds.Any())
+            if (elIds.Count > 0)
             {
                 foreach (var elId in elIds)
                 {

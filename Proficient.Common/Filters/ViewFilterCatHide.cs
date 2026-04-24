@@ -12,16 +12,38 @@ internal class ViewFilterCatHide : IExternalCommand
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
-        
+        var linkEl = true;
+        var isViewTemplate = false;
+
         var selIds = uiDoc.Selection.GetElementIds();
+#if !PRE23
+        var selRefs = uiDoc.Selection.GetReferences();
+#endif
         Element el;
-        if (selIds.Any())
+        RevitLinkInstance? selectedLink = null;
+#if !PRE24
+        RevitLinkGraphicsSettings? settings = null;
+#endif
+
+        if (selIds.Count > 0)
         {
+            linkEl = false;
             el = doc.GetElement(selIds.First());
         }
+#if !PRE23
+        else if (selRefs.Count > 0)
+        {
+            var selRef = selRefs.First();
+            el = doc.GetElement(selRef.ElementId);
+            selectedLink = doc.GetElement(selRef.ElementId) as RevitLinkInstance;
+            if (selectedLink is null)
+                return Result.Cancelled;
+            el = selectedLink.GetLinkDocument().GetElement(selRef.LinkedElementId);
+            
+        }
+#endif
         else
         {
-            var linkEl = true;
             BlankViewModel bvm = new();
             var mousePos = Mouse.GetCursorPosition();
             bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
@@ -36,9 +58,10 @@ internal class ViewFilterCatHide : IExternalCommand
 
             if (linkEl)
             {
-                if (doc.GetElement(selRef) is not RevitLinkInstance linkInst)
+                selectedLink = doc.GetElement(selRef.ElementId) as RevitLinkInstance;
+                if (selectedLink is null)
                     return Result.Cancelled;
-                el = linkInst.GetLinkDocument().GetElement(selRef.LinkedElementId);
+                el = selectedLink.GetLinkDocument().GetElement(selRef.LinkedElementId);
             }
             else
             {
@@ -46,14 +69,30 @@ internal class ViewFilterCatHide : IExternalCommand
             }
         }
 
+#if !PRE24
         if (view.ViewTemplateId != ElementId.InvalidElementId)
+        {
             view = (View)doc.GetElement(view.ViewTemplateId);
+            isViewTemplate = true;
+        }
+        if (linkEl)
+            settings = view.GetLinkOverrides(selectedLink?.GetTypeId());
 
         using Transaction tx = new(doc, "Hide Category");
         if (tx.Start() != TransactionStatus.Started) return Result.Failed;
-        view.SetCategoryHidden(el.Category.Id, true);
-        tx.Commit();
 
+        if (selectedLink is not null && settings is not null && settings.LinkVisibilityType == LinkVisibility.Custom)
+        {
+            Util.BalloonTip("Operation Unavailable", "Unable to hide category of link with custom visibility settings.", string.Empty);
+        }
+        else
+        {
+            view.SetCategoryHidden(el.Category.Id, true);
+            var viewType = isViewTemplate ? "View Template" : "View";
+            Util.BalloonTip("Category Hidden", $"{el.Category.Name} category hidden in {viewType} {view.Name}", string.Empty);
+        }
+        tx.Commit();
+#endif
 
         return Result.Succeeded;
     }

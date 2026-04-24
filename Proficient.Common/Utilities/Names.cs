@@ -44,7 +44,7 @@ internal class Names
     {
         public static string UserSettings = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Autodesk\ApplicationPlugins\Proficient.bundle\Settings.json";
         public const string SharedParameters = @"Z:\Revit MEI Content\Shared Parameters\MEI Shared Parameters.txt";
-        public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R24\Proficient.dll";
+        public const string ServerDll = @"Z:\Revit\Proficient\Proficient.bundle\Contents\R25\Proficient.NET.dll";
         public const string CommonSettings = @"Z:\Revit\Proficient\Proficient Config Files\appsettings.json";
         public const string KnTempFile = @"Z:\Revit\Keynotes Template.xlsx";
         public const string ProficientInstaller = @"Z:\Revit\Proficient\ProficientInstaller.exe";

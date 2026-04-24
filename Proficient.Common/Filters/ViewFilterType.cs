@@ -8,22 +8,44 @@ namespace Proficient.Filters;
 [Transaction(TransactionMode.Manual)]
 internal class ViewFilterType : IExternalCommand
 {
+    private const string MechFilterName = "Proficient Mechanical Hidden Types";
+    private const string ElecFilterName = "Proficient Electrical Hidden Types";
     public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
     {
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
+        var isViewTemplate = false;
+        var linkEl = false;
 
+        var filterName = Main.Settings?.DefWorkset.StartsWith("M") ?? true ? MechFilterName : ElecFilterName;
 
         var selIds = uiDoc.Selection.GetElementIds();
+#if !PRE23
+        var selRefs = uiDoc.Selection.GetReferences();
+#endif
+        RevitLinkInstance? selectedLink = null;
         Element el;
-        if (selIds.Any())
+
+        if (selIds.Count > 0)
         {
             el = doc.GetElement(selIds.First());
         }
+#if !PRE23
+        else if (selRefs.Count > 0)
+        {
+            var selRef = selRefs.First();
+            el = doc.GetElement(selRef.ElementId);
+            selectedLink = doc.GetElement(selRef.ElementId) as RevitLinkInstance;
+            if (selectedLink is null)
+                return Result.Cancelled;
+            el = selectedLink.GetLinkDocument().GetElement(selRef.LinkedElementId);
+            linkEl = true;
+
+        }
+#endif
         else
         {
-            var linkEl = true;
             BlankViewModel bvm = new();
             var mousePos = Mouse.GetCursorPosition();
             bvm.SetLocation(Convert.ToInt32(mousePos.X), Convert.ToInt32(mousePos.Y));
@@ -38,9 +60,10 @@ internal class ViewFilterType : IExternalCommand
 
             if (linkEl)
             {
-                if (doc.GetElement(selRef) is not RevitLinkInstance linkInst)
+                selectedLink = doc.GetElement(selRef) as RevitLinkInstance;
+                if (selectedLink is null)
                     return Result.Cancelled;
-                el = linkInst.GetLinkDocument().GetElement(selRef.LinkedElementId);
+                el = selectedLink.GetLinkDocument().GetElement(selRef.LinkedElementId);
             }
             else
             {
@@ -52,38 +75,136 @@ internal class ViewFilterType : IExternalCommand
             return Result.Failed;
 
         if (view.ViewTemplateId != ElementId.InvalidElementId)
+        {
             view = (View)doc.GetElement(view.ViewTemplateId);
-        string famName = (doc.GetElement(el.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
-        string typeName = el.Name;
-        string filtName = "*" + famName + "-" + typeName;
-        var pfes = new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement));
-        ParameterFilterElement filter;
-        if (pfes.Any(pfe => pfe.Name == filtName))
-        {
-            filter = (ParameterFilterElement)pfes.First(pfe => pfe.Name == filtName);
+            isViewTemplate = true;
         }
-        else
-        {
-#if PRE23
-            var famRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME), famName, true);
-            var typeRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), typeName, true);
-#else
-            var famRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME), famName);
-            var typeRule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), typeName);
-#endif
-            var epf = new ElementParameterFilter(new List<FilterRule> {famRule, typeRule});
-            using Transaction ftx = new(doc, "Create View Filter");
-            if (ftx.Start() != TransactionStatus.Started) return Result.Failed;
-            filter = ParameterFilterElement.Create(doc, filtName, new List<ElementId> { el.Category.Id }, epf);
-            ftx.Commit();
-        }
+        var typeName = linkEl && selectedLink is not null ?
+            (selectedLink.GetLinkDocument().GetElement(el.GetTypeId()) as ElementType)?.Name :
+            (doc.GetElement(el.GetTypeId()) as ElementType)?.Name;
+        if (typeName == null)
+            return Result.Failed;
+
+        var catId = el.Category.Id;
+
+        var pfes = new FilteredElementCollector(doc)
+            .OfClass(typeof(ParameterFilterElement))
+            .Cast<ParameterFilterElement>()
+            .ToList();
+
+        var existing = pfes.FirstOrDefault(pfe => pfe.Name == filterName);
 
         using Transaction tx = new(doc, "Add View Filter");
         if (tx.Start() != TransactionStatus.Started) return Result.Failed;
-        view.AddFilter(filter.Id);
-        view.SetFilterVisibility(filter.Id, false);
-        tx.Commit();
 
+        ParameterFilterElement filter;
+
+        if (existing == null)
+        {
+            // Create brand new filter with this one rule and category
+            filter = ParameterFilterElement.Create(
+                doc,
+                filterName,
+                [catId],
+                BuildOrFilter([typeName]));
+        }
+        else
+        {
+            // Collect existing family names from the current rules
+            var existingTypeNames = GetExistingTypeNames(existing);
+
+            if (existingTypeNames.Contains(typeName) && existing.GetCategories().Contains(catId))
+            {
+                // Nothing new to add - just ensure filter is applied to view below
+                filter = existing;
+            }
+            else
+            {
+                if (!existingTypeNames.Contains(typeName))
+                    existingTypeNames.Add(typeName);
+
+                // Add category if not already present
+                var cats = existing.GetCategories().ToList();
+                if (!cats.Contains(catId))
+                    cats.Add(catId);
+
+                existing.SetCategories(cats);
+                existing.SetElementFilter(BuildOrFilter(existingTypeNames));
+                filter = existing;
+            }
+        }
+
+        var filterAdded = false;
+
+        if (!view.GetFilters().Contains(filter.Id))
+        {
+            filterAdded = true;
+            view.AddFilter(filter.Id);
+        }
+
+        view.SetFilterVisibility(filter.Id, false);
+
+        var viewType = isViewTemplate ? "View Template" : "View";
+        var filterAddedText = filterAdded ? $"\n{filterName} filter added to {viewType} {view.Name}" : string.Empty;
+        Util.BalloonTip("Type Hidden", $"\"{typeName}\" added to {filterName} filter.{filterAddedText}", string.Empty);
+
+        tx.Commit();
         return Result.Succeeded;
+    }
+
+    private static ElementFilter BuildOrFilter(List<string> typeNames)
+    {
+        var rules = typeNames.Select(name =>
+        {
+#if PRE23
+            var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), name, true);
+#else
+            var rule = PFRF.CreateEqualsRule(new ElementId(BuiltInParameter.ALL_MODEL_TYPE_NAME), name);
+#endif
+            return (ElementFilter)new ElementParameterFilter(rule);
+        }).ToList();
+
+        return rules.Count == 1
+            ? rules[0]
+            : new LogicalOrFilter(rules);
+    }
+
+    private static List<string> GetExistingTypeNames(ParameterFilterElement pfe)
+    {
+        List<string> names = [];
+        try
+        {
+            // Walk the filter tree to collect type name rule values
+            CollectTypeNames(pfe.GetElementFilter(), names);
+        }
+        catch { /* filter structure unreadable, start fresh */ }
+
+        return names;
+    }
+
+    private static void CollectTypeNames(ElementFilter? filter, List<string> names)
+    {
+        if (filter is null) return;
+
+        if (filter is LogicalOrFilter orFilter)
+        {
+            foreach (var f in orFilter.GetFilters())
+                CollectTypeNames(f, names);
+        }
+        else if (filter is ElementParameterFilter epf)
+        {
+            foreach (var rule in epf.GetRules())
+            {
+#if PRE23
+                if (rule is FilterStringRule fsr &&
+                    fsr.GetRuleParameter() == new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME))
+                    names.Add(fsr.RuleString);
+#else
+                if (rule is FilterStringRule fsr &&
+                    fsr.GetRuleParameter() == new ElementId(BuiltInParameter.ALL_MODEL_FAMILY_NAME))
+                    names.Add(fsr.RuleString);
+#endif
+            }
+        }
     }
 }

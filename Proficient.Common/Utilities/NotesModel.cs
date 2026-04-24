@@ -48,17 +48,13 @@ public class NotesModel
 
     public string GetMarkdown(NotesType nt)
     {
-        switch (nt)
+        return nt switch
         {
-            case NotesType.View:
-                return GetViewNotes();
-            case NotesType.Project:
-                return GetProjectNotes(); 
-            case NotesType.Global:
-                return GetGlobalNotes();
-            default:
-                return string.Empty;
-        }
+            NotesType.View => GetViewNotes(),
+            NotesType.Project => GetProjectNotes(),
+            NotesType.Global => GetGlobalNotes(),
+            _ => string.Empty,
+        };
     }
 
     public void ViewChange(View view)
@@ -115,7 +111,7 @@ public class NotesModel
             return string.Empty;
         }
 
-        Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
         Entity ent = projectStorage.GetEntity(pSchema);
 
         if (ent.Schema != null)
@@ -138,13 +134,13 @@ public class NotesModel
     }
     public void AddGlobalNotes(string desc)
     {
-        int newId = MeiDbConn.CreateEqiNote(desc);
+        var newId = MeiDbConn.CreateEqiNote(desc);
         SaveDbId(newId);
     }
 
     private string GetGlobalNotes()
     {
-        int id = GetDbId();
+        var id = GetDbId();
 
         if (id == 0)
         {
@@ -173,14 +169,14 @@ public class NotesModel
 
     public int GetDbId()
     {
-        Schema pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
+        var pSchema = Schema.Lookup(Names.Guids.ProficientSchema);
         if(CurrentView is null) return 0;
         Entity ent = CurrentView.GetEntity(pSchema);
 
         if (ent.Schema != null)
         {
             IDictionary<string, int> intDict = ent.Get<IDictionary<string, int>>(SchemaKeys.IntDict);
-            if (intDict.TryGetValue(SchemaKeys.DbNotesId, out int id))
+            if (intDict.TryGetValue(SchemaKeys.DbNotesId, out var id))
             {
                 return id;
             }

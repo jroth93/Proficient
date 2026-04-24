@@ -41,7 +41,7 @@ internal class PanelUtil : IExternalCommand
                         ? doc.GetElement(pi.OwnerViewId).get_Parameter(BuiltInParameter.SHEET_NUMBER).AsString()
                         : current + ", " + doc.GetElement(pi.OwnerViewId).get_Parameter(BuiltInParameter.SHEET_NUMBER).AsString());
             }
-            object[] row = { panel.Name, hasSched, placedSheet };
+            object[] row = [panel.Name, hasSched, placedSheet];
             epdf.dgv.Rows.Add(row);
         }
         epdf.Text = @"Panel Checker";

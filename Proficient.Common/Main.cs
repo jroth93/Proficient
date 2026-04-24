@@ -11,6 +11,7 @@ using Proficient.Utilities;
 using System.Data.Entity;
 using System.DirectoryServices.AccountManagement;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
@@ -36,6 +37,12 @@ public class Main : IExternalApplication
     public static string? CurrentUser { get; set; }
 
     public static readonly Guid AppId = new("339af853-36e4-461f-9171-c5dceda4e721");
+
+    public static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
 
     private static ElecLoadDmu? _elecLoadDmu;
     //private static BreakerDmu? _breakerDmu;
@@ -66,8 +73,8 @@ public class Main : IExternalApplication
                 const string path = @"Z:\Revit\Proficient\Proficient Config Files\errorLog.txt";
                 using var sw = File.AppendText(path);
                 var e = (Exception)eventArgs.ExceptionObject;
-                StringBuilder sb = new();
-                sb.Append(CurrentUser).Append(" ").AppendLine(DateTime.Now.ToString(CultureInfo.CurrentCulture)).AppendLine(e.Message).AppendLine(e.StackTrace);
+                var sb = new StringBuilder();
+                sb.Append(CurrentUser).Append(' ').AppendLine(DateTime.Now.ToString(CultureInfo.CurrentCulture)).AppendLine(e.Message).AppendLine(e.StackTrace);
                 sw.WriteLine(sb.ToString());
             };
             return Result.Succeeded;
@@ -195,7 +202,7 @@ public class Main : IExternalApplication
             TaskDialog.Show("Error Enabling Updaters", ex.ToString(), TaskDialogCommonButtons.Ok);
         }
     }
-    public void App_ViewActivated(object? sender, EventArgs args)
+    private void App_ViewActivated(object? sender, EventArgs args)
     {
         if (sender is not UIApplication uiApp) return;
         var doc = uiApp.ActiveUIDocument.Document;
@@ -214,16 +221,22 @@ public class Main : IExternalApplication
             if (!doc.IsWorkshared || tx.Start() != TransactionStatus.Started) return;
 
             var wst = doc.GetWorksetTable();
-            string viewSub = view.GetParameters(Names.Parameter.ViewSubdiscipline).Any() ?
-                    view.GetParameters(Names.Parameter.ViewSubdiscipline).First().AsString() :
+            var viewSubPar = view.GetParameters(Names.Parameter.ViewSubdiscipline);
+            var viewSub = viewSubPar.Count > 0 && viewSubPar.First().HasValue ?
+                    viewSubPar.First().AsString() :
                     string.Empty;
 
-            var isEnlarged = view.Name.ToLower().Contains("enlarged") || viewSub.ToLower().Contains("enlarged");
-            var isSite = (view.Name.ToLower().Contains("site") || viewSub.ToLower().Contains("site")) &&
-                          Settings?.DefWorkset[0] == 'E';
+#pragma warning disable CA2249 //disable until all on .NET
+            var isEnlarged = view.Name.IndexOf("enlarged", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 viewSub.IndexOf("enlarged", StringComparison.OrdinalIgnoreCase) >= 0;
+            var isSite = (view.Name.IndexOf("site", StringComparison.OrdinalIgnoreCase) >= 0 ||
+              viewSub.IndexOf("site", StringComparison.OrdinalIgnoreCase) >= 0) &&
+#pragma warning restore CA2249
+
+              Settings?.DefWorkset[0] == 'E';
             if (isEnlarged && Settings is not null && Settings.SwitchEnlarged)
             {
-                string ewName = Settings.DefWorkset[0] == 'M' ?
+                var ewName = Settings.DefWorkset[0] == 'M' ?
                     Names.Workset.MechEnlarged :
                     Names.Workset.ElecEnlarged;
                 var enWs = new FilteredWorksetCollector(doc).FirstOrDefault(e => e.Name.Equals(ewName));
@@ -261,7 +274,7 @@ public class Main : IExternalApplication
 
 
     }
-    public void App_DialogBoxShowing(object? sender, DialogBoxShowingEventArgs args)
+    private void App_DialogBoxShowing(object? sender, DialogBoxShowingEventArgs args)
     {
         if (args is not TaskDialogShowingEventArgs e) return;
             
@@ -273,14 +286,14 @@ public class Main : IExternalApplication
             e.OverrideResult(1001);
 
     }
-    public void App_DocumentPrinting(object? sender, DocumentPrintingEventArgs args)
+    private void App_DocumentPrinting(object? sender, DocumentPrintingEventArgs args)
     {
         if (Settings is not null && !Settings.HideDesignNotes) return;
             
         var printViewIds = args.GetViewElementIds().ToList();
         DesignNotes.Hide(args.Document, printViewIds);
     }
-    public void App_DocumentPrinted(object? sender, DocumentPrintedEventArgs args)
+    private void App_DocumentPrinted(object? sender, DocumentPrintedEventArgs args)
     {
         if (Settings is not null && Settings.HideDesignNotes)
             DesignNotes.Unhide(args.Document);
@@ -294,7 +307,7 @@ public class Main : IExternalApplication
     {
         if (!File.Exists(Names.File.ServerDll)) return;
             
-        string? currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
+        var currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll).FileVersion;
         if (ProficientVersion != currentVersion)
             Process.Start(Names.File.ProficientInstaller);
     }
@@ -339,7 +352,7 @@ public class Main : IExternalApplication
         */
     }
 
-    public void AddEventListeners()
+    private void AddEventListeners()
     {
         if (App is null) return;
 
@@ -352,28 +365,26 @@ public class Main : IExternalApplication
         App.ApplicationClosing += App_ApplicationClosing;
         App.ControlledApplication.ApplicationInitialized += App_ApplicationInitialized;
     }
-    public void InitializeSettings()
+    private static void InitializeSettings()
     {
-        string configPath = Names.File.UserSettings;
+        var configPath = Names.File.UserSettings;
         Settings = new Settings();
 
         if (File.Exists(configPath) && new FileInfo(configPath).Length > 0)
         {
-            string configTxt = File.ReadAllText(configPath);
+            var configTxt = File.ReadAllText(configPath);
 
             // System.Text.Json is case-sensitive by default. 
             // Use JsonSerializerOptions if your JSON keys don't match your C# property names exactly.
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            Settings = JsonSerializer.Deserialize<Settings>(configTxt, options);
+            Settings = JsonSerializer.Deserialize<Settings>(configTxt, JsonOptions);
         }
         else
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string jsonSettings = JsonSerializer.Serialize(Settings, options);
+            var jsonSettings = JsonSerializer.Serialize(Settings, JsonOptions);
             File.WriteAllText(configPath, jsonSettings);
         }
     }
-    public void AddCommandBindings()
+    private void AddCommandBindings()
     {
         if (App is null) return;
         App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.TagByCategory)).BeforeExecuted += BeforeTag;
@@ -384,7 +395,7 @@ public class Main : IExternalApplication
         App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.SynchronizeAndModifySettings)).BeforeExecuted += BeforeSync;
         App.CreateAddInCommandBinding(RevitCommandId.LookupPostableCommandId(PostableCommand.SynchronizeNow)).BeforeExecuted += BeforeSync;
     }
-    public static void AddExternalService()
+    private static void AddExternalService()
     {
         ExternalServiceRegistry
             .GetService(ExternalServices.BuiltInExternalServices.ExternalResourceService)
@@ -393,12 +404,12 @@ public class Main : IExternalApplication
             GetService(ExternalServices.BuiltInExternalServices.ExternalResourceUIService)
             .AddServer(new Keynotes.ExternalResourceUIServer());
     }
-    public static void CheckToolbarVersion()
+    private static void CheckToolbarVersion()
     {
         if (!File.Exists(Names.File.ServerDll)) return;
             
         ProficientVersion = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString();
-        string? currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll)?.FileVersion;
+        var currentVersion = FileVersionInfo.GetVersionInfo(Names.File.ServerDll)?.FileVersion;
         if (ProficientVersion != currentVersion)
         {
             Util.BalloonTip("Proficient", "New version of Proficient available.\nVersion will be updated on Revit close", "Proficient Out Of Date");
@@ -539,11 +550,8 @@ public class Main : IExternalApplication
         var assemblyPath = Path.Combine(assemblyDir ?? string.Empty, assemblyName + ".dll");
 
         // If the DLL exists in your folder, load it explicitly
-        if (File.Exists(assemblyPath))
-        {
-            return Assembly.LoadFrom(assemblyPath);
-        }
-
-        return null;
+        return File.Exists(assemblyPath) ? 
+            Assembly.LoadFrom(assemblyPath) : 
+            null;
     }
 }

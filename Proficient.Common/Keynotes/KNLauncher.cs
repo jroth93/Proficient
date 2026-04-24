@@ -9,7 +9,7 @@ internal class KnLauncher : IExternalCommand
     {
         var doc = revit.Application.ActiveUIDocument.Document;
 
-        string pn = doc.Title[5] == '.' ? 
+        var pn = doc.Title[5] == '.' ? 
             doc.Title.Substring(0, 7) : 
             doc.Title.Substring(0, 5);
 

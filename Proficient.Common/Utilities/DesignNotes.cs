@@ -2,16 +2,16 @@
 
 internal class DesignNotes
 {
-    private static readonly Dictionary<View, ICollection<ElementId>> _designNoteViews = new();
+    private static readonly Dictionary<View, ICollection<ElementId>> _designNoteViews = [];
 
     public static void Hide(Document doc, List<ElementId> printViews)
     {
-        ElementMulticategoryFilter mcf = new(new List<BuiltInCategory>{
+        ElementMulticategoryFilter mcf = new([
             BuiltInCategory.OST_TextNotes,
             BuiltInCategory.OST_Lines,
             BuiltInCategory.OST_Dimensions,
             BuiltInCategory.OST_GenericAnnotation,
-            BuiltInCategory.OST_DetailComponents});
+            BuiltInCategory.OST_DetailComponents]);
         var allPrintViews = new List<ElementId>();
         allPrintViews.AddRange(printViews);
 
@@ -37,7 +37,7 @@ internal class DesignNotes
                 .Select(el => el.Id)
                 .ToList();
 
-            if (!designEl.Any()) continue;
+            if (designEl.Count <= 0) continue;
 
             _designNoteViews.Add(view, designEl);
             view.HideElements(designEl);

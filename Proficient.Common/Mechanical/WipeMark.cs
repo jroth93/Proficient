@@ -12,7 +12,7 @@ internal class WipeMark : IExternalCommand
 
         var selIds = uiDoc.Selection.GetElementIds();
 
-        if (selIds is not null && selIds.Any())
+        if (selIds is not null && selIds.Count > 0)
         {
             using Transaction tx = new (doc, "Wipe Mark");
             if (tx.Start() != TransactionStatus.Started)

@@ -11,14 +11,14 @@ public partial class ExcelAssignFrm : Form
     private int _parCnt = 1;
     private string[] _cols = [];
     private bool _byType;
-    private readonly List<ComboBox> _colDrops = new();
-    private readonly List<ComboBox> _parDrops = new();
+    private readonly List<ComboBox> _colDrops = [];
+    private readonly List<ComboBox> _parDrops = [];
 
     public ExcelAssignFrm()
     {
         InitializeComponent();
         getColsBtn.Visible = false;
-        catDrop.Items.AddRange(GetCategories().ToArray<object>());
+        catDrop.Items.AddRange([.. GetCategories()]);
         catDrop.SelectedIndex = 0;
         _colDrops.Add(sc1);
         _parDrops.Add(dp1);
@@ -29,10 +29,10 @@ public partial class ExcelAssignFrm : Form
         var maxWidth = 0;
         var label1 = new Label();
 
-        foreach (object obj in myCombo.Items)
+        foreach (var obj in myCombo.Items)
         {
             label1.Text = Convert.ToString(obj);
-            int temp = label1.PreferredWidth;
+            var temp = label1.PreferredWidth;
             if (temp > maxWidth)
             {
                 maxWidth = temp;
@@ -53,7 +53,7 @@ public partial class ExcelAssignFrm : Form
         if (fd.FileName == string.Empty) 
             return;
         filelocationtxt.Text = fd.FileName;
-        object[] xlSheets = OpenExcel(fd.FileName).ToArray<object>();
+        var xlSheets = OpenExcel(fd.FileName).ToArray<object>();
         wkshtDrop.Items.AddRange(xlSheets);
         wkshtDrop.SelectedIndex = 0;
     }
@@ -66,9 +66,9 @@ public partial class ExcelAssignFrm : Form
             var parName = Convert.ToString(_parDrops[i - 1].SelectedItem);
             parName = parName?.Substring(0, parName.Length - 7) ?? string.Empty;
             var familyName = Convert.ToString(familyDrop.SelectedItem) ?? string.Empty;
-            int keyCol = KeyColDrop.SelectedIndex + 1;
-            int parCol = KeyColDrop.Items.IndexOf(_colDrops[i - 1].SelectedItem) + 1;
-            int startRow = Convert.ToInt32(hdrRowCtrl.Value) + 1;
+            var keyCol = KeyColDrop.SelectedIndex + 1;
+            var parCol = KeyColDrop.Items.IndexOf(_colDrops[i - 1].SelectedItem) + 1;
+            var startRow = Convert.ToInt32(hdrRowCtrl.Value) + 1;
 
             errorLog += _byType ? 
                 AssignTypeParameters(familyName, parName, keyCol, startRow, parCol) :
@@ -94,12 +94,12 @@ public partial class ExcelAssignFrm : Form
 
     private void WsDrop_SelectedIndexChanged(object sender, EventArgs e)
     {
-        int wsIndex = wkshtDrop.SelectedIndex + 1;
+        var wsIndex = wkshtDrop.SelectedIndex + 1;
         var hdrRow = Convert.ToInt32(hdrRowCtrl.Value);
         _cols = GetExcelColumns(wsIndex, hdrRow);
 
         KeyColDrop.Items.Clear();
-        KeyColDrop.Items.AddRange(_cols.ToArray<object>());
+        KeyColDrop.Items.AddRange([.. _cols]);
         KeyColDrop.SelectedIndex = 0;
 
     }
@@ -108,13 +108,13 @@ public partial class ExcelAssignFrm : Form
     {
         var catName = Convert.ToString(catDrop.SelectedItem) ?? string.Empty;
         familyDrop.Items.Clear();
-        familyDrop.Items.AddRange(GetFamiliesOfCategory(catName).ToArray<object>());
+        familyDrop.Items.AddRange([.. GetFamiliesOfCategory(catName)]);
     }
 
     private void KeyColumnDrop_SelectedIndexChanged(object sender, EventArgs e)
     {
         sc1.Items.Clear();
-        sc1.Items.AddRange(_cols.ToArray<object>());
+        sc1.Items.AddRange([.. _cols]);
         sc1.Items.Remove(KeyColDrop.SelectedItem);
         if (_cols.Length > 1)
             sc1.SelectedIndex = 0;
@@ -126,7 +126,7 @@ public partial class ExcelAssignFrm : Form
 
         var familyName = Convert.ToString(familyDrop.SelectedItem) ?? string.Empty;
 
-        dp1.Items.AddRange(GetFamilyParameters(familyName).ToArray<object>());
+        dp1.Items.AddRange([.. GetFamilyParameters(familyName)]);
         dp1.SelectedIndex = 0;
         dp1.DropDownWidth = DropDownWidth(dp1);
     }
@@ -134,7 +134,7 @@ public partial class ExcelAssignFrm : Form
     private void DP1_SelectedIndexChanged(object sender, EventArgs e)
     {
         var curItem = Convert.ToString(dp1.SelectedItem);
-        string typeInst = curItem?.Substring(curItem.Length - 5, 4) ?? string.Empty;
+        var typeInst = curItem?.Substring(curItem.Length - 5, 4) ?? string.Empty;
 
         _byType = typeInst != "inst";
         typeInstLbl.Text = _byType ? @"Assigning by Type" : @"Assigning by Instance";
@@ -179,12 +179,12 @@ public partial class ExcelAssignFrm : Form
         _parDrops[_parCnt].Top += 35;
         _parDrops[_parCnt].DropDownWidth = _parDrops[_parCnt - 1].DropDownWidth;
 
-        _colDrops[_parCnt].Items.AddRange(_cols.ToArray<object>());
+        _colDrops[_parCnt].Items.AddRange([.. _cols]);
         _colDrops[_parCnt].Items.Remove(KeyColDrop.SelectedItem);
 
         foreach (string par in dp1.Items)
         {
-            string typeInst = par.Substring(par.Length - 5, 4);
+            var typeInst = par.Substring(par.Length - 5, 4);
             if (_byType && typeInst == "type")
                 _parDrops[_parCnt].Items.Add(par);
             else if (!_byType && typeInst == "inst")

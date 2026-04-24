@@ -53,14 +53,14 @@ public static class Backend
         for (var i = minDepth; i < maxDepth + 2; i += 2)
         {
             int actVel;
-            int width = Convert.ToInt32(Ceiling(144.0 * airflow / (vel * i)));
+            var width = Convert.ToInt32(Ceiling(144.0 * airflow / (vel * i)));
             width = width % 2 == 1 ? width + 1 : width;
-            double fRect = Ceiling(Functions.FrictionSolver(airflow, 0, width, i, false) * Constants.Fprecision) / Constants.Fprecision;
+            var fRect = Ceiling(Functions.FrictionSolver(airflow, 0, width, i, false) * Constants.Fprecision) / Constants.Fprecision;
             if (i == minDepth)
             {
                 var dia = Convert.ToInt32(Ceiling(Pow(576.0 * airflow / (PI * vel), 0.5)));
                 if (dia % 2 == 1) dia += 1;
-                double fRnd = Ceiling(Functions.FrictionSolver(airflow, dia, 0, 0, true) * Constants.Fprecision) / Constants.Fprecision;
+                var fRnd = Ceiling(Functions.FrictionSolver(airflow, dia, 0, 0, true) * Constants.Fprecision) / Constants.Fprecision;
                 actVel = Convert.ToInt32(Functions.VelocitySolver(airflow, dia, 0, 0, true));
                 output[0] += $"{dia} Ø\n";
                 output[1] += $"{fRnd}\n";
@@ -78,13 +78,13 @@ public static class Backend
     public static string EquivalentDuct(int dia, int width, int depth, int minDepth, int maxDepth, bool isRnd)
     {
 
-        string output = "Duct Size\n[in]\n\n";
-        int airflow = 1000;
-        double friction = Functions.FrictionSolver(airflow, dia, width, depth, isRnd);
+        var output = "Duct Size\n[in]\n\n";
+        var airflow = 1000;
+        var friction = Functions.FrictionSolver(airflow, dia, width, depth, isRnd);
 
         if (!isRnd)
         {
-            int dOut = Convert.ToInt32(Ceiling(1.3 * Pow(width * depth, 0.625) / Pow(width + depth, 0.25)));
+            var dOut = Convert.ToInt32(Ceiling(1.3 * Pow(width * depth, 0.625) / Pow(width + depth, 0.25)));
             if(dOut % 2 == 1) dOut++;
             output += $"{dOut} Ø\n\n";
         }

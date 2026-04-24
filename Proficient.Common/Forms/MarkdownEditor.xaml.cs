@@ -25,9 +25,10 @@ public partial class MarkdownEditor : Window
 
 
         var menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
-        Action setAlignmentValue = () => {
+        void setAlignmentValue()
+        {
             if (SystemParameters.MenuDropAlignment && menuDropAlignmentField != null) menuDropAlignmentField.SetValue(null, false);
-        };
+        }
         setAlignmentValue();
         SystemParameters.StaticPropertyChanged += (sender, e) => { setAlignmentValue(); };
     }
@@ -36,9 +37,9 @@ public partial class MarkdownEditor : Window
 
     private void Menu_Click(object sender, RoutedEventArgs e)
     {
-        string? snippet = ((System.Windows.Controls.MenuItem)sender).Tag as string;
-        int pos = tb.CaretIndex;
-        string newMd = tb.Text.Insert(pos, snippet ?? string.Empty);
+        var snippet = ((System.Windows.Controls.MenuItem)sender).Tag as string;
+        var pos = tb.CaretIndex;
+        var newMd = tb.Text.Insert(pos, snippet ?? string.Empty);
         tb.Text = newMd;
         tb.CaretIndex = pos + (snippet?.Length ?? 0);
     }

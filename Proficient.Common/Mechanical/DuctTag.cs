@@ -78,7 +78,7 @@ internal class DuctTag : IExternalCommand
             .First(f => f.Name == Names.Family.DuctTagRotating)
             .GetFamilySymbolIds()
             .First();
-        double minNoLdr = Convert.ToDouble(view.Scale) / 64.0;
+        var minNoLdr = Convert.ToDouble(view.Scale) / 64.0;
 
         using var dTx = new Transaction(doc, "Add duct tags");
         if (dTx.Start() != TransactionStatus.Started)
@@ -90,20 +90,20 @@ internal class DuctTag : IExternalCommand
             var ep1 = dc.GetEndPoint(0);
             var ep2 = dc.GetEndPoint(1);
 
-            bool isVert = Math.Abs(Math.Round(ep1.X, 4) - Math.Round(ep2.X, 4)) < 0.01;
-            bool isHor = Math.Abs(Math.Round(ep1.Y, 4) - Math.Round(ep2.Y, 4)) < 0.01;
-            bool isInPlane = Math.Abs(Math.Round(ep1.Z, 4) - Math.Round(ep2.Z, 4)) < 0.01;
+            var isVert = Math.Abs(Math.Round(ep1.X, 4) - Math.Round(ep2.X, 4)) < 0.01;
+            var isHor = Math.Abs(Math.Round(ep1.Y, 4) - Math.Round(ep2.Y, 4)) < 0.01;
+            var isInPlane = Math.Abs(Math.Round(ep1.Z, 4) - Math.Round(ep2.Z, 4)) < 0.01;
 
             if (!isInPlane) continue;
 
-            double dWidth = duct.DuctType.Shape == ConnectorProfileType.Round ?
+            var dWidth = duct.DuctType.Shape == ConnectorProfileType.Round ?
                 duct.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble() :
                 duct.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM).AsDouble();
 
             var point = dc.Evaluate(0.5, true);
 
             var tagId = isVert || isHor ? dtId : dtrId;
-            bool ldr = dWidth < minNoLdr;
+            var ldr = dWidth < minNoLdr;
             var tagOr = isVert && !ldr ? TagOrientation.Vertical : TagOrientation.Horizontal;
 
             IndependentTag.Create(doc, tagId, view.Id, new Reference(duct), ldr, tagOr, point);
@@ -115,7 +115,7 @@ internal class DuctTag : IExternalCommand
         #region tag duct drops/rises
 
         using var dfTx = new Transaction(doc, "Add fitting tags");
-        List<PartType> noTag = new() { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
+        List<PartType> noTag = [PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular];
         if (dfTx.Start() != TransactionStatus.Started) 
             return Result.Failed;
 
@@ -151,16 +151,16 @@ internal class DuctTag : IExternalCommand
             switch (zDir)
             {
                 case -1:
-                    double top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
-                    double viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
+                    var top = Math.Max(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
+                    var viewTop = Util.GetViewBound(doc, view, Util.ViewPlane.Top);
                     if (viewTop - top > 70)
                         viewTop -= 100;
                     if (top <= viewTop)
                         continue;
                     break;
                 case 1:
-                    double bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
-                    double viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
+                    var bottom = Math.Min(crv.GetEndPoint(0).Z, crv.GetEndPoint(1).Z);
+                    var viewBottom = Util.GetViewBound(doc, view, Util.ViewPlane.Bottom);
                     if (viewBottom - bottom > 70)
                         viewBottom -= 100;
                     if (bottom >= viewBottom)

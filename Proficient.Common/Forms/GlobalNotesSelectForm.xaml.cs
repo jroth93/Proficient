@@ -51,6 +51,7 @@ public class NotesSelectViewModel : INotifyPropertyChanged
 
     public List<EqiNote> NoteEntries { get; set; }
 
+    private const string NoteEntryProperty = "NoteEntry";
     private EqiNote? _noteEntry;
 
     public EqiNote? NoteEntry
@@ -61,7 +62,7 @@ public class NotesSelectViewModel : INotifyPropertyChanged
             if (_noteEntry == value) return;
             _noteEntry = value;
 
-            NotifyPropertyChanged("NoteEntry");
+            NotifyPropertyChanged(NoteEntryProperty);
         }
     }
     public event PropertyChangedEventHandler? PropertyChanged;

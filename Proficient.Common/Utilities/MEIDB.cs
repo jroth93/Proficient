@@ -55,8 +55,8 @@ internal class MeiDbConn
         connection.Open();
 
         using MeiDb context = new (connection, false);
-        var notes = context.EqiNotes.Where(n => n.Id == id);
-        return notes.Any() ? notes.First() : null;
+        var notes = context.EqiNotes.Where(n => n.Id == id).ToList();
+        return notes.Count > 0 ? notes[0] : null;
     }
 
     public static List<EqiNote> GetEqiNotes()
@@ -130,7 +130,7 @@ internal class MeiDbConn
     {
         using MySqlConnection connection = new (ConnectionString);
         using MeiDb context = new (connection, false);
-        return context.Users.ToList();
+        return [.. context.Users];
     }
 
     public static User? GetUserByAdId(string adUser)

@@ -59,8 +59,7 @@ internal class EditSettings : IExternalCommand
             Main.Settings.DefFont = sf.DefaultFont.SelectedItem?.ToString() ?? string.Empty;
             Main.Settings.HideDesignNotes = (bool)sf.HideDesignNotes.IsChecked;
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string jsonSettings = JsonSerializer.Serialize(Main.Settings, options);
+            var jsonSettings = JsonSerializer.Serialize(Main.Settings, Main.JsonOptions);
             File.WriteAllText(Names.File.UserSettings, jsonSettings);
         }
 

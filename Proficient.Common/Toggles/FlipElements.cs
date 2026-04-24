@@ -91,7 +91,7 @@ internal class FlipElements : IExternalCommand
             
         using var tx = new Transaction(doc, "Flip Section");
         if (tx.Start() == TransactionStatus.Started)
-            ElementTransformUtils.MirrorElements(doc, new List<ElementId>{sec.Id}, p, false);
+            ElementTransformUtils.MirrorElements(doc, [sec.Id], p, false);
         tx.Commit();
     }
 

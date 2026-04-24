@@ -91,7 +91,7 @@ namespace Proficient.Archive
                 .Request()
                 .GetAsync();
 
-            if (files.Where(f => f.Name == $"{pn}.xlsx").Count() > 0)
+            if (files.Where(f => f.Name == $"{pn}.xlsx").Count > 0)
             {
                 return files.Where(f => f.Name == $"{pn}.xlsx").FirstOrDefault();
             }
@@ -116,7 +116,7 @@ namespace Proficient.Archive
                         .Request()
                         .GetAsync();
                 }
-                while (files.Where(f => f.Name == $"{pn}.xlsx").Count() == 0);
+                while (files.Where(f => f.Name == $"{pn}.xlsx").Count == 0);
 
                 return files.Where(f => f.Name == $"{pn}.xlsx").FirstOrDefault();
             }

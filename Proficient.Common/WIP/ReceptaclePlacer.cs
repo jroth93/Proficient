@@ -13,8 +13,8 @@ internal class ReceptaclePlacer : IExternalCommand
         UIDocument uiDoc = revit.Application.ActiveUIDocument;
         Document doc = uiDoc.Document;
         Selection sel = uiDoc.Selection;
-        var sp = doc.GetElement(sel.GetElementIds().First()) as Space;
-        if (sp is null) return Result.Failed;
+        if (doc.GetElement(sel.GetElementIds().First()) is not Space sp) 
+            return Result.Failed;
 
         var bsList = sp.GetBoundarySegments(new SpatialElementBoundaryOptions())[0].Select(x => x.GetCurve());
         var per = bsList.Select(x => x.Length).Sum();

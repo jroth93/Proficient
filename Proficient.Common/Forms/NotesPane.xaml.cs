@@ -12,7 +12,7 @@ namespace Proficient.Forms;
 /// </summary>
 public partial class NotesPane : Page, IDockablePaneProvider
 {
-    public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
+    public static readonly DockablePaneId PaneId = new(new Guid("D39CCF32-627E-4075-B1E6-68D3F1DAC780"));
 
     public NotesPane(ExternalEvent exEvent, NotesHandler handler)
     {
@@ -42,7 +42,7 @@ public partial class NotesPane : Page, IDockablePaneProvider
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                var startInfo = new ProcessStartInfo
                 {
                     Arguments = (string)((Hyperlink)e.OriginalSource).ToolTip,
                     FileName = "explorer.exe"

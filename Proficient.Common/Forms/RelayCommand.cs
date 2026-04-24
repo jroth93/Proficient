@@ -26,11 +26,9 @@ public class RelayCommand : ICommand
 
     bool ICommand.CanExecute(object? parameter)
     {
-        if (_targetCanExecuteMethod != null)
-        {
-            return _targetCanExecuteMethod();
-        }
-        return _targetExecuteMethod != null;
+        return _targetCanExecuteMethod != null ? 
+            _targetCanExecuteMethod() : 
+            _targetExecuteMethod != null;
     }
 
     // Beware - should use weak references if command instance lifetime is longer than lifetime of UI objects that get hooked up to command
@@ -39,10 +37,7 @@ public class RelayCommand : ICommand
 
     void ICommand.Execute(object? parameter)
     {
-        if (_targetExecuteMethod != null)
-        {
-            _targetExecuteMethod();
-        }
+        _targetExecuteMethod?.Invoke();
     }
     #endregion
 }
@@ -70,11 +65,9 @@ public class RelayCommand<T> : ICommand
 
     bool ICommand.CanExecute(object? parameter)
     {
-        if (_targetCanExecuteMethod != null)
-        {
-            return parameter is T tPar && _targetCanExecuteMethod(tPar);
-        }
-        return _targetExecuteMethod != null;
+        return _targetCanExecuteMethod != null ? 
+            parameter is T tPar && _targetCanExecuteMethod(tPar) : 
+            _targetExecuteMethod != null;
     }
 
     // Beware - should use weak references if command instance lifetime is longer than lifetime of UI objects that get hooked up to command

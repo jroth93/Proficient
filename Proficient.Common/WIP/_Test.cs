@@ -100,12 +100,12 @@ class _Test : IExternalCommand
     }
 
 
-    public void GetAllMethods(Type t)
+    public static void GetAllMethods(Type t)
     {
 
 
-        StringBuilder st = new StringBuilder();
-        StreamWriter logger = new StreamWriter(@"C:\Users\jroth\Desktop\methods.txt");
+        var st = new StringBuilder();
+        var logger = new StreamWriter(@"C:\Users\jroth\Desktop\methods.txt");
 
         MethodInfo[] docInternalMethods = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -121,7 +121,7 @@ class _Test : IExternalCommand
 
             }
 
-            string rep = " Method: " + m.Name + ", Attribute: " + m.Attributes + ", CallingConvention: " +
+            var rep = " Method: " + m.Name + ", Attribute: " + m.Attributes + ", CallingConvention: " +
                          m.CallingConvention
                          + ", Contains Generic Parameters: " + m.ContainsGenericParameters + ", Custom Attribute: " +
                          m.CustomAttributes

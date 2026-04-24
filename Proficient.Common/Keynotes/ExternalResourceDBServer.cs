@@ -158,16 +158,16 @@ public class ExternalResourceDBServer : IExternalResourceServer
     /// <returns></returns>
     public virtual bool AreSameResources(IDictionary<string, string> referenceInformation_1, IDictionary<string, string> referenceInformation_2)
     {
-        bool same = true;
+        var same = true;
         if (referenceInformation_1.Count != referenceInformation_2.Count)
         {
             same = false;
         }
         else
         {
-            foreach (string key in referenceInformation_1.Keys)
+            foreach (var key in referenceInformation_1.Keys)
             {
-                if (!referenceInformation_2.ContainsKey(key) || referenceInformation_1[key] != referenceInformation_2[key])
+                if (!referenceInformation_2.TryGetValue(key, out var value) || referenceInformation_1[key] != value)
                 {
                     same = false;
                     break;
@@ -183,11 +183,12 @@ public class ExternalResourceDBServer : IExternalResourceServer
     /// Servers can override the name for UI purposes, but here we just return the names that we
     /// used when we first created the Resources in SetupBrowserData().
     /// </summary>        
-    public String GetInSessionPath(ExternalResourceReference err, String savedPath)
+    public string GetInSessionPath(ExternalResourceReference err, String savedPath)
     {
         return savedPath;
     }
 
+    private const string ParamName = "loadContent";
 
     /// <summary>
     /// Loads the resources.
@@ -205,7 +206,7 @@ public class ExternalResourceDBServer : IExternalResourceServer
         loadContent.Version = DateTime.Now.ToString();
 
         if (loadContent is not KeyBasedTreeEntriesLoadContent kdrlc)
-            throw new ArgumentException("Wrong type of ExternalResourceLoadContent (expecting a KeyBasedTreeEntriesLoadContent) for keynote data.", "loadContent");
+            throw new ArgumentException("Wrong type of ExternalResourceLoadContent (expecting a KeyBasedTreeEntriesLoadContent) for keynote data.", ParamName);
 
         kdrlc.Reset();
 
@@ -226,12 +227,11 @@ public class ExternalResourceDBServer : IExternalResourceServer
     public ResourceVersionStatus GetResourceVersionStatus(ExternalResourceReference extRef)
     {
         // Determine whether currently loaded version is out of date, and return appropriate status.
-        String currentlyLoadedVersion = extRef.Version;
+        var currentlyLoadedVersion = extRef.Version;
 
-        if (currentlyLoadedVersion == String.Empty)
-            return ResourceVersionStatus.Unknown;
-
-        return ResourceVersionStatus.OutOfDate;
+        return currentlyLoadedVersion == string.Empty ? 
+            ResourceVersionStatus.Unknown : 
+            ResourceVersionStatus.OutOfDate;
     }
 
     /// <summary>

@@ -26,7 +26,7 @@ public class NotesHandler : IExternalEventHandler
         }
     }
 
-    public void SaveViewNotes(UIApplication uiApp)
+    private static void SaveViewNotes(UIApplication uiApp)
     {
         using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set View Notes");
         if (tx.Start() != TransactionStatus.Started) return;
@@ -55,7 +55,7 @@ public class NotesHandler : IExternalEventHandler
         tx.Commit();
     }
 
-    public void SaveProjectNotes(UIApplication uiApp)
+    private static void SaveProjectNotes(UIApplication uiApp)
     {
         using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set Project Notes");
         if (tx.Start() != TransactionStatus.Started) return;
@@ -91,7 +91,7 @@ public class NotesHandler : IExternalEventHandler
         tx.Commit();
     }
 
-    public void SaveDbId(UIApplication uiApp)
+    private static void SaveDbId(UIApplication uiApp)
     {
         using Transaction tx = new (uiApp.ActiveUIDocument.Document, "Set Db Id");
         if (tx.Start() != TransactionStatus.Started) return;

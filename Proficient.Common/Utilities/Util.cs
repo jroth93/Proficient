@@ -68,7 +68,7 @@ internal class Util
 
         if (endDrop is null) return;
 
-        string newEndValue = endDrop.Current.Name == "Attached End" ? "Free End" : "Attached End";
+        var newEndValue = endDrop.Current.Name == "Attached End" ? "Free End" : "Attached End";
 
 
         var newSelection = endDrop
@@ -121,11 +121,11 @@ internal class Util
 
         if (ldBox.GetCurrentPattern(ValuePattern.Pattern) is not ValuePattern ldVp) return;
 
-        string ldVal = ldVp.Current.Value;
-        string exp = ldVal.Substring(0, ldVal.Length - 1).Replace(" ","+");
+        var ldVal = ldVp.Current.Value;
+        var exp = ldVal.Substring(0, ldVal.Length - 1).Replace(" ","+");
         var curVal = Convert.ToDouble(new DataTable().Compute(exp, null));
-        int sign = increase ? 1 : -1;
-        double newVal = curVal + sign / 8.0;
+        var sign = increase ? 1 : -1;
+        var newVal = curVal + sign / 8.0;
         if (newVal <= 0) newVal = 0.125;
         ldVp.SetValue(Convert.ToString(newVal, CultureInfo.CurrentCulture));
 
@@ -155,8 +155,8 @@ internal class Util
         var viewRange = viewPlan.GetViewRange();
 
         var pvp = vp == ViewPlane.Top ? PlanViewPlane.TopClipPlane : PlanViewPlane.BottomClipPlane;
-        double elev = (doc.GetElement(viewRange.GetLevelId(pvp)) is Level l) ? l.ProjectElevation : 0;
-        double offset = viewRange.GetOffset(pvp);
+        var elev = (doc.GetElement(viewRange.GetLevelId(pvp)) is Level l) ? l.ProjectElevation : 0;
+        var offset = viewRange.GetOffset(pvp);
 
         return elev + offset;
     }

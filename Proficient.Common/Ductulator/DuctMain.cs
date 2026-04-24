@@ -78,10 +78,10 @@ public partial class DuctMain : Form
             return;
         }
 
-        int airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
-        int velocity = Convert.ToInt32(new DataTable().Compute(inputs[1], null));
-        int minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
-        int maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
+        var airflow = Convert.ToInt32(new DataTable().Compute(inputs[0], null));
+        var velocity = Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+        var minDepth = Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var maxDepth = Convert.ToInt32(new DataTable().Compute(inputs[3], null));
 
         var result = Regex.Match(inputs[0], Constants.NumPattern);
         TotalCFM2.Text = result.Success ? "" : $"{Convert.ToInt32(airflow)} CFM Total";
@@ -169,13 +169,13 @@ public partial class DuctMain : Form
             return;
         }
 
-        double friction = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
-        int dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
-        int width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
-        int depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
+        var friction = Convert.ToDouble(new DataTable().Compute(inputs[0], null));
+        var dia = isRnd ? Convert.ToInt32(new DataTable().Compute(inputs[1], null)) : 0;
+        var width = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[1], null));
+        var depth = isRnd ? 0 : Convert.ToInt32(new DataTable().Compute(inputs[2], null));
 
-        int airflow = Convert.ToInt32(Functions.AirflowSolver(friction, dia, width, depth, isRnd));
-        int velocity = Convert.ToInt32(Functions.VelocitySolver(airflow, dia, width, depth, isRnd));
+        var airflow = Convert.ToInt32(Functions.AirflowSolver(friction, dia, width, depth, isRnd));
+        var velocity = Convert.ToInt32(Functions.VelocitySolver(airflow, dia, width, depth, isRnd));
 
         Output6.Text = $"{airflow} CFM \n\n{velocity} FPM";
     }
@@ -198,7 +198,7 @@ public partial class DuctMain : Form
 
         Output8.Text = "";
 
-        var inputs = isRnd ? new List<string> { velocitytxt2.Text, diatxt3.Text } : new List<string> { velocitytxt2.Text, widthtxt3.Text, depthtxt3.Text };
+        List<string> inputs = isRnd ? [velocitytxt2.Text, diatxt3.Text ] : [velocitytxt2.Text, widthtxt3.Text, depthtxt3.Text];
 
         if (Parser(inputs) == false)
         {
@@ -279,15 +279,9 @@ public partial class DuctMain : Form
     {
         if (Main.Settings is null) return;
 
-        if (Main.Settings.AppVert)
-        {
-            Height = size > 170 ? size + 300 : 450;
-        }
-        else
-        {
-            Height = size > 150 ? size + 130 : 275;
-        }
-
+        Height = Main.Settings.AppVert ? 
+            size > 170 ? size + 300 : 450 : 
+            size > 150 ? size + 130 : 275;
     }
 
     private void SettingsButtonClick(object sender, EventArgs e)
@@ -324,13 +318,13 @@ public partial class DuctMain : Form
     public const int WM_NCLBUTTONDOWN = 0xA1;
     public const int HT_CAPTION = 0x2;
     [DllImport("user32.dll")]
-    public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+    private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
     [DllImport("user32.dll")]
-    public static extern bool ReleaseCapture();
+    private static extern bool ReleaseCapture();
     private void Form1_MouseDown(object sender, MouseEventArgs e)
     {
         if (e.Button != MouseButtons.Left) return;
         ReleaseCapture();
-        SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+        _ = SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
     }
 }

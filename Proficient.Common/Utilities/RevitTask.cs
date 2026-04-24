@@ -8,9 +8,9 @@ namespace Proficient.Utilities;
 /// <typeparam name="TResult"></typeparam>
 public class RevitTask
 {
-    private EventHandler _handler;
+    private readonly EventHandler _handler;
     private TaskCompletionSource<object>? _tcs;
-    private ExternalEvent _externalEvent;
+    private readonly ExternalEvent _externalEvent;
 
     /// <summary>
     /// .ctor

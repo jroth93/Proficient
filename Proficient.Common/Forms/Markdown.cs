@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using Binding = System.Windows.Data.Binding;
 
 namespace Proficient.Forms;
-
+#pragma warning disable CA1510, CA1865 //ArgumentNullException.ThrowIfNull and StartsWith(Char) not available in .NET Framework
 public class Markdown : DependencyObject
 {
     /// <summary>
@@ -189,7 +189,7 @@ public class Markdown : DependencyObject
         }
 
         text = Normalize(text);
-        var document = Create<FlowDocument, Block>(RunBlockGamut(text));
+        FlowDocument document = Create<FlowDocument, Block>(RunBlockGamut(text));
 
         if (DocumentStyle != null)
         {
@@ -208,12 +208,9 @@ public class Markdown : DependencyObject
     /// </summary>
     private IEnumerable<Block> RunBlockGamut(string text)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return DoHeaders(text,
+        return text is null
+            ? throw new ArgumentNullException(nameof(text))
+            : DoHeaders(text,
             s1 => DoHorizontalRules(s1,
                 s2 => DoLists(s2,
                     s3 => DoTable(s3,
@@ -238,12 +235,9 @@ public class Markdown : DependencyObject
     /// </summary>
     private IEnumerable<Inline> RunSpanGamut(string text)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return DoCodeSpans(text,
+        return text is null
+            ? throw new ArgumentNullException(nameof(text))
+            : DoCodeSpans(text,
             s0 => DoImages(s0,
                 s1 => DoAnchors(s1,
                     s2 => DoItalicsAndBold(s2,
@@ -267,9 +261,9 @@ public class Markdown : DependencyObject
         //return text;
     }
 
-    private static readonly Regex _newlinesLeadingTrailing = new Regex(@"^\n+|\n+\z", RegexOptions.Compiled);
-    private static readonly Regex _newlinesMultiple = new Regex(@"\n{2,}", RegexOptions.Compiled);
-    private static readonly Regex _leadingWhitespace = new Regex(@"^[ ]*", RegexOptions.Compiled);
+    private static readonly Regex _newlinesLeadingTrailing = new(@"^\n+|\n+\z", RegexOptions.Compiled);
+    private static readonly Regex _newlinesMultiple = new(@"\n{2,}", RegexOptions.Compiled);
+    private static readonly Regex _leadingWhitespace = new(@"^[ ]*", RegexOptions.Compiled);
 
     /// <summary>
     /// splits on two or more newlines, to form "paragraphs";    
@@ -282,11 +276,11 @@ public class Markdown : DependencyObject
         }
 
         // split on two or more newlines
-        string[] grafs = _newlinesMultiple.Split(_newlinesLeadingTrailing.Replace(text, ""));
+        var grafs = _newlinesMultiple.Split(_newlinesLeadingTrailing.Replace(text, ""));
 
         foreach (var g in grafs)
         {
-            var block = Create<Paragraph, Inline>(RunSpanGamut(g));
+            Paragraph block = Create<Paragraph, Inline>(RunSpanGamut(g));
             block.Style = this.NormalParagraphStyle;
             yield return block;
         }
@@ -302,8 +296,7 @@ public class Markdown : DependencyObject
     {
         // in other words [this] and [this[also]] and [this[also[too]]]
         // up to _nestDepth
-        if (_nestedBracketsPattern is null)
-            _nestedBracketsPattern =
+        _nestedBracketsPattern ??=
                 RepeatString(@"
                     (?>              # Atomic matching
                        [^\[\]]+      # Anything other than brackets
@@ -326,8 +319,7 @@ public class Markdown : DependencyObject
     {
         // in other words (this) and (this(also)) and (this(also(too)))
         // up to _nestDepth
-        if (_nestedParensPattern is null)
-            _nestedParensPattern =
+        _nestedParensPattern ??=
                 RepeatString(@"
                     (?>              # Atomic matching
                        [^()\s]+      # Anything other than parens or whitespace
@@ -350,8 +342,7 @@ public class Markdown : DependencyObject
     {
         // in other words (this) and (this(also)) and (this(also(too)))
         // up to _nestDepth
-        if (_nestedParensPatternWithWhiteSpace is null)
-            _nestedParensPatternWithWhiteSpace =
+        _nestedParensPatternWithWhiteSpace ??=
                 RepeatString(@"
                     (?>              # Atomic matching
                        [^()]+      # Anything other than parens
@@ -364,7 +355,7 @@ public class Markdown : DependencyObject
         return _nestedParensPatternWithWhiteSpace;
     }
 
-    private static readonly Regex _imageInline = new Regex(
+    private static readonly Regex _imageInline = new(
         string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
                     !\[
@@ -386,7 +377,7 @@ public class Markdown : DependencyObject
             GetNestedParensPatternWithWhiteSpace()),
         RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-    private static readonly Regex _anchorInline = new Regex(
+    private static readonly Regex _anchorInline = new(
         string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
                     \[
@@ -414,12 +405,9 @@ public class Markdown : DependencyObject
     /// </remarks>
     private IEnumerable<Inline> DoImages(string text, Func<string, IEnumerable<Inline>> defaultHandler)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return Evaluate(text, _imageInline, ImageInlineEvaluator, defaultHandler);
+        return text is null
+            ? throw new ArgumentNullException(nameof(text))
+            : Evaluate(text, _imageInline, ImageInlineEvaluator, defaultHandler);
     }
 
     private Inline ImageInlineEvaluator(Match match)
@@ -429,8 +417,8 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string linkText = match.Groups[2].Value;
-        string url = match.Groups[3].Value;
+        var linkText = match.Groups[2].Value;
+        var url = match.Groups[3].Value;
         BitmapImage? imgSource = null;
         try
         {
@@ -514,11 +502,11 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string linkText = match.Groups[2].Value;
-        string url = match.Groups[3].Value;
-        string title = match.Groups[6].Value;
+        var linkText = match.Groups[2].Value;
+        var url = match.Groups[3].Value;
+        var title = match.Groups[6].Value;
 
-        var result = Create<Hyperlink, Inline>(RunSpanGamut(linkText));
+        Hyperlink result = Create<Hyperlink, Inline>(RunSpanGamut(linkText));
         result.Command = HyperlinkCommand;
         result.CommandParameter = url;
         if (!string.IsNullOrWhiteSpace(title))
@@ -533,7 +521,7 @@ public class Markdown : DependencyObject
         return result;
     }
 
-    private static readonly Regex _headerSetext = new Regex(@"
+    private static readonly Regex _headerSetext = new(@"
                 ^(.+?)
                 [ ]*
                 \n
@@ -542,7 +530,7 @@ public class Markdown : DependencyObject
                 \n+",
         RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-    private static readonly Regex _headerAtx = new Regex(@"
+    private static readonly Regex _headerAtx = new(@"
                 ^(\#{1,6})  # $1 = string of #'s
                 [ ]*
                 (.+?)       # $2 = Header text
@@ -569,12 +557,9 @@ public class Markdown : DependencyObject
     /// </remarks>
     private IEnumerable<Block> DoHeaders(string text, Func<string, IEnumerable<Block>> defaultHandler)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return Evaluate<Block>(text, _headerSetext, m => SetextHeaderEvaluator(m),
+        return text is null
+            ? throw new ArgumentNullException(nameof(text))
+            : Evaluate<Block>(text, _headerSetext, SetextHeaderEvaluator,
             s => Evaluate<Block>(s, _headerAtx, m => AtxHeaderEvaluator(m), defaultHandler));
     }
 
@@ -585,8 +570,8 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string header = match.Groups[1].Value;
-        int level = match.Groups[2].Value.StartsWith("=", StringComparison.Ordinal) ? 1 : 2;
+        var header = match.Groups[1].Value;
+        var level = match.Groups[2].Value.StartsWith("=", StringComparison.Ordinal) ? 1 : 2;
 
         //TODO: Style the paragraph based on the header level
         return CreateHeader(level, RunSpanGamut(header.Trim()));
@@ -599,8 +584,8 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string header = match.Groups[2].Value;
-        int level = match.Groups[1].Value.Length;
+        var header = match.Groups[2].Value;
+        var level = match.Groups[1].Value.Length;
         return CreateHeader(level, RunSpanGamut(header));
     }
 
@@ -611,7 +596,7 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(content));
         }
 
-        var block = Create<Paragraph, Inline>(content);
+        Paragraph block = Create<Paragraph, Inline>(content);
 
         switch (level)
         {
@@ -647,7 +632,7 @@ public class Markdown : DependencyObject
         return block;
     }
 
-    private static readonly Regex _horizontalRules = new Regex(@"
+    private static readonly Regex _horizontalRules = new(@"
             ^[ ]{0,3}         # Leading space
                 ([-*_])       # $1: First marker
                 (?>           # Repeated marker group
@@ -669,12 +654,9 @@ public class Markdown : DependencyObject
     /// </remarks>
     private IEnumerable<Block> DoHorizontalRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return Evaluate(text, _horizontalRules, RuleEvaluator, defaultHandler);
+        return text is null
+            ? throw new ArgumentNullException(nameof(text))
+            : Evaluate(text, _horizontalRules, RuleEvaluator, defaultHandler);
     }
 
     private Block RuleEvaluator(Match match)
@@ -715,10 +697,10 @@ public class Markdown : DependencyObject
               )
             )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _tabWidth - 1);
 
-    private static readonly Regex _listNested = new Regex(@"^" + _wholeList,
+    private static readonly Regex _listNested = new(@"^" + _wholeList,
         RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-    private static readonly Regex _listTopLevel = new Regex(@"(?:(?<=\n\n)|\A\n?)" + _wholeList,
+    private static readonly Regex _listTopLevel = new(@"(?:(?<=\n\n)|\A\n?)" + _wholeList,
         RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
     /// <summary>
@@ -733,10 +715,9 @@ public class Markdown : DependencyObject
 
         // We use a different prefix before nested lists than top-level lists.
         // See extended comment in _ProcessListItems().
-        if (_listLevel > 0)
-            return Evaluate(text, _listNested, ListEvaluator, defaultHandler);
-        else
-            return Evaluate(text, _listTopLevel, ListEvaluator, defaultHandler);
+        return _listLevel > 0
+            ? Evaluate(text, _listNested, ListEvaluator, defaultHandler)
+            : Evaluate(text, _listTopLevel, ListEvaluator, defaultHandler);
     }
 
     private Block ListEvaluator(Match match)
@@ -746,14 +727,14 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string list = match.Groups[1].Value;
-        string listType = Regex.IsMatch(match.Groups[3].Value, _markerUL) ? "ul" : "ol";
+        var list = match.Groups[1].Value;
+        var listType = Regex.IsMatch(match.Groups[3].Value, _markerUL) ? "ul" : "ol";
 
         // Turn double returns into triple returns, so that we can make a
         // paragraph for the last item in a list, if necessary:
         list = Regex.Replace(list, @"\n{2,}", "\n\n\n");
 
-        var resultList = Create<List, ListItem>(ProcessListItems(list, listType == "ul" ? _markerUL : _markerOL));
+        List resultList = Create<List, ListItem>(ProcessListItems(list, listType == "ul" ? _markerUL : _markerOL));
 
         resultList.MarkerStyle = listType == "ul" ? TextMarkerStyle.Disc : TextMarkerStyle.Decimal;
 
@@ -793,7 +774,7 @@ public class Markdown : DependencyObject
             // Trim trailing blank lines:
             list = Regex.Replace(list, @"\n{2,}\z", "\n");
 
-            string pattern = string.Format(CultureInfo.InvariantCulture,
+            var pattern = string.Format(CultureInfo.InvariantCulture,
                 @"(\n)?                      # leading line = $1
                 (^[ ]*)                    # leading whitespace = $2
                 ({0}) [ ]+                 # list marker = $3
@@ -802,7 +783,7 @@ public class Markdown : DependencyObject
                 (?= \n* (\z | \2 ({0}) [ ]+))", marker);
 
             var regex = new Regex(pattern, RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
-            var matches = regex.Matches(list);
+            MatchCollection matches = regex.Matches(list);
             foreach (Match m in matches)
             {
                 yield return ListItemEvaluator(m);
@@ -821,8 +802,8 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string item = match.Groups[4].Value;
-        string leadingLine = match.Groups[1].Value;
+        var item = match.Groups[4].Value;
+        var leadingLine = match.Groups[1].Value;
 
         if (!String.IsNullOrEmpty(leadingLine) || Regex.IsMatch(item, @"\n{2,}"))
             // we could correct any bad indentation here..
@@ -834,7 +815,7 @@ public class Markdown : DependencyObject
         }
     }
 
-    private static readonly Regex _table = new Regex(@"
+    private static readonly Regex _table = new(@"
             (                               # $1 = whole table
                 [ \r\n]*
                 (                           # $2 = table header
@@ -855,12 +836,9 @@ public class Markdown : DependencyObject
 
     public IEnumerable<Block> DoTable(string text, Func<string, IEnumerable<Block>> defaultHandler)
     {
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        return Evaluate(text, _table, TableEvalutor, defaultHandler);
+        return text is null ? 
+            throw new ArgumentNullException(nameof(text)) : 
+            Evaluate(text, _table, TableEvalutor, defaultHandler);
     }
 
     private Block TableEvalutor(Match match)
@@ -883,7 +861,7 @@ public class Markdown : DependencyObject
             return trimRitm.Substring(1, trimRitm.Length - 2).Split('|');
         }).ToList();
 
-        int maxColCount =
+        var maxColCount =
             Math.Max(
                 Math.Max(styles.Length, headers.Length),
                 rowList.Select(ritm => ritm.Length).Max()
@@ -942,7 +920,7 @@ public class Markdown : DependencyObject
             tableHeaderRG.Style = TableHeaderStyle;
         }
 
-        var tableHeader = CreateTableRow(headers, aligns);
+        TableRow tableHeader = CreateTableRow(headers, aligns);
         tableHeaderRG.Rows.Add(tableHeader);
         table.RowGroups.Add(tableHeaderRG);
 
@@ -952,9 +930,9 @@ public class Markdown : DependencyObject
         {
             tableBodyRG.Style = TableBodyStyle;
         }
-        foreach (string[] rowAry in rowList)
+        foreach (var rowAry in rowList)
         {
-            var tableBody = CreateTableRow(rowAry, aligns);
+            TableRow tableBody = CreateTableRow(rowAry, aligns);
             tableBodyRG.Rows.Add(tableBody);
         }
         table.RowGroups.Add(tableBodyRG);
@@ -969,9 +947,9 @@ public class Markdown : DependencyObject
         foreach (var idx in Enumerable.Range(0, txts.Length))
         {
             var txt = txts[idx];
-            var align = aligns[idx];
+            TextAlignment? align = aligns[idx];
 
-            var paragraph = Create<Paragraph, Inline>(RunSpanGamut(txt));
+            Paragraph paragraph = Create<Paragraph, Inline>(RunSpanGamut(txt));
             var cell = new TableCell(paragraph);
 
             if (align.HasValue)
@@ -990,7 +968,7 @@ public class Markdown : DependencyObject
         return tableRow;
     }
 
-    private static readonly Regex _codeSpan = new Regex(@"
+    private static readonly Regex _codeSpan = new(@"
                     (?<!\\)   # Character before opening ` can't be a backslash
                     (`+)      # $1 = Opening run of `
                     (.+?)     # $2 = The code block
@@ -1040,7 +1018,7 @@ public class Markdown : DependencyObject
             throw new ArgumentNullException(nameof(match));
         }
 
-        string span = match.Groups[2].Value;
+        var span = match.Groups[2].Value;
         span = Regex.Replace(span, @"^[ ]*", ""); // leading whitespace
         span = Regex.Replace(span, @"[ ]*$", ""); // trailing whitespace
 
@@ -1053,14 +1031,14 @@ public class Markdown : DependencyObject
         return result;
     }
 
-    private static readonly Regex _bold = new Regex(@"(\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1",
+    private static readonly Regex _bold = new(@"(\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1",
         RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-    private static readonly Regex _strictBold = new Regex(@"([\W_]|^) (\*\*|__) (?=\S) ([^\r]*?\S[\*_]*) \2 ([\W_]|$)",
+    private static readonly Regex _strictBold = new(@"([\W_]|^) (\*\*|__) (?=\S) ([^\r]*?\S[\*_]*) \2 ([\W_]|$)",
         RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
-    private static readonly Regex _italic = new Regex(@"(\*|_) (?=\S) (.+?) (?<=\S) \1",
+    private static readonly Regex _italic = new(@"(\*|_) (?=\S) (.+?) (?<=\S) \1",
         RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-    private static readonly Regex _strictItalic = new Regex(@"([\W_]|^) (\*|_) (?=\S) ([^\r\*_]*?\S) \2 ([\W_]|$)",
+    private static readonly Regex _strictItalic = new(@"([\W_]|^) (\*|_) (?=\S) ([^\r\*_]*?\S) \2 ([\W_]|$)",
         RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
     /// <summary>
@@ -1074,21 +1052,16 @@ public class Markdown : DependencyObject
         }
 
         // <strong> must go first, then <em>
-        if (StrictBoldItalic)
-        {
-            return Evaluate<Inline>(text, _strictBold, m => BoldEvaluator(m, 3),
+        return StrictBoldItalic
+            ? Evaluate<Inline>(text, _strictBold, m => BoldEvaluator(m, 3),
                 s1 => Evaluate<Inline>(s1, _strictItalic, m => ItalicEvaluator(m, 3),
-                    s2 => defaultHandler(s2)));
-        }
-        else
-        {
-            return Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
+                    s2 => defaultHandler(s2)))
+            : Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
                 s1 => Evaluate<Inline>(s1, _italic, m => ItalicEvaluator(m, 2),
                     s2 => defaultHandler(s2)));
-        }
     }
 
-    private Inline ItalicEvaluator(Match match, int contentGroup)
+    private Italic ItalicEvaluator(Match match, int contentGroup)
     {
         if (match is null)
         {
@@ -1099,7 +1072,7 @@ public class Markdown : DependencyObject
         return Create<Italic, Inline>(RunSpanGamut(content));
     }
 
-    private Inline BoldEvaluator(Match match, int contentGroup)
+    private Bold BoldEvaluator(Match match, int contentGroup)
     {
         if (match is null)
         {
@@ -1110,12 +1083,12 @@ public class Markdown : DependencyObject
         return Create<Bold, Inline>(RunSpanGamut(content));
     }
 
-    private static readonly Regex _outDent = new Regex(@"^[ ]{1," + _tabWidth + @"}", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex _outDent = new(@"^[ ]{1," + _tabWidth + @"}", RegexOptions.Multiline | RegexOptions.Compiled);
 
     /// <summary>
     /// Remove one level of line-leading spaces
     /// </summary>
-    private string Outdent(string block)
+    private static string Outdent(string block)
     {
         return _outDent.Replace(block, "");
     }
@@ -1126,7 +1099,7 @@ public class Markdown : DependencyObject
     /// makes sure text ends with a couple of newlines; 
     /// removes any blank lines (only spaces) in the text
     /// </summary>
-    private string Normalize(string text)
+    private static string Normalize(string text)
     {
         if (text is null)
         {
@@ -1135,9 +1108,9 @@ public class Markdown : DependencyObject
 
         var output = new StringBuilder(text.Length);
         var line = new StringBuilder();
-        bool valid = false;
+        var valid = false;
 
-        for (int i = 0; i < text.Length; i++)
+        for (var i = 0; i < text.Length; i++)
         {
             switch (text[i])
             {
@@ -1159,8 +1132,8 @@ public class Markdown : DependencyObject
                     }
                     break;
                 case '\t':
-                    int width = (_tabWidth - line.Length % _tabWidth);
-                    for (int k = 0; k < width; k++)
+                    var width = (_tabWidth - line.Length % _tabWidth);
+                    for (var k = 0; k < width; k++)
                         line.Append(' ');
                     break;
                 case '\x1A':
@@ -1192,16 +1165,16 @@ public class Markdown : DependencyObject
         }
 
         var sb = new StringBuilder(value.Length * count);
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             sb.Append(value);
         return sb.ToString();
     }
 
-    private TResult Create<TResult, TContent>(IEnumerable<TContent> content)
+    private static TResult Create<TResult, TContent>(IEnumerable<TContent> content)
         where TResult : IAddChild, new()
     {
         var result = new TResult();
-        foreach (var c in content)
+        foreach (TContent? c in content)
         {
             result.AddChild(c);
         }
@@ -1209,21 +1182,21 @@ public class Markdown : DependencyObject
         return result;
     }
 
-    private IEnumerable<T> Evaluate<T>(string text, Regex expression, Func<Match, T> build, Func<string, IEnumerable<T>> rest)
+    private static IEnumerable<T> Evaluate<T>(string text, Regex expression, Func<Match, T> build, Func<string, IEnumerable<T>> rest)
     {
         if (text is null)
         {
             throw new ArgumentNullException(nameof(text));
         }
 
-        var matches = expression.Matches(text);
+        MatchCollection matches = expression.Matches(text);
         var index = 0;
         foreach (Match m in matches)
         {
             if (m.Index > index)
             {
                 var prefix = text.Substring(index, m.Index - index);
-                foreach (var t in rest(prefix))
+                foreach (T? t in rest(prefix))
                 {
                     yield return t;
                 }
@@ -1237,17 +1210,17 @@ public class Markdown : DependencyObject
         if (index < text.Length)
         {
             var suffix = text.Substring(index, text.Length - index);
-            foreach (var t in rest(suffix))
+            foreach (T? t in rest(suffix))
             {
                 yield return t;
             }
         }
     }
 
-    private static readonly Regex _eoln = new Regex("\\s+");
-    private static readonly Regex _lbrk = new Regex(@"\ {2,}\n");
+    private static readonly Regex _eoln = new(@"\s+");
+    private static readonly Regex _lbrk = new(@"\ {2,}\n");
 
-    public IEnumerable<Inline> DoText(string text)
+    public static IEnumerable<Inline> DoText(string text)
     {
         if (text is null)
         {
@@ -1255,7 +1228,7 @@ public class Markdown : DependencyObject
         }
 
         var lines = _lbrk.Split(text);
-        bool first = true;
+        var first = true;
         foreach (var line in lines)
         {
             if (first)

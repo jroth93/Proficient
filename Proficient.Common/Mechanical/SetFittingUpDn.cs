@@ -30,7 +30,7 @@ internal class SetFittingUpDn : IExternalCommand
 #endif
 
         IEnumerable<FamilyInstance> fittings;
-        if(selEls is not null && selEls.Any())
+        if (selEls is not null && selEls.Count > 0)
         {
             fittings = selEls
                 .Where(IsFitting)
@@ -45,7 +45,7 @@ internal class SetFittingUpDn : IExternalCommand
                 .Cast<FamilyInstance>();
         }
 
-        var noSet = new List<PartType> { PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular };
+        List<PartType> noSet = [PartType.Transition, PartType.Cap, PartType.TapAdjustable, PartType.TapPerpendicular];
 
         var cons = fittings
             .Where(f => f.MEPModel is MechanicalFitting {ConnectorManager: { }} mf && !noSet.Contains(mf.PartType))

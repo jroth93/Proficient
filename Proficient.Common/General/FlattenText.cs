@@ -9,7 +9,7 @@ internal class FlattenText : IExternalCommand
         var doc = uiDoc.Document;
 
         var selIds = uiDoc.Selection.GetElementIds();
-        if (!selIds.Any()) 
+        if (selIds.Count <= 0) 
             return Result.Cancelled;
 
         var textEls = selIds

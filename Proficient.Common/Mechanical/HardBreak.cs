@@ -19,7 +19,7 @@ internal class HardBreak : IExternalCommand
 
         try
         {
-            eId = sel.Any() ? sel.First() : uiDoc.Selection.PickObject(ObjectType.Element, "Pick Element").ElementId;
+            eId = sel.Count > 0 ? sel.First() : uiDoc.Selection.PickObject(ObjectType.Element, "Pick Element").ElementId;
             pt = uiDoc.Selection.PickPoint();
         }
         catch (OperationCanceledException)

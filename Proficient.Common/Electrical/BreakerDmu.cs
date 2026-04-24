@@ -22,7 +22,7 @@ internal class BreakerDmu : IUpdater
 
                 foreach (var id in _addedIds)
                 {
-                    if (doc.GetElement(id) is not Wire w || !w.GetMEPSystems().Any()) continue;
+                    if (doc.GetElement(id) is not Wire w || w.GetMEPSystems().Count <= 0) continue;
 
                     var newVal = doc.GetElement(w.GetMEPSystems().First())
                         .LookupParameter(Names.Parameter.BreakerOptions).AsString();
@@ -49,7 +49,7 @@ internal class BreakerDmu : IUpdater
                     var par = el.LookupParameter(Names.Parameter.BreakerOptions);
                     if (par == null) continue;
 
-                    if (el is Wire w && w.GetMEPSystems().Any())
+                    if (el is Wire w && w.GetMEPSystems().Count > 0)
                     {
                         var newVal = doc.GetElement(w.GetMEPSystems().First()).LookupParameter(Names.Parameter.BreakerOptions).AsString();
                         par.Set(newVal);
@@ -59,7 +59,7 @@ internal class BreakerDmu : IUpdater
                         par.Set(string.Empty);
                     }
                 }
-                else if (bic == BuiltInCategory.OST_Wire && el is Wire wire && wire.GetMEPSystems().Any())
+                else if (bic == BuiltInCategory.OST_Wire && el is Wire wire && wire.GetMEPSystems().Count > 0)
                 {
                     var newVal = el.LookupParameter(Names.Parameter.BreakerOptions).AsString();
                     var ec = doc.GetElement(wire.GetMEPSystems().First());

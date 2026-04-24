@@ -14,7 +14,7 @@ internal class ElementPlacer : IExternalCommand
         var prompt = new Follower(revit);
         
 
-        bool prevErr = false;
+        var prevErr = false;
         Curve pathCrv;
 
         while (true)

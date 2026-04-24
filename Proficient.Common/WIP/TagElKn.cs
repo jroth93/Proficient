@@ -19,7 +19,7 @@ class TagElKn : IExternalCommand
 
         FilteredElementCollector elcoll = GetMEPElements(doc);
 
-        using Transaction tx = new Transaction(doc, "Add Element Keynotes");
+        using var tx = new Transaction(doc, "Add Element Keynotes");
         if (tx.Start() == TransactionStatus.Started)
         {
             foreach (Element el in elcoll)

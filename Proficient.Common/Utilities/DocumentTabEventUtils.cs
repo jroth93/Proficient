@@ -90,8 +90,9 @@ public static class DocumentTabEventUtils
 
             if (GetDocumentTabGroup(UIApp) is LayoutDocumentPaneGroupControl docTabGroup)
             {
+                var docTabs = GetDocumentTabs(docTabGroup).ToList();
                 // dont do anything if there are no tabs
-                if (!GetDocumentTabs(docTabGroup).Any()) return;
+                if (docTabs.Count <= 0) return;
                 // reset tabs
             }
         }
@@ -105,8 +106,10 @@ public static class DocumentTabEventUtils
             
             if (GetDocumentTabGroup(UIApp) is LayoutDocumentPaneGroupControl docTabGroup)
             {
+
+                var docTabs = GetDocumentTabs(docTabGroup).ToList();
                 // dont do anything if there are no tabs
-                if (!GetDocumentTabs(docTabGroup).Any()) return;
+                if (docTabs.Count <= 0) return;
             }
         }
     }

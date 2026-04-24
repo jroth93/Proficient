@@ -116,8 +116,8 @@ class ExternalResourceUIServer : IExternalResourceUIServer
 
     #region ExternalResourceUIServer Member Variables
 
-    private static Guid m_myServerId = new Guid("E9B6C194-62DE-4134-900D-BA8DF7AD33FA");
-    private static Guid m_myDBServerId = new Guid("5F3CAA13-F073-4F93-BDC2-B7F4B806CDAF");
+    private static readonly Guid m_myServerId = new("E9B6C194-62DE-4134-900D-BA8DF7AD33FA");
+    private static readonly Guid m_myDBServerId = new("5F3CAA13-F073-4F93-BDC2-B7F4B806CDAF");
 
     #endregion ExternalResourceUIServer Member Variables
 

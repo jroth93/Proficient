@@ -42,12 +42,7 @@ public partial class UserSettings : Form
         Main.Settings.AppVert = radiovert.Checked;
         MessageBox.Show(@"Please restart program for new settings to take effect.", @"Restart Program");
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-
-        string jsonSettings = JsonSerializer.Serialize(Main.Settings, options);
+        var jsonSettings = JsonSerializer.Serialize(Main.Settings, Main.JsonOptions);
 
         File.WriteAllText(Names.File.UserSettings, jsonSettings);
         this.Close();

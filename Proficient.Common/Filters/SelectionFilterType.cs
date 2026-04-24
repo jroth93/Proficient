@@ -32,8 +32,8 @@ internal class SelectionFilterType : IExternalCommand
 
         foreach (var type in types)
         {
-            string fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
-            string display = fam + " - " + type.Name;
+            var fam = (Doc.GetElement(type.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
+            var display = fam + " - " + type.Name;
             bvm.AddButton("smallBtn", display, () => { selectedFamily = fam; selectedType = type.Name; }, true, true);
         }
 
@@ -60,8 +60,8 @@ internal class TypeEqualityComparer : IEqualityComparer<Element>
 {
     public bool Equals(Element? e1, Element? e2)
     {
-        string? f1 = (SelectionFilterType.Doc?.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
-        string? f2 = (SelectionFilterType.Doc?.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
+        var f1 = (SelectionFilterType.Doc?.GetElement(e1?.GetTypeId()) as ElementType)?.FamilyName;
+        var f2 = (SelectionFilterType.Doc?.GetElement(e2?.GetTypeId()) as ElementType)?.FamilyName;
 
         if (e1 == null && e2 == null)
             return true;

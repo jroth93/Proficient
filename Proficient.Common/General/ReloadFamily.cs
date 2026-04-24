@@ -10,7 +10,7 @@ internal class ReloadFamily : IExternalCommand
 
         var ids = uiDoc.Selection.GetElementIds();
 
-        if (ids.Any() && doc.GetElement(ids.First()) is FamilyInstance fi)
+        if (ids.Count > 0 && doc.GetElement(ids.First()) is FamilyInstance fi)
             BrowserUtility.ReloadFamily(doc, fi.Symbol.Family.Id);
 
         return Result.Succeeded;

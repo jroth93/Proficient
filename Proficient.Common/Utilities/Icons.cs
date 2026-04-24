@@ -32,7 +32,7 @@ internal class Icons
     /// </summary>
     private static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
     {
-        IntPtr hBitmap = bitmap.GetHbitmap();
+        var hBitmap = bitmap.GetHbitmap();
 
         var retVal = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
         DeleteObject(hBitmap);

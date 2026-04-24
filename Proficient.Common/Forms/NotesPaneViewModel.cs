@@ -145,7 +145,7 @@ public class GlobalTabButtonConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        bool globalTab = value != null && (bool)value;
+        var globalTab = value != null && (bool)value;
         return globalTab && NotesPaneViewModel.GlobalNotesManager ? new GridLength(25) : new GridLength(0);
     }
 
@@ -157,7 +157,7 @@ public class EditButtonConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        bool globalTab = value != null && (bool)value;
+        var globalTab = value != null && (bool)value;
         return (globalTab && NotesPaneViewModel.GlobalNotesEditor) || !globalTab ? new GridLength(35) : new GridLength(0);
     }
 

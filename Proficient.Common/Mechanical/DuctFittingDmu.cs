@@ -4,7 +4,7 @@ namespace Proficient.Mechanical;
 
 internal class DuctFittingDmu : IUpdater
 {
-    private static UpdaterId _updaterId = new(new AddInId(Main.AppId), Names.Guids.DuctFittingDmu);
+    private static readonly UpdaterId _updaterId = new(new AddInId(Main.AppId), Names.Guids.DuctFittingDmu);
 
     public void Execute(UpdaterData data)
     {

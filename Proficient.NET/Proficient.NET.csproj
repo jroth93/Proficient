@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>1.1.2.1</Version>
+		<Version>1.2.0.0</Version>
+		<Copyright>2026</Copyright>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Configurations>Debug2025;Debug2026;Debug2027;Release2025;Release2026;Release2027;Publish2025;Publish2026;Publish2027;Debug2026</Configurations>
@@ -50,6 +51,7 @@
 		<StartProgram>C:\Program Files\Autodesk\Revit $(RevitVersion)\Revit.exe</StartProgram>
 		<StartArguments>/language ENG</StartArguments>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>$(NoWarn);SYSLIB1045;SYSLIB1054</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -58,6 +60,7 @@
 		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
 		<PackageReference Include="MySql.Data.EntityFramework" Version="9.6.0" />
 		<PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.7" />
+		<PackageReference Include="System.IO.Pipelines" Version="8.0.0" Condition="$(RevitVersion) == 2026"/>
 		<Reference Include="RevitAPI">
 			<HintPath>C:\Program Files\Autodesk\Revit $(RevitVersion)\RevitAPI.dll</HintPath>
 			<Private>False</Private>

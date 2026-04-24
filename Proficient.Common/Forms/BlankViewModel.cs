@@ -13,13 +13,15 @@ public class BlankViewModel : INotifyPropertyChanged
 {
     public BlankViewModel()
     {
-        WrapPanelItems = new ObservableCollection<FrameworkElement>();
+        WrapPanelItems = [];
         Blank = new Blank()
         {
             DataContext = this
         };
         Blank.PreviewKeyDown += HandleEsc;
     }
+
+    private const string WrapPanelProperty = "WrapPanelItems";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -51,7 +53,7 @@ public class BlankViewModel : INotifyPropertyChanged
             }
         };
         WrapPanelItems.Add(btn);
-        NotifyPropertyChanged("WrapPanelItems");
+        NotifyPropertyChanged(WrapPanelProperty);
     }
 
     public void AddLabel(string content)

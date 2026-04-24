@@ -1,4 +1,5 @@
 ﻿using Proficient.Forms;
+using Proficient.Utilities;
 
 namespace Proficient.Filters;
 
@@ -10,9 +11,13 @@ internal class ViewFilterCatShow : IExternalCommand
         var uiDoc = revit.Application.ActiveUIDocument;
         var doc = uiDoc.Document;
         var view = uiDoc.ActiveView;
+        var isViewTemplate = false;
 
         if (view.ViewTemplateId != ElementId.InvalidElementId)
+        {
             view = (View)doc.GetElement(view.ViewTemplateId);
+            isViewTemplate = true;
+        }
 
         var cats = doc.Settings.Categories
             .Cast<Category>()
@@ -36,6 +41,8 @@ internal class ViewFilterCatShow : IExternalCommand
         using Transaction tx = new(doc, "Show Category");
         if (tx.Start() != TransactionStatus.Started) return Result.Failed;
         view.SetCategoryHidden(selectedCat.Id, false);
+        var viewType = isViewTemplate ? "View Template" : "View";
+        Util.BalloonTip("Category Visible", $"{selectedCat.Name} category visible in {viewType} {view.Name}", string.Empty);
         tx.Commit();
 
         return Result.Succeeded;

@@ -9,7 +9,7 @@ public partial class ViewForm : Form
     public ViewForm(string[] calloutViews)
     {
         InitializeComponent();
-        viewdropdown.Items.AddRange(calloutViews.ToArray<object>());
+        viewdropdown.Items.AddRange([.. calloutViews]);
         StartPosition = FormStartPosition.CenterScreen;
         SelectedViewIndex = 0;
     }
